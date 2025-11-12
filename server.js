@@ -4,7 +4,7 @@ const axios = require('axios');
 const path = require('path');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_KEY;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 let supabase;
@@ -313,18 +313,18 @@ app.delete('/api/customers/:id', requireAuth, requireAdmin, async (req, res) => 
 // Endpoint untuk Admin meluluskan pembayaran
 app.post('/api/customers/:id/approve', requireAuth, requireAdmin, async (req, res) => {
     const { id } = req.params;
-const { data, error } = await supabaseAdmin
-.from('customers')
-.update({ payment_status: 'paid' })
-.eq('id', id)
-.select();
+    const { data, error } = await supabaseAdmin
+        .from('customers')
+        .update({ payment_status: 'paid' })
+        .eq('id', id)
+        .select();
 
-if (error) {
-    console.error('Ralat meluluskan pembayaran:', error);
-    return res.status(500).json({ error: 'Gagal meluluskan pembayaran pelanggan.'});
-}
+    if (error) {
+        console.error('Ralat meluluskan pembayaran:', error);
+        return res.status(500).json({ error: 'Gagal meluluskan pembayaran pelanggan.'});
+    }
 
-res.status(200).json(data[0]);
+    res.status(200).json(data[0]);
 });
 
 // Endpoint untuk Admin menolak pembayaran
