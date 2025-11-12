@@ -20,6 +20,10 @@ app.use((req, res, next) => {
     next();
 });
 
+console.log('DIAGNOSTIC: SUPABASE_URL:', SUPABASE_URL ? 'Set' : 'Not Set');
+console.log('DIAGNOSTIC: SUPABASE_ANON_KEY:', SUPABASE_ANON_KEY ? 'Set' : 'Not Set');
+console.log('DIAGNOSTIC: SUPABASE_SERVICE_KEY:', SUPABASE_SERVICE_KEY ? 'Set' : 'Not Set');
+
 try {
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_KEY) {
         throw new Error("Pembolehubah persekitaran Supabase tidak ditetapkan sepenuhnya.");
