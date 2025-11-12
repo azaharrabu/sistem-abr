@@ -21,6 +21,8 @@ const openInteractiveButton = document.getElementById('open-interactive-button')
 const paymentVerificationSection = document.getElementById('payment-verification-section');
 const paymentProofForm = document.getElementById('payment-proof-form');
 const paymentMessage = document.getElementById('payment-message');
+const adminPanelSection = document.getElementById('admin-panel-section');
+const pendingPaymentsTableBody = document.getElementById('pending-payments-table-body');
 const adminSections = {
     addCustomer: document.getElementById('admin-add-customer-section'),
     customerListHeader: document.getElementById('admin-customer-list-header'),
@@ -34,6 +36,121 @@ const getSessionToken = async () => {
     return session ? session.access_token : null;
 };
 
+// Fungsi untuk mengambil dan memaparkan permintaan pembayaran tertunda
+async function fetchPendingPayments() {
+    const token = await getSessionToken();
+    if (!token) {
+        pendingPaymentsTableBody.innerHTML = '<tr><td colspan="5">Sesi tidak sah. Sila log masuk semula.</td></tr>';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/customers', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error((await response.json()).error || 'Gagal mengambil data pelanggan.');
+
+        const customers = await response.json();
+        const pendingPayments = customers.filter(customer => customer.payment_status === 'pending');
+
+        pendingPaymentsTableBody.innerHTML = ''; // Kosongkan jadual sedia ada
+
+        if (pendingPayments.length === 0) {
+            pendingPaymentsTableBody.innerHTML = '<tr><td colspan="5">Tiada permintaan pembayaran tertunda.</td></tr>';
+            return;
+        }
+
+        pendingPayments.forEach(customer => {
+            const row = pendingPaymentsTableBody.insertRow();
+            row.innerHTML = `
+                <td>${customer.email}</td>
+                <td>${customer.subscription_plan}</td>
+                <td>RM${customer.subscription_price}</td>
+                <td>${customer.payment_reference || 'Tiada'}</td>
+                <td><button class="approve-button" data-customer-id="${customer.id}">Luluskan</button></td>
+                <td><button class="reject-button" data-customer-id="${customer.id}">Tolak</button></td>
+            `;
+        });
+
+    } catch (error) {
+        pendingPaymentsTableBody.innerHTML = `<tr><td colspan="5" style="color: red;">Ralat: ${error.message}</td></tr>`;
+    }
+}
+
+// Fungsi untuk menolak pembayaran
+async function handleRejectPayment(event) {
+    if (!event.target.classList.contains('reject-button')) return;
+
+    const customerId = event.target.dataset.customerId;
+    if (!customerId) {
+        alert('ID pelanggan tidak ditemui.');
+        return;
+    }
+
+    if (!confirm('Anda pasti mahu menolak pembayaran ini? Tindakan ini tidak boleh diundur.')) {
+        return;
+    }
+
+    const token = await getSessionToken();
+    if (!token) {
+        alert('Sesi anda telah tamat. Sila log masuk semula.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/customers/${customerId}/reject`, {
+            method: 'DELETE', // Menggunakan DELETE untuk penolakan
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Gagal menolak pembayaran.');
+
+        alert('Pembayaran berjaya ditolak!');
+        fetchPendingPayments(); // Muat semula senarai pembayaran tertunda
+
+    } catch (error) {
+        alert(`Ralat: ${error.message}`);
+    }
+}
+
+// Fungsi untuk meluluskan pembayaran
+async function handleApprovePayment(event) {
+    if (!event.target.classList.contains('approve-button')) return;
+
+    const customerId = event.target.dataset.customerId;
+    if (!customerId) {
+        alert('ID pelanggan tidak ditemui.');
+        return;
+    }
+
+    if (!confirm('Anda pasti mahu meluluskan pembayaran ini?')) {
+        return;
+    }
+
+    const token = await getSessionToken();
+    if (!token) {
+        alert('Sesi anda telah tamat. Sila log masuk semula.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/customers/${customerId}/approve`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Gagal meluluskan pembayaran.');
+
+        alert('Pembayaran berjaya diluluskan!');
+        fetchPendingPayments(); // Muat semula senarai pembayaran tertunda
+
+    } catch (error) {
+        alert(`Ralat: ${error.message}`);
+    }
+}
+
 // Fungsi untuk memaparkan UI berdasarkan status & peranan pengguna
 const showUi = (user, customer) => {
     authSection.style.display = 'none';
@@ -44,10 +161,15 @@ const showUi = (user, customer) => {
     navLinksContainer.style.display = 'none';
     paymentVerificationSection.style.display = 'none';
     Object.values(adminSections).forEach(el => el.style.display = 'none');
+    adminPanelSection.style.display = 'none'; // Sembunyikan admin panel secara lalai
 
     if (customer && customer.role === 'admin') {
-        Object.values(adminSections).forEach(el => el.style.display = 'block');
-        fetchCustomers();
+        adminPanelSection.style.display = 'block'; // Paparkan admin panel
+        fetchPendingPayments(); // Muatkan pembayaran tertunda
+        // Sembunyikan bahagian admin lain yang tidak berkaitan dengan kelulusan pembayaran
+        adminSections.addCustomer.style.display = 'none';
+        adminSections.customerListHeader.style.display = 'none';
+        adminSections.customerList.style.display = 'none';
     } 
     else if (customer && customer.role === 'user') {
         if (customer.payment_status === 'paid') {
@@ -277,5 +399,7 @@ openInteractiveButton.addEventListener('click', handleOpenInteractiveSystem);
 // Event listener untuk admin
 document.getElementById('add-customer-form').addEventListener('submit', handleAddCustomer);
 document.getElementById('customer-list').addEventListener('click', handleDeleteCustomer);
+pendingPaymentsTableBody.addEventListener('click', handleApprovePayment); // Event listener untuk butang luluskan
+pendingPaymentsTableBody.addEventListener('click', handleRejectPayment); // Event listener untuk butang tolak
 
 document.addEventListener('DOMContentLoaded', checkUserSession);

@@ -310,6 +310,43 @@ app.delete('/api/customers/:id', requireAuth, requireAdmin, async (req, res) => 
     res.status(200).json({ message: 'Customer dipadam' });
 });
 
+// Endpoint untuk Admin meluluskan pembayaran
+app.post('/api/customers/:id/approve', requireAuth, requireAdmin, async (req, res) => {
+    const { id } = req.params;
+const { data, error } = await supabaseAdmin
+.from('customers')
+.update({ payment_status: 'paid' })
+.eq('id', id)
+.select();
+
+if (error)
+    console.error('Ralat meluluskan pembayaran:', error);
+return res.status(500).json({ error: 'Gagal meluluskan pembayaran pelanggan.'});
+}
+
+res.status(200).json(data[0]);
+});
+
+// Endpoint untuk Admin menolak pembayaran
+app.delete('/api/customers/:id/reject', requireAuth, requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { data, error } = await supabaseAdmin
+        .from('customers')
+        .update({ payment_status: 'rejected' })
+        .eq('id', id)
+        .select();
+
+    if (error) {
+        console.error('Ralat menolak pembayaran:', error);
+        return res.status(500).json({ error: 'Gagal menolak pembayaran pelanggan.' });
+    }
+
+    if (!data || data.length === 0) {
+        return res.status(404).json({ error: 'Pelanggan tidak ditemui atau status pembayaran tidak berubah.' });
+    }
+
+    res.status(200).json(data[0]);
+});
 
 // 7. MULAKAN SERVER
 app.listen(port, () => {

@@ -96,6 +96,28 @@
             <h3 id="admin-customer-list-header">Senarai Pelanggan</h3>
             <div id="customer-list"></div>
         </div>
+
+        <div id="admin-panel-section" style="display: none;">
+            <h2>Panel Admin</h2>
+            <h3>Permintaan Pembayaran Tertunda</h3>
+            <div id="pending-payments-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Pelan Langganan</th>
+                            <th>Harga</th>
+                            <th>Rujukan Pembayaran</th>
+                            <th>Tindakan</th>
+                            <th>Tolak</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-payments-table-body">
+                        <!-- Data will be loaded here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     <script src="app.js"></script>
 </body>
