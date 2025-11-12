@@ -88,13 +88,10 @@ const requireAdmin = async (req, res, next) => {
 };
 
 
-app.use(express.static(__dirname));
-
-// 3. LALUAN UTAMA (Main Route)
-// Hantar fail index.html untuk laluan utama (root)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+// 3. HIDANGKAN FAIL STATIK
+// Hantar semua fail dari folder 'public'. express.static akan secara automatik
+// menghantar 'index.html' apabila pengguna mengakses laluan root ('/').
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 // 4. API ENDPOINTS
