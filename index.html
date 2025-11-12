@@ -44,16 +44,34 @@
                     <input type="password" id="signup-password" placeholder="Kata Laluan" required>
                     
                     <div class="subscription-options">
-                        <h4>Pilih Pelan Langganan</h4>
-                        <label>
-                            <input type="radio" name="subscription_plan" value="6-bulan" required>
-                            6 Bulan - RM60 (Promosi: RM50)
-                        </label>
-                        <br>
-                        <label>
-                            <input type="radio" name="subscription_plan" value="12-bulan" required>
-                            12 Bulan - RM100 (Promosi: RM80)
-                        </label>
+                        <h4>Pilih Pelan Langganan Anda:</h4>
+                        <p class="promo-info">
+                            <span class="highlight">Promosi Istimewa!</span> Untuk 100 pendaftar pertama, nikmati harga diskaun!
+                        </p>
+                        
+                        <div class="plan-card">
+                            <input type="radio" name="subscription_plan" id="plan-6-months" value="6-bulan" required>
+                            <label for="plan-6-months">
+                                <h5>6 Bulan Langganan</h5>
+                                <p class="price">
+                                    Harga Biasa: <span class="strikethrough">RM60</span><br>
+                                    Harga Promosi: <span class="promo-price">RM50</span>
+                                </p>
+                                <p class="description">Akses penuh selama 6 bulan.</p>
+                            </label>
+                        </div>
+                        
+                        <div class="plan-card">
+                            <input type="radio" name="subscription_plan" id="plan-12-months" value="12-bulan" required>
+                            <label for="plan-12-months">
+                                <h5>12 Bulan Langganan</h5>
+                                <p class="price">
+                                    Harga Biasa: <span class="strikethrough">RM100</span><br>
+                                    Harga Promosi: <span class="promo-price">RM80</span>
+                                </p>
+                                <p class="description">Akses penuh selama 12 bulan.</p>
+                            </label>
+                        </div>
                     </div>
                     
                     <button type="submit">Daftar</button>
