@@ -321,6 +321,7 @@ app.post('/api/customers/:id/approve', requireAuth, requireAdmin, async (req, re
 
     if (error) {
         console.error('Ralat meluluskan pembayaran:', error);
+        // Log additional details for debugging on Vercel
         return res.status(500).json({ error: 'Gagal meluluskan pembayaran pelanggan.'});
     }
 
