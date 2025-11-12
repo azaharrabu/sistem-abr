@@ -90,6 +90,13 @@ const requireAdmin = async (req, res, next) => {
 
 app.use(express.static(__dirname));
 
+// 3. LALUAN UTAMA (Main Route)
+// Hantar fail index.html untuk laluan utama (root)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+
 // 4. API ENDPOINTS
 
 // Endpoint Pendaftaran (Awam)
