@@ -319,9 +319,9 @@ const { data, error } = await supabaseAdmin
 .eq('id', id)
 .select();
 
-if (error)
+if (error) {
     console.error('Ralat meluluskan pembayaran:', error);
-return res.status(500).json({ error: 'Gagal meluluskan pembayaran pelanggan.'});
+    return res.status(500).json({ error: 'Gagal meluluskan pembayaran pelanggan.'});
 }
 
 res.status(200).json(data[0]);
