@@ -47,8 +47,15 @@ try {
 
 // 2. MIDDLEWARE
 // Penting: Hidangkan fail statik dari folder 'public' SEBELUM mana-mana laluan lain.
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 3. STATIC FILE SERVING (Fail Awam)
+// Hidangkan fail utama aplikasi (index.html) untuk laluan akar.
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Middleware untuk pengesahan (Authentication)
 const requireAuth = async (req, res, next) => {
