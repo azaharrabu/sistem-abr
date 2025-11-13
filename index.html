@@ -24,9 +24,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="nav-links" id="nav-links-container" style="display: none;">
-            <button id="open-interactive-button">Buka Sistem Rujukan Interaktif</button>
-        </div>
+        <!-- Bahagian 1: Pengesahan (Daftar/Log Masuk) -->
         <div id="auth-section">
             <div class="form-container" id="login-container" style="display: none;">
                 <h2>Log Masuk</h2>
@@ -80,42 +78,54 @@
             </div>
         </div>
 
-        <div id="dashboard-section" style="display: none;">
+        <!-- Bahagian 2: Halaman Pembayaran (untuk pengguna 'pending') -->
+        <div id="payment-section" style="display: none;">
             <div class="header">
-                <h2>Dashboard Pelanggan</h2>
-                <div id="user-info"></div>
-                <button id="logout-button">Log Keluar</button>
+                <div id="payment-user-info"></div>
+                <button id="logout-button-payment">Log Keluar</button>
             </div>
-
-            <div id="payment-verification-section" style="display: none;">
-                <h3>Sahkan Pembayaran Anda</h3>
-                <p>Sila buat pembayaran ke akaun bank di bawah dan masukkan nombor rujukan transaksi untuk pengesahan.</p>
-                <div class="bank-details">
-                    <p><strong>Nama Bank:</strong> CIMB Bank</p>
-                    <p><strong>Nombor Akaun:</strong> 80-0974060-0</p>
-                    <p><strong>Nama Pemegang Akaun:</strong> ABR Brillante PLT</p>
-                </div>
-                <form id="payment-proof-form">
-                    <input type="text" id="payment-reference" placeholder="Nombor Rujukan Bank" required>
-                    <button type="submit">Sahkan Pembayaran</button>
-                </form>
-                <div id="payment-message"></div>
+            <h3>Sahkan Pembayaran Anda</h3>
+            <p>Pendaftaran anda berjaya. Sila buat pembayaran ke akaun bank di bawah dan masukkan nombor rujukan transaksi untuk pengesahan.</p>
+            <div class="bank-details">
+                <p><strong>Nama Bank:</strong> CIMB Bank</p>
+                <p><strong>Nombor Akaun:</strong> 80-0974060-0</p>
+                <p><strong>Nama Pemegang Akaun:</strong> ABR Brillante PLT</p>
             </div>
-
-            <div class="form-container" id="admin-add-customer-section">
-                <h3>Tambah Pelanggan</h3>
-                <form id="add-customer-form">
-                    <input type="text" id="customer-name" placeholder="Nama" required>
-                    <input type="email" id="customer-email" placeholder="Email" required>
-                    <input type="text" id="customer-phone" placeholder="No. Telefon">
-                    <button type="submit">Tambah</button>
-                </form>
-            </div>
-            <h3 id="admin-customer-list-header">Senarai Pelanggan</h3>
-            <div id="customer-list"></div>
+            <form id="payment-proof-form">
+                <input type="text" id="payment-reference" placeholder="Nombor Rujukan Bank" required>
+                <button type="submit">Hantar Bukti Pembayaran</button>
+            </form>
         </div>
 
+        <!-- Bahagian 3: Menunggu Kelulusan Admin -->
+        <div id="pending-approval-section" style="display: none;">
+            <div class="header">
+                <div id="pending-user-info"></div>
+                <button id="logout-button-pending">Log Keluar</button>
+            </div>
+            <h3>Terima Kasih!</h3>
+            <p>Bukti pembayaran anda telah diterima. Permohonan anda akan disemak dan diproses dalam tempoh 3 hari bekerja. Anda akan menerima e-mel pengesahan apabila akaun anda diaktifkan.</p>
+        </div>
+
+        <!-- Bahagian 4: Kandungan Utama (untuk pengguna 'paid') -->
+        <div id="main-content-section" style="display: none;">
+            <div class="header">
+                <div id="main-user-info"></div>
+                <button id="logout-button-main">Log Keluar</button>
+            </div>
+            <h2>Selamat Datang!</h2>
+            <p>Langganan anda aktif. Anda kini boleh mengakses sistem rujukan interaktif.</p>
+            <div class="nav-links">
+                <button id="open-interactive-button">Buka Sistem Rujukan Interaktif</button>
+            </div>
+        </div>
+
+        <!-- Bahagian 5: Panel Admin -->
         <div id="admin-panel-section" style="display: none;">
+            <div class="header">
+                <div id="admin-user-info"></div>
+                <button id="logout-button-admin">Log Keluar</button>
+            </div>
             <h2>Panel Admin</h2>
             <h3>Permintaan Pembayaran Tertunda</h3>
             <div id="pending-payments-list">

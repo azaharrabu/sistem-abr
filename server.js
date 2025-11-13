@@ -74,13 +74,13 @@ const requireAuth = async (req, res, next) => {
 const requireAdmin = async (req, res, next) => {
     const { user } = req; // Pengguna dari middleware requireAuth
 
-    const { data: customer, error } = await supabaseAdmin
+    const { data: profile, error } = await supabaseAdmin
         .from('users')
         .select('role')
         .eq('user_id', user.id)
         .single();
 
-    if (error || !customer || customer.role !== 'admin') {
+    if (error || !profile || profile.role !== 'admin') {
         return res.status(403).json({ error: 'Akses terhad kepada admin sahaja.' });
     }
 
@@ -162,11 +162,36 @@ app.post('/api/signup', async (req, res) => {
             }
         }
 
-        // 5. Pendaftaran Selesai
-        // Logik ToyyibPay dialih keluar. Pengguna akan membuat pembayaran manual.
+        // 5. Pendaftaran Selesai - Log masuk pengguna secara automatik
+        const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({ email, password });
+        if (sessionError) {
+            // Walaupun pendaftaran berjaya, log masuk gagal. Maklumkan pengguna untuk log masuk secara manual.
+            console.error('DIAGNOSTIC: Gagal log masuk automatik selepas daftar:', sessionError);
+            return res.status(200).json({ 
+                message: "Pendaftaran berjaya! Sila log masuk secara manual.",
+                user: authData.user,
+                session: null,
+                customer: null
+            });
+        }
+
+        // Dapatkan profil yang baru dicipta untuk dihantar kembali
+        const { data: profile, error: finalProfileError } = await supabaseAdmin
+            .from('users')
+            .select('*, role')
+            .eq('user_id', authData.user.id)
+            .single();
+
+        if (finalProfileError) {
+            // Ini tidak sepatutnya berlaku, tetapi sebagai langkah keselamatan
+            return res.status(500).json({ error: 'Gagal mendapatkan profil pengguna selepas dicipta.' });
+        }
+
         res.status(200).json({ 
-            message: "Pendaftaran berjaya! Sila teruskan ke halaman pembayaran.",
-            user: authData.user 
+            message: "Pendaftaran berjaya!",
+            user: sessionData.user,
+            session: sessionData.session,
+            customer: profile
         });
 
     } catch (error) {
@@ -184,17 +209,17 @@ app.post('/api/signin', async (req, res) => {
         if (authError) throw authError;
 
         // Dapatkan profil termasuk 'role'
-        const { data: customer, error: customerError } = await supabase
+        const { data: profile, error: profileError } = await supabase
             .from('users')
             .select('*, role') // Pastikan 'role' dipilih
             .eq('user_id', authData.user.id)
             .single();
 
-        if (customerError) {
-            console.error('Ralat mendapatkan profil pelanggan:', customerError.message);
+        if (profileError) {
+            console.error('Ralat mendapatkan profil pelanggan:', profileError.message);
         }
 
-        res.status(200).json({ user: authData.user, session: authData.session, customer: customer });
+        res.status(200).json({ user: authData.user, session: authData.session, customer: profile });
 
     } catch (error) {
         res.status(error.status || 400).json({ error: error.message });
@@ -271,13 +296,13 @@ app.post('/api/payment-callback', async (req, res) => {
 // Laluan untuk kandungan interaktif (perlu log masuk)
 app.get('/rujukan_interaktif.html', requireAuth, async (req, res) => {
     // Pastikan pengguna mempunyai langganan yang aktif dan telah dibayar
-    const { data: customer, error } = await supabaseAdmin
+    const { data: profile, error } = await supabaseAdmin
         .from('users')
         .select('payment_status, subscription_end_date')
         .eq('user_id', req.user.id)
         .single();
 
-    if (error || !customer || customer.payment_status !== 'paid' || new Date(customer.subscription_end_date) < new Date()) {
+    if (error || !profile || profile.payment_status !== 'paid' || new Date(profile.subscription_end_date) < new Date()) {
         return res.status(403).send('Akses ditolak. Sila pastikan langganan anda aktif.');
     }
     
@@ -293,41 +318,41 @@ app.get('/rujukan_interaktif.html', requireAuth, async (req, res) => {
 
 // Endpoint untuk dapatkan profil pengguna semasa
 app.get('/api/profile', requireAuth, async (req, res) => {
-    const { data: customer, error } = await supabaseAdmin
+    const { data: profile, error } = await supabaseAdmin
         .from('users')
         .select('*, role')
         .eq('user_id', req.user.id)
         .single();
 
-    if (error || !customer) {
+    if (error || !profile) {
         return res.status(404).json({ error: 'Profil pelanggan tidak ditemui.' });
     }
 
-    res.status(200).json(customer);
+    res.status(200).json(profile);
 });
 
 // 6. API ADMIN (Perlu log masuk sebagai admin)
 
-app.get('/api/customers', requireAuth, requireAdmin, async (req, res) => {
+app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
     const { data, error } = await supabaseAdmin.from('users').select('*');
     if (error) return res.status(500).json({ error: error.message });
     res.status(200).json(data);
 });
 
-app.post('/api/customers', requireAuth, requireAdmin, async (req, res) => {
+app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
     const { data, error } = await supabaseAdmin.from('users').insert([req.body]).select();
     if (error) return res.status(500).json({ error: error.message });
     res.status(201).json(data[0]);
 });
 
-app.delete('/api/customers/:id', requireAuth, requireAdmin, async (req, res) => {
+app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
     const { data, error } = await supabaseAdmin.from('users').delete().match({ id: req.params.id });
     if (error) return res.status(500).json({ error: error.message });
-    res.status(200).json({ message: 'Customer dipadam' });
+    res.status(200).json({ message: 'User dipadam' });
 });
 
 // Endpoint untuk Admin meluluskan pembayaran
-app.post('/api/customers/:id/approve', requireAuth, requireAdmin, async (req, res) => {
+app.post('/api/users/:id/approve', requireAuth, requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { data, error } = await supabaseAdmin
         .from('users')
@@ -345,7 +370,7 @@ app.post('/api/customers/:id/approve', requireAuth, requireAdmin, async (req, re
 });
 
 // Endpoint untuk Admin menolak pembayaran
-app.delete('/api/customers/:id/reject', requireAuth, requireAdmin, async (req, res) => {
+app.delete('/api/users/:id/reject', requireAuth, requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { data, error } = await supabaseAdmin
         .from('users')
