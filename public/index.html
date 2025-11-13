@@ -24,9 +24,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="nav-links" id="nav-links-container" style="display: none;">
-            <button id="open-interactive-button">Buka Sistem Rujukan Interaktif</button>
-        </div>
+        <!-- Bahagian 1: Pengesahan (Daftar/Log Masuk) -->
         <div id="auth-section">
             <div class="form-container" id="login-container" style="display: none;">
                 <h2>Log Masuk</h2>
@@ -42,97 +40,93 @@
                 <form id="signup-form">
                     <input type="email" id="signup-email" placeholder="Email" required>
                     <input type="password" id="signup-password" placeholder="Kata Laluan" required>
-                    
                     <div class="subscription-options">
                         <h4>Pilih Pelan Langganan Anda:</h4>
-                        <p class="promo-info">
-                            <span class="highlight">Promosi Istimewa!</span> Untuk 100 pendaftar pertama, nikmati harga diskaun!
-                        </p>
-                        
+                        <p class="promo-info"><span class="highlight">Promosi Istimewa!</span> Untuk 100 pendaftar pertama, nikmati harga diskaun!</p>
                         <div class="plan-card">
                             <input type="radio" name="subscription_plan" id="plan-6-months" value="6-bulan" required>
                             <label for="plan-6-months">
                                 <h5>6 Bulan Langganan</h5>
-                                <p class="price">
-                                    Harga Biasa: <span class="strikethrough">RM60</span><br>
-                                    Harga Promosi: <span class="promo-price">RM50</span>
-                                </p>
+                                <p class="price">Harga Biasa: <span class="strikethrough">RM60</span><br>Harga Promosi: <span class="promo-price">RM50</span></p>
                                 <p class="description">Akses penuh selama 6 bulan.</p>
                             </label>
                         </div>
-                        
                         <div class="plan-card">
                             <input type="radio" name="subscription_plan" id="plan-12-months" value="12-bulan" required>
                             <label for="plan-12-months">
                                 <h5>12 Bulan Langganan</h5>
-                                <p class="price">
-                                    Harga Biasa: <span class="strikethrough">RM100</span><br>
-                                    Harga Promosi: <span class="promo-price">RM80</span>
-                                </p>
+                                <p class="price">Harga Biasa: <span class="strikethrough">RM100</span><br>Harga Promosi: <span class="promo-price">RM80</span></p>
                                 <p class="description">Akses penuh selama 12 bulan.</p>
                             </label>
                         </div>
                     </div>
-                    
                     <button type="submit">Daftar</button>
                 </form>
                 <p>Sudah ada akaun? <a href="#" id="show-login">Log masuk</a></p>
             </div>
         </div>
 
-        <div id="dashboard-section" style="display: none;">
+        <!-- Bahagian 2: Pembayaran (Untuk pengguna yang belum bayar) -->
+        <div id="payment-section" style="display: none;">
             <div class="header">
-                <h2>Dashboard Pelanggan</h2>
-                <div id="user-info"></div>
-                <button id="logout-button">Log Keluar</button>
+                <div id="payment-user-info"></div>
+                <button id="logout-button-payment">Log Keluar</button>
             </div>
-
-            <div id="payment-verification-section" style="display: none;">
-                <h3>Sahkan Pembayaran Anda</h3>
-                <p>Sila buat pembayaran ke akaun bank di bawah dan masukkan nombor rujukan transaksi untuk pengesahan.</p>
-                <div class="bank-details">
-                    <p><strong>Nama Bank:</strong> CIMB Bank</p>
-                    <p><strong>Nombor Akaun:</strong> 80-0974060-0</p>
-                    <p><strong>Nama Pemegang Akaun:</strong> ABR Brillante PLT</p>
-                </div>
-                <form id="payment-proof-form">
-                    <input type="text" id="payment-reference" placeholder="Nombor Rujukan Bank" required>
-                    <button type="submit">Sahkan Pembayaran</button>
-                </form>
-                <div id="payment-message"></div>
+            <h3>Sahkan Pembayaran Anda</h3>
+            <p>Sila buat pembayaran ke akaun bank di bawah dan masukkan nombor rujukan transaksi untuk pengesahan.</p>
+            <div class="bank-details">
+                <p><strong>Nama Bank:</strong> CIMB Bank</p>
+                <p><strong>Nombor Akaun:</strong> 80-0974060-0</p>
+                <p><strong>Nama Pemegang Akaun:</strong> ABR Brillante PLT</p>
             </div>
-
-            <div class="form-container" id="admin-add-customer-section">
-                <h3>Tambah Pelanggan</h3>
-                <form id="add-customer-form">
-                    <input type="text" id="customer-name" placeholder="Nama" required>
-                    <input type="email" id="customer-email" placeholder="Email" required>
-                    <input type="text" id="customer-phone" placeholder="No. Telefon">
-                    <button type="submit">Tambah</button>
-                </form>
-            </div>
-            <h3 id="admin-customer-list-header">Senarai Pelanggan</h3>
-            <div id="customer-list"></div>
+            <form id="payment-proof-form">
+                <input type="text" id="payment-reference" placeholder="Nombor Rujukan Bank" required>
+                <button type="submit">Hantar Bukti Pembayaran</button>
+            </form>
         </div>
 
+        <!-- Bahagian 3: Menunggu Kelulusan -->
+        <div id="pending-approval-section" style="display: none;">
+            <div class="header">
+                <div id="pending-user-info"></div>
+                <button id="logout-button-pending">Log Keluar</button>
+            </div>
+            <h3>Menunggu Kelulusan</h3>
+            <p>Terima kasih. Bukti pembayaran anda telah dihantar dan akan disemak dalam masa 3 hari bekerja.</p>
+        </div>
+
+        <!-- Bahagian 4: Kandungan Utama (Untuk pengguna yang sudah bayar) -->
+        <div id="main-content-section" style="display: none;">
+            <div class="header">
+                <div id="main-user-info"></div>
+                <button id="logout-button-main">Log Keluar</button>
+            </div>
+            <h3>Dashboard</h3>
+            <p>Langganan anda aktif. Klik butang di bawah untuk mengakses sistem.</p>
+            <button id="open-interactive-button">Buka Sistem Rujukan Interaktif</button>
+        </div>
+
+        <!-- Bahagian 5: Panel Admin -->
         <div id="admin-panel-section" style="display: none;">
-            <h2>Panel Admin</h2>
+            <div class="header">
+                <h2>Panel Admin</h2>
+                <div id="admin-user-info"></div>
+                <button id="logout-button-admin">Log Keluar</button>
+            </div>
             <h3>Permintaan Pembayaran Tertunda</h3>
             <div id="pending-payments-list">
                 <table>
                     <thead>
                         <tr>
                             <th>Email</th>
-                            <th>Pelan Langganan</th>
+                            <th>Pelan</th>
                             <th>Harga</th>
-                            <th>Rujukan Pembayaran</th>
-                            <th>Tindakan</th>
+                            <th>Rujukan</th>
+                            <th>Luluskan</th>
                             <th>Tolak</th>
                         </tr>
                     </thead>
-                    <tbody id="pending-payments-table-body">
-                        <!-- Data will be loaded here by JavaScript -->
-                    </tbody>
+                    <tbody id="pending-payments-table-body"></tbody>
                 </table>
             </div>
         </div>

@@ -130,7 +130,7 @@ app.post('/api/signup', async (req, res) => {
         const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
         if (authError) throw authError;
 
-        // 4. Cipta profil pengguna (customer) dengan maklumat langganan (guna klien admin)
+        // 4. Cipta profil pengguna dengan maklumat langganan (guna klien admin)
         if (authData.user) {
             const subscriptionMonths = subscription_plan === '6-bulan' ? 6 : 12;
             const subscriptionEndDate = new Date();
@@ -171,7 +171,7 @@ app.post('/api/signup', async (req, res) => {
                 message: "Pendaftaran berjaya! Sila log masuk secara manual.",
                 user: authData.user,
                 session: null,
-                customer: null
+                profile: null
             });
         }
 
@@ -191,7 +191,7 @@ app.post('/api/signup', async (req, res) => {
             message: "Pendaftaran berjaya!",
             user: sessionData.user,
             session: sessionData.session,
-            customer: profile
+            profile: profile
         });
 
     } catch (error) {
@@ -216,10 +216,10 @@ app.post('/api/signin', async (req, res) => {
             .single();
 
         if (profileError) {
-            console.error('Ralat mendapatkan profil pelanggan:', profileError.message);
+            console.error('Ralat mendapatkan profil pengguna:', profileError.message);
         }
 
-        res.status(200).json({ user: authData.user, session: authData.session, customer: profile });
+        res.status(200).json({ user: authData.user, session: authData.session, profile: profile });
 
     } catch (error) {
         res.status(error.status || 400).json({ error: error.message });
@@ -266,7 +266,7 @@ app.post('/api/payment-callback', async (req, res) => {
 
     if (status === '1') { // Pembayaran berjaya
         try {
-            const { data: customer, error } = await supabaseAdmin
+            const { data: profile, error } = await supabaseAdmin
                 .from('users')
                 .update({ payment_status: 'paid' })
                 .eq('toyyibpay_bill_code', billcode)
@@ -276,10 +276,10 @@ app.post('/api/payment-callback', async (req, res) => {
                 console.error('Ralat mengemaskini status pembayaran:', error.message);
                 return res.status(500).send('Internal Server Error');
             }
-            if (customer && customer.length > 0) {
+            if (profile && profile.length > 0) {
                 console.log(`Status pembayaran untuk BillCode ${billcode} dikemaskini.`);
             } else {
-                console.warn(`Tiada pelanggan ditemui dengan BillCode ${billcode}.`);
+                console.warn(`Tiada pengguna ditemui dengan BillCode ${billcode}.`);
             }
         } catch (e) {
             console.error('Ralat server semasa memproses callback:', e.message);
@@ -325,7 +325,7 @@ app.get('/api/profile', requireAuth, async (req, res) => {
         .single();
 
     if (error || !profile) {
-        return res.status(404).json({ error: 'Profil pelanggan tidak ditemui.' });
+        return res.status(404).json({ error: 'Profil pengguna tidak ditemui.' });
     }
 
     res.status(200).json(profile);
