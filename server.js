@@ -88,10 +88,7 @@ const requireAdmin = async (req, res, next) => {
 };
 
 
-// 3. HIDANGKAN FAIL STATIK
-// Hantar semua fail dari folder 'public'. express.static akan secara automatik
-// menghantar 'index.html' apabila pengguna mengakses laluan root ('/').
-app.use(express.static(path.join(__dirname, 'public')));
+
 
 
 // 4. API ENDPOINTS
@@ -291,23 +288,7 @@ app.post('/api/payment-callback', async (req, res) => {
 */
 
 
-// 5. LALUAN DILINDUNGI (Protected Routes)
 
-// Laluan untuk kandungan interaktif (perlu log masuk)
-app.get('/rujukan_interaktif.html', requireAuth, async (req, res) => {
-    // Pastikan pengguna mempunyai langganan yang aktif dan telah dibayar
-    const { data: profile, error } = await supabaseAdmin
-        .from('users')
-        .select('payment_status, subscription_end_date')
-        .eq('user_id', req.user.id)
-        .single();
-
-    if (error || !profile || profile.payment_status !== 'paid' || new Date(profile.subscription_end_date) < new Date()) {
-        return res.status(403).send('Akses ditolak. Sila pastikan langganan anda aktif.');
-    }
-    
-    res.sendFile(path.join(__dirname, 'rujukan_interaktif.html'));
-});
 
 
 

@@ -202,29 +202,8 @@ async function handlePaymentProofSubmit(event) {
 }
 
 // Membuka sistem interaktif
-async function handleOpenInteractiveSystem() {
-    const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) {
-        alert("Sesi tidak sah. Sila log masuk semula.");
-        return;
-    }
-
-    try {
-        const response = await fetch('/rujukan_interaktif.html', {
-            headers: { 'Authorization': `Bearer ${session.access_token}` }
-        });
-
-        if (response.ok) {
-            const pageBlob = await response.blob();
-            const pageUrl = URL.createObjectURL(pageBlob);
-            window.open(pageUrl, '_blank');
-        } else {
-            const errorText = await response.text();
-            throw new Error(errorText || 'Akses ditolak. Langganan anda mungkin tidak aktif.');
-        }
-    } catch (error) {
-        alert(`Ralat: ${error.message}`);
-    }
+function handleOpenInteractiveSystem() {
+    window.open('rujukan_interaktif.html', '_blank');
 }
 
 
