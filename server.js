@@ -75,7 +75,7 @@ const requireAdmin = async (req, res, next) => {
     const { user } = req; // Pengguna dari middleware requireAuth
 
     const { data: customer, error } = await supabaseAdmin
-        .from('customers')
+        .from('users')
         .select('role')
         .eq('user_id', user.id)
         .single();
@@ -104,7 +104,7 @@ app.post('/api/signup', async (req, res) => {
 
         // 1. Dapatkan jumlah pengguna sedia ada (guna klien admin)
         const { count, error: countError } = await supabaseAdmin
-            .from('customers')
+            .from('users')
             .select('*', { count: 'exact', head: true });
 
         if (countError) {
@@ -136,7 +136,7 @@ app.post('/api/signup', async (req, res) => {
             const subscriptionEndDate = new Date();
             subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + subscriptionMonths);
 
-            const { error: profileError } = await supabaseAdmin.from('customers').insert([{
+            const { error: profileError } = await supabaseAdmin.from('users').insert([{
                 user_id: authData.user.id,
                 email: authData.user.email,
                 subscription_plan: subscription_plan,
@@ -185,7 +185,7 @@ app.post('/api/signin', async (req, res) => {
 
         // Dapatkan profil termasuk 'role'
         const { data: customer, error: customerError } = await supabase
-            .from('customers')
+            .from('users')
             .select('*, role') // Pastikan 'role' dipilih
             .eq('user_id', authData.user.id)
             .single();
@@ -212,7 +212,7 @@ app.post('/api/submit-payment-proof', requireAuth, async (req, res) => {
         }
 
         const { data, error } = await supabaseAdmin
-            .from('customers')
+            .from('users')
             .update({ 
                 payment_reference: payment_reference,
                 payment_status: 'pending' // Kekal/Set semula ke 'pending' sehingga disahkan admin
@@ -242,7 +242,7 @@ app.post('/api/payment-callback', async (req, res) => {
     if (status === '1') { // Pembayaran berjaya
         try {
             const { data: customer, error } = await supabaseAdmin
-                .from('customers')
+                .from('users')
                 .update({ payment_status: 'paid' })
                 .eq('toyyibpay_bill_code', billcode)
                 .select();
@@ -272,7 +272,7 @@ app.post('/api/payment-callback', async (req, res) => {
 app.get('/rujukan_interaktif.html', requireAuth, async (req, res) => {
     // Pastikan pengguna mempunyai langganan yang aktif dan telah dibayar
     const { data: customer, error } = await supabaseAdmin
-        .from('customers')
+        .from('users')
         .select('payment_status, subscription_end_date')
         .eq('user_id', req.user.id)
         .single();
@@ -294,7 +294,7 @@ app.get('/rujukan_interaktif.html', requireAuth, async (req, res) => {
 // Endpoint untuk dapatkan profil pengguna semasa
 app.get('/api/profile', requireAuth, async (req, res) => {
     const { data: customer, error } = await supabaseAdmin
-        .from('customers')
+        .from('users')
         .select('*, role')
         .eq('user_id', req.user.id)
         .single();
@@ -309,19 +309,19 @@ app.get('/api/profile', requireAuth, async (req, res) => {
 // 6. API ADMIN (Perlu log masuk sebagai admin)
 
 app.get('/api/customers', requireAuth, requireAdmin, async (req, res) => {
-    const { data, error } = await supabaseAdmin.from('customers').select('*');
+    const { data, error } = await supabaseAdmin.from('users').select('*');
     if (error) return res.status(500).json({ error: error.message });
     res.status(200).json(data);
 });
 
 app.post('/api/customers', requireAuth, requireAdmin, async (req, res) => {
-    const { data, error } = await supabaseAdmin.from('customers').insert([req.body]).select();
+    const { data, error } = await supabaseAdmin.from('users').insert([req.body]).select();
     if (error) return res.status(500).json({ error: error.message });
     res.status(201).json(data[0]);
 });
 
 app.delete('/api/customers/:id', requireAuth, requireAdmin, async (req, res) => {
-    const { data, error } = await supabaseAdmin.from('customers').delete().match({ id: req.params.id });
+    const { data, error } = await supabaseAdmin.from('users').delete().match({ id: req.params.id });
     if (error) return res.status(500).json({ error: error.message });
     res.status(200).json({ message: 'Customer dipadam' });
 });
@@ -330,7 +330,7 @@ app.delete('/api/customers/:id', requireAuth, requireAdmin, async (req, res) => 
 app.post('/api/customers/:id/approve', requireAuth, requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { data, error } = await supabaseAdmin
-        .from('customers')
+        .from('users')
         .update({ payment_status: 'paid' })
         .eq('id', id)
         .select();
@@ -348,7 +348,7 @@ app.post('/api/customers/:id/approve', requireAuth, requireAdmin, async (req, re
 app.delete('/api/customers/:id/reject', requireAuth, requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { data, error } = await supabaseAdmin
-        .from('customers')
+        .from('users')
         .update({ payment_status: 'rejected' })
         .eq('id', id)
         .select();
