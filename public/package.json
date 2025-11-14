@@ -2,10 +2,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.75.0",
     "axios": "^1.12.2",
-    "bcrypt": "^6.0.0",
-    "body-parser": "^2.2.0",
-    "express": "^5.1.0",
-    "express-session": "^1.18.2"
+    "express": "^5.1.0"
   },
   "name": "reference",
   "version": "1.0.0",
