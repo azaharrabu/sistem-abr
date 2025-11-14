@@ -86,9 +86,16 @@
         <h1>Sistem Rujukan Pantas: Jadual Kesepuluh UBBL 1984 (Pindaan 2021)</h1>
         
         <div class="form-group">
-            <label for="kategoriBangunan">Pilih Kategori Bangunan:</label>
-            <select id="kategoriBangunan">
-                <option value="">-- Sila Pilih Kategori --</option>
+            <label for="kumpulanMaksud">Pilih Kumpulan Maksud:</label>
+            <select id="kumpulanMaksud">
+                <option value="">-- Sila Pilih Kumpulan --</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="subKategoriContainer" style="display: none;">
+            <label for="subKategori">Pilih Sub-Kategori:</label>
+            <select id="subKategori">
+                <option value="">-- Sila Pilih Sub-Kategori --</option>
             </select>
         </div>
 
@@ -121,149 +128,189 @@
                 '7': 'Pengesan asap jenis berkuasa sendiri'
             };
 
-            // Flattened data structure
+            // Nested data structure
             const jadualData = {
-                "Kediaman Kecil - Rumah kediaman persendirian hingga 2 tingkat (Teres, Berkembar, Berasingan)": { pemadam: "-", penggera: "-" },
-                "Kediaman Kecil - Rumah kediaman persendirian yang melebihi daripada 2 tingkat": { pemadam: "-", penggera: "7" },
-                "Institusional - Pendudukan Pelajaran: Reka bentuk koridor terbuka - Dua tingkat dan ke bawah": { pemadam: "-", penggera: "-" },
-                "Institusional - Pendudukan Pelajaran: Reka bentuk koridor terbuka - Tiga hingga lima tingkat": { pemadam: "G", penggera: "2" },
-                "Institusional - Pendudukan Pelajaran: Reka bentuk koridor terbuka - Enam tingkat dan ke atas": { pemadam: "G", penggera: "1&2" },
-                "Institusional - Pendudukan Pelajaran: Reka bentuk lain - Kurang daripada 500 m² setiap lantai": { pemadam: "-", penggera: "-" },
-                "Institusional - Pendudukan Pelajaran: Reka bentuk lain - 500 hingga 1,000 m² setiap lantai": { pemadam: "G", penggera: "2" },
-                "Institusional - Pendudukan Pelajaran: Reka bentuk lain - 1,001 hingga 2,000 m² setiap lantai atau 18m hingga 30m tinggi": { pemadam: "G", penggera: "1&2" },
-                "Institusional - Pendudukan Pelajaran: Reka bentuk lain - Melebihi 2,000 m² setiap lantai atau 30m tinggi ke atas": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Institusional - Kantin atau Dapur Berasingan": { pemadam: "-", penggera: "-" },
-                "Institusional - Makmal atau Bengkel: Kurang daripada 1,000 m²": { pemadam: "-", penggera: "-" },
-                "Institusional - Makmal atau Bengkel: 1,000 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Institusional - Makmal atau Bengkel: Melebihi 2,000 m²": { pemadam: "A&G", penggera: "2,5&6" },
-                "Institusional - Perpustakaan: Kurang daripada 500 m²": { pemadam: "-", penggera: "-" },
-                "Institusional - Perpustakaan: 500 hingga 1,000 m²": { pemadam: "G", penggera: "2" },
-                "Institusional - Perpustakaan: 1,001 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Institusional - Perpustakaan: Melebihi 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Institusional - Dewan Pelbagai Guna Berasingan: Satu tingkat dan kurang daripada 2,000 m²": { pemadam: "-", penggera: "-" },
-                "Institusional - Dewan Pelbagai Guna Berasingan: Dua tingkat dan ke atas atau melebihi 2,000 m²": { pemadam: "G", penggera: "2" },
-                "Institusional - Dewan Pelbagai Guna Berasingan: Penyaman udara pusat, melebihi 2,000 m²": { pemadam: "A&G", penggera: "2&6" },
-                "Institusional - Institusi Pelajaran dalam Kompleks Komersial": { pemadam: "Akan dianggap sebahagian daripada suatu risiko keseluruhan di dalam kompleks.", penggera: "Akan dianggap sebahagian daripada suatu risiko keseluruhan di dalam kompleks." },
-                "Hospital atau Rumah Rawatan - Klinik Jagaan Harian: Kurang daripada 750 m²": { pemadam: "-", penggera: "-" },
-                "Hospital atau Rumah Rawatan - Klinik Jagaan Harian: 751 hingga 1,000 m²": { pemadam: "G", penggera: "2" },
-                "Hospital atau Rumah Rawatan - Klinik Jagaan Harian: 1,001 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Hospital atau Rumah Rawatan - Klinik Jagaan Harian: Melebihi 2,000 m²": { pemadam: "A&G", penggera: "2&6" },
-                "Hospital atau Rumah Rawatan - Penginapan Pesakit: Sebahagian daripada suatu kompleks komersial": { pemadam: "Akan dianggap sebahagian daripada suatu risiko keseluruhan dengan suatu kehendak khas bagi lampu kecemasan, lif usungan dan sebagainya.", penggera: "Akan dianggap sebahagian daripada suatu risiko keseluruhan dengan suatu kehendak khas bagi lampu kecemasan, lif usungan dan sebagainya." },
-                "Hospital atau Rumah Rawatan - Penginapan Pesakit: Satu tingkat - Kurang daripada 750 m²": { pemadam: "G", penggera: "2" },
-                "Hospital atau Rumah Rawatan - Penginapan Pesakit: Satu tingkat - 751 hingga 1,000 m²": { pemadam: "G", penggera: "1&3" },
-                "Hospital atau Rumah Rawatan - Penginapan Pesakit: Satu tingkat - Melebihi 1,000 m²": { pemadam: "A&G", penggera: "2,3,4,5&6" },
-                "Hospital atau Rumah Rawatan - Penginapan Pesakit: Dua tingkat dan ke atas - Kurang daripada 750 m²": { pemadam: "G", penggera: "2" },
-                "Hospital atau Rumah Rawatan - Penginapan Pesakit: Dua tingkat dan ke atas - 751 hingga 1,000 m²": { pemadam: "G", penggera: "1&3" },
-                "Hospital atau Rumah Rawatan - Penginapan Pesakit: Dua tingkat dan ke atas - Melebihi 1,000 m²": { pemadam: "A&G", penggera: "2,3,4,5&6" },
-                "Kediaman Lain - Hotel: Reka bentuk koridor terbuka - 2 hingga 3 tingkat, 50 bilik atau kurang": { pemadam: "-", penggera: "1&2" },
-                "Kediaman Lain - Hotel: Reka bentuk koridor terbuka - 2 hingga 3 tingkat, Melebihi 50 bilik": { pemadam: "G", penggera: "1&2" },
-                "Kediaman Lain - Hotel: Reka bentuk koridor terbuka - 4 tingkat dan ke atas, 100 bilik atau kurang": { pemadam: "G", penggera: "1&2" },
-                "Kediaman Lain - Hotel: Reka bentuk koridor terbuka - 4 tingkat dan ke atas, Melebihi 100 bilik": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Kediaman Lain - Hotel: Reka bentuk lain - 2 hingga 3 tingkat, Kurang daripada 20 bilik": { pemadam: "-", penggera: "1&2" },
-                "Kediaman Lain - Hotel: Reka bentuk lain - 2 hingga 3 tingkat, 20 hingga 100 bilik": { pemadam: "G", penggera: "1&2" },
-                "Kediaman Lain - Hotel: Reka bentuk lain - 2 hingga 3 tingkat, Melebihi 100 bilik": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Kediaman Lain - Hotel: Reka bentuk lain - 4 tingkat dan ke atas, Kurang daripada 50 bilik": { pemadam: "G", penggera: "1&2" },
-                "Kediaman Lain - Hotel: Reka bentuk lain - 4 tingkat dan ke atas, 50 bilik dan melebihi": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Kediaman Lain - Hotel di atas pendudukan kedai atau pejabat": { pemadam: "Bagi menyediakan tidak kurang daripada yang dikehendaki bagi suatu risiko pendudukan keseluruhan atau rujuk Nota 3-1 & 2.", penggera: "Bagi menyediakan tidak kurang daripada yang dikehendaki bagi suatu risiko pendudukan keseluruhan atau rujuk Nota 3-1 & 2." },
-                "Kediaman Lain - Asrama/Dormitori: Dua tingkat dan ke bawah": { pemadam: "-", penggera: "-" },
-                "Kediaman Lain - Asrama/Dormitori: Reka bentuk koridor terbuka - 3 hingga 5 tingkat": { pemadam: "G", penggera: "2" },
-                "Kediaman Lain - Asrama/Dormitori: Reka bentuk koridor terbuka - 6 hingga 10 tingkat, < 5,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Kediaman Lain - Asrama/Dormitori: Reka bentuk koridor terbuka - > 10 tingkat atau > 5,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Kediaman Lain - Asrama/Dormitori: Reka bentuk lain - 3 hingga 5 tingkat, < 3,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Kediaman Lain - Asrama/Dormitori: Reka bentuk lain - > 5 tingkat atau > 3,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Kediaman Lain - Pangsapuri/Rumah Pangsa: Lima tingkat dan ke bawah": { pemadam: "-", penggera: "7" },
-                "Kediaman Lain - Pangsapuri/Rumah Pangsa: Reka bentuk terbuka - 6 hingga 40 tingkat (< 120m)": { pemadam: "G", penggera: "2,5&7" },
-                "Kediaman Lain - Pangsapuri/Rumah Pangsa: Reka bentuk terbuka - > 40 tingkat (> 120m)": { pemadam: "A&G", penggera: "2,5&6" },
-                "Kediaman Lain - Pangsapuri/Rumah Pangsa: Tangga dalam/teras - 6 hingga 10 tingkat (< 30m)": { pemadam: "G", penggera: "2&7" },
-                "Kediaman Lain - Pangsapuri/Rumah Pangsa: Tangga dalam/teras - 11 hingga 40 tingkat (< 120m)": { pemadam: "G", penggera: "2,5&7" },
-                "Kediaman Lain - Pangsapuri/Rumah Pangsa: Tangga dalam/teras - > 40 tingkat (> 120m)": { pemadam: "A&G", penggera: "2,5&6" },
-                "Kediaman Lain - Pangsapuri Perkhidmatan: Hingga 10 tingkat (< 30m)": { pemadam: "G", penggera: "2,5&7" },
-                "Kediaman Lain - Pangsapuri Perkhidmatan: Melebihi 10 tingkat (> 30m)": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Pejabat - 4 tingkat dan ke bawah atau < 1,000 m²": { pemadam: "-", penggera: "-" },
-                "Pejabat - 5 tingkat dan ke atas atau > 1,000 m²": { pemadam: "G", penggera: "2" },
-                "Pejabat - Melebihi 18m tinggi dan < 10,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Pejabat - 30m dan ke atas atau > 10,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Kedai - Keluasan lantai < 250 m² setiap petak berasingan (bangunan < 4.5 tingkat / 18m)": { pemadam: "-", penggera: "-" },
-                "Kedai - Satu tingkat: < 1,000 m²": { pemadam: "-", penggera: "-" },
-                "Kedai - Satu tingkat: 1,000 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Kedai - Satu tingkat: > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Kedai - Dua tingkat dan ke atas: < 750 m²": { pemadam: "G", penggera: "2" },
-                "Kedai - Dua tingkat dan ke atas: 750 hingga 1,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Kedai - Dua tingkat dan ke atas: 1,001 hingga 3,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Kedai - Dua tingkat dan ke atas: > 3,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Kedai - Pusat Penjaja/Medan Selera/Pasar: < 2,000 m² (struktur terbuka)": { pemadam: "-", penggera: "-" },
-                "Kedai - Pusat Penjaja/Medan Selera/Pasar: > 2,000 m²": { pemadam: "G", penggera: "2" },
-                "Kedai - Gabungan Kedai dan Hotel/Pejabat": { pemadam: "Keluasan kasar dihitung terhadap kehendak risiko tertinggi.", penggera: "Keluasan kasar dihitung terhadap kehendak risiko tertinggi." },
-                "Kilang - Unit 1 tingkat (asing/berkembar/teres): < 750 m²": { pemadam: "-", penggera: "-" },
-                "Kilang - Unit 1 tingkat (asing/berkembar/teres): 750 hingga 1,000 m²": { pemadam: "G", penggera: "2" },
-                "Kilang - Unit 1 tingkat (asing/berkembar/teres): 1,001 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Kilang - Unit 1 tingkat (asing/berkembar/teres): > 2,000 m²": { pemadam: "A&G", penggera: "2,4&6" },
-                "Kilang - Struktur Terbuka (Kerja logam/risiko rendah)": { pemadam: "-", penggera: "-" },
-                "Kilang - Struktur Terbuka: Kilang Papan": { pemadam: "G&H", penggera: "2" },
-                "Kilang - Struktur Terbuka: Kilang Keluli": { pemadam: "G&H", penggera: "2" },
-                "Kilang - Unit 2 tingkat ke atas (petak berasingan): < 500 m² per lantai": { pemadam: "-", penggera: "2" },
-                "Kilang - Unit 2 tingkat ke atas (petak berasingan): 500 hingga 1,000 m² per lantai": { pemadam: "G", penggera: "1&2" },
-                "Kilang - Unit 2 tingkat ke atas (petak berasingan): > 1,000 m² per lantai": { pemadam: "A&G", penggera: "2,5&6" },
-                "Kilang - Blok Kilang Bertingkat: < 500 m² per lantai": { pemadam: "-", penggera: "2" },
-                "Kilang - Blok Kilang Bertingkat: 500 hingga 1,000 m² per lantai": { pemadam: "G", penggera: "2" },
-                "Kilang - Blok Kilang Bertingkat: > 1,000 m² per lantai atau > 7,000 m³ per petak": { pemadam: "A&G", penggera: "2,5&6" },
-                "Kilang - Tempat Pemasangan Kenderaan/Loji: < 1,000 m²": { pemadam: "-", penggera: "-" },
-                "Kilang - Tempat Pemasangan Kenderaan/Loji: 1,000 hingga 2,000 m²": { pemadam: "G&H", penggera: "2" },
-                "Kilang - Tempat Pemasangan Kenderaan/Loji: 2,001 hingga 5,000 m²": { pemadam: "G&H", penggera: "1&2" },
-                "Kilang - Tempat Pemasangan Kenderaan/Loji: > 5,000 m²": { pemadam: "A,G&H", penggera: "2,5&6" },
-                "Kilang - Struktur Khas (cth: Kilang Kelapa Sawit, Gula)": { pemadam: "G&H", penggera: "2" },
-                "Kilang - Struktur Khas: Prosesan Basah": { pemadam: "G", penggera: "2" },
-                "Kilang - Struktur Khas: Prosesan Berbahaya": { pemadam: "A,B,C,D,F,G&H (Lihat Nota 2)", penggera: "1,2,3,4,5&6 (Lihat Nota 2)" },
-                "Tempat Perhimpunan - Di bawah paras jalan keluar > 1,000 m²": { pemadam: "A&G", penggera: "2&6" },
-                "Tempat Perhimpunan - Pusat Konvensyen/Komuniti/Muzium/Galeri: < 1,000 m²": { pemadam: "-", penggera: "-" },
-                "Tempat Perhimpunan - Pusat Konvensyen/Komuniti/Muzium/Galeri: 1,001 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Tempat Perhimpunan - Pusat Konvensyen/Komuniti/Muzium/Galeri: > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Tempat Perhimpunan - Panggung Wayang/Dewan Konsert/Auditorium: < 1,000 m²": { pemadam: "-", penggera: "-" },
-                "Tempat Perhimpunan - Panggung Wayang/Dewan Konsert/Auditorium: 1,000 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Tempat Perhimpunan - Panggung Wayang/Dewan Konsert/Auditorium: > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Tempat Perhimpunan - Pusat Hiburan: < 1,000 m²": { pemadam: "-", penggera: "-" },
-                "Tempat Perhimpunan - Pusat Hiburan: 1,000 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Tempat Perhimpunan - Pusat Hiburan: > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Tempat Perhimpunan - Terminal Pengangkutan (Bas/Feri/Stesen Keretapi/Lapangan Terbang): < 1,000 m²": { pemadam: "-", penggera: "2" },
-                "Tempat Perhimpunan - Terminal Pengangkutan: 1,000 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
-                "Tempat Perhimpunan - Terminal Pengangkutan: > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Tempat Perhimpunan - Tempat Ibadat": { pemadam: "-", penggera: "-" },
-                "Storan dan Am - Tempat Letak Kereta: Struktur terbuka, 1 tingkat atau < 750 m²": { pemadam: "-", penggera: "-" },
-                "Storan dan Am - Tempat Letak Kereta: Struktur terbuka, >= 2 tingkat atau >= 750 m² per lantai": { pemadam: "G", penggera: "2" },
-                "Storan dan Am - Tempat Letak Kereta: Dikepongi/Bawah Tanah, < 2,000 m²": { pemadam: "G", penggera: "2" },
-                "Storan dan Am - Tempat Letak Kereta: Dikepongi/Bawah Tanah, > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
-                "Storan dan Am - Tempat Letak Kereta: Pelbagai paras automatik": { pemadam: "A&G", penggera: "2,5&6" },
-                "Storan dan Am - Gudang (Produk Tidak Boleh Bakar): 1 tingkat, < 2,000 m²": { pemadam: "-", penggera: "-" },
-                "Storan dan Am - Gudang (Produk Tidak Boleh Bakar): 1 tingkat, > 2,000 m²": { pemadam: "G", penggera: "2" },
-                "Storan dan Am - Gudang (Produk Tidak Boleh Bakar): >= 2 tingkat": { pemadam: "G", penggera: "2" },
-                "Storan dan Am - Gudang (Produk Boleh Bakar): 1 tingkat, sisi terbuka > 1,000 m²": { pemadam: "G", penggera: "2" },
-                "Storan dan Am - Gudang (Produk Boleh Bakar): 1 tingkat, < 250 m²": { pemadam: "-", penggera: "-" },
-                "Storan dan Am - Gudang (Produk Boleh Bakar): 1 tingkat, 250 hingga 500 m²": { pemadam: "-", penggera: "2" },
-                "Storan dan Am - Gudang (Produk Boleh Bakar): 1 tingkat, 501 hingga 1,000 m² & < 7,000 m³": { pemadam: "G", penggera: "1&2" },
-                "Storan dan Am - Gudang (Produk Boleh Bakar): 1 tingkat, 1,001-10,000 m² & 7,001-70,000 m³": { pemadam: "A&G", penggera: "2&6" },
-                "Storan dan Am - Gudang (Produk Boleh Bakar): 1 tingkat, > 10,000 m² atau > 70,000 m³": { pemadam: "A,G&H", penggera: "2&6" },
-                "Storan dan Am - Gudang (Produk Boleh Bakar): >= 2 tingkat, < 1,000 m² atau < 7,000 m³": { pemadam: "G", penggera: "1&2" },
-                "Storan dan Am - Gudang (Produk Boleh Bakar): >= 2 tingkat, > 1,000 m² atau > 7,000 m³": { pemadam: "A&G", penggera: "2&6" }
+                "Kediaman Kecil": {
+                    "Rumah kediaman persendirian hingga 2 tingkat (Teres, Berkembar, Berasingan)": { pemadam: "-", penggera: "-" },
+                    "Rumah kediaman persendirian yang melebihi daripada 2 tingkat": { pemadam: "-", penggera: "7" }
+                },
+                "Institusional": {
+                    "Pendudukan Pelajaran: Reka bentuk koridor terbuka - Dua tingkat dan ke bawah": { pemadam: "-", penggera: "-" },
+                    "Pendudukan Pelajaran: Reka bentuk koridor terbuka - Tiga hingga lima tingkat": { pemadam: "G", penggera: "2" },
+                    "Pendudukan Pelajaran: Reka bentuk koridor terbuka - Enam tingkat dan ke atas": { pemadam: "G", penggera: "1&2" },
+                    "Pendudukan Pelajaran: Reka bentuk lain - Kurang daripada 500 m² setiap lantai": { pemadam: "-", penggera: "-" },
+                    "Pendudukan Pelajaran: Reka bentuk lain - 500 hingga 1,000 m² setiap lantai": { pemadam: "G", penggera: "2" },
+                    "Pendudukan Pelajaran: Reka bentuk lain - 1,001 hingga 2,000 m² setiap lantai atau 18m hingga 30m tinggi": { pemadam: "G", penggera: "1&2" },
+                    "Pendudukan Pelajaran: Reka bentuk lain - Melebihi 2,000 m² setiap lantai atau 30m tinggi ke atas": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Kantin atau Dapur Berasingan": { pemadam: "-", penggera: "-" },
+                    "Makmal atau Bengkel: Kurang daripada 1,000 m²": { pemadam: "-", penggera: "-" },
+                    "Makmal atau Bengkel: 1,000 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Makmal atau Bengkel: Melebihi 2,000 m²": { pemadam: "A&G", penggera: "2,5&6" },
+                    "Perpustakaan: Kurang daripada 500 m²": { pemadam: "-", penggera: "-" },
+                    "Perpustakaan: 500 hingga 1,000 m²": { pemadam: "G", penggera: "2" },
+                    "Perpustakaan: 1,001 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Perpustakaan: Melebihi 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Dewan Pelbagai Guna Berasingan: Satu tingkat dan kurang daripada 2,000 m²": { pemadam: "-", penggera: "-" },
+                    "Dewan Pelbagai Guna Berasingan: Dua tingkat dan ke atas atau melebihi 2,000 m²": { pemadam: "G", penggera: "2" },
+                    "Dewan Pelbagai Guna Berasingan: Penyaman udara pusat, melebihi 2,000 m²": { pemadam: "A&G", penggera: "2&6" },
+                    "Institusi Pelajaran dalam Kompleks Komersial": { pemadam: "Akan dianggap sebahagian daripada suatu risiko keseluruhan di dalam kompleks.", penggera: "Akan dianggap sebahagian daripada suatu risiko keseluruhan di dalam kompleks." },
+                    "Hospital atau Rumah Rawatan - Klinik Jagaan Harian: Kurang daripada 750 m²": { pemadam: "-", penggera: "-" },
+                    "Hospital atau Rumah Rawatan - Klinik Jagaan Harian: 751 hingga 1,000 m²": { pemadam: "G", penggera: "2" },
+                    "Hospital atau Rumah Rawatan - Klinik Jagaan Harian: 1,001 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Hospital atau Rumah Rawatan - Klinik Jagaan Harian: Melebihi 2,000 m²": { pemadam: "A&G", penggera: "2&6" },
+                    "Hospital atau Rumah Rawatan - Penginapan Pesakit: Sebahagian daripada suatu kompleks komersial": { pemadam: "Akan dianggap sebahagian daripada suatu risiko keseluruhan dengan suatu kehendak khas bagi lampu kecemasan, lif usungan dan sebagainya.", penggera: "Akan dianggap sebahagian daripada suatu risiko keseluruhan dengan suatu kehendak khas bagi lampu kecemasan, lif usungan dan sebagainya." },
+                    "Hospital atau Rumah Rawatan - Penginapan Pesakit: Satu tingkat - Kurang daripada 750 m²": { pemadam: "G", penggera: "2" },
+                    "Hospital atau Rumah Rawatan - Penginapan Pesakit: Satu tingkat - 751 hingga 1,000 m²": { pemadam: "G", penggera: "1&3" },
+                    "Hospital atau Rumah Rawatan - Penginapan Pesakit: Satu tingkat - Melebihi 1,000 m²": { pemadam: "A&G", penggera: "2,3,4,5&6" },
+                    "Hospital atau Rumah Rawatan - Penginapan Pesakit: Dua tingkat dan ke atas - Kurang daripada 750 m²": { pemadam: "G", penggera: "2" },
+                    "Hospital atau Rumah Rawatan - Penginapan Pesakit: Dua tingkat dan ke atas - 751 hingga 1,000 m²": { pemadam: "G", penggera: "1&3" },
+                    "Hospital atau Rumah Rawatan - Penginapan Pesakit: Dua tingkat dan ke atas - Melebihi 1,000 m²": { pemadam: "A&G", penggera: "2,3,4,5&6" }
+                },
+                "Kediaman Lain": {
+                    "Hotel: Reka bentuk koridor terbuka - 2 hingga 3 tingkat, 50 bilik atau kurang": { pemadam: "-", penggera: "1&2" },
+                    "Hotel: Reka bentuk koridor terbuka - 2 hingga 3 tingkat, Melebihi 50 bilik": { pemadam: "G", penggera: "1&2" },
+                    "Hotel: Reka bentuk koridor terbuka - 4 tingkat dan ke atas, 100 bilik atau kurang": { pemadam: "G", penggera: "1&2" },
+                    "Hotel: Reka bentuk koridor terbuka - 4 tingkat dan ke atas, Melebihi 100 bilik": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Hotel: Reka bentuk lain - 2 hingga 3 tingkat, Kurang daripada 20 bilik": { pemadam: "-", penggera: "1&2" },
+                    "Hotel: Reka bentuk lain - 2 hingga 3 tingkat, 20 hingga 100 bilik": { pemadam: "G", penggera: "1&2" },
+                    "Hotel: Reka bentuk lain - 2 hingga 3 tingkat, Melebihi 100 bilik": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Hotel: Reka bentuk lain - 4 tingkat dan ke atas, Kurang daripada 50 bilik": { pemadam: "G", penggera: "1&2" },
+                    "Hotel: Reka bentuk lain - 4 tingkat dan ke atas, 50 bilik dan melebihi": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Hotel di atas pendudukan kedai atau pejabat": { pemadam: "Bagi menyediakan tidak kurang daripada yang dikehendaki bagi suatu risiko pendudukan keseluruhan atau rujuk Nota 3-1 & 2.", penggera: "Bagi menyediakan tidak kurang daripada yang dikehendaki bagi suatu risiko pendudukan keseluruhan atau rujuk Nota 3-1 & 2." },
+                    "Asrama/Dormitori: Dua tingkat dan ke bawah": { pemadam: "-", penggera: "-" },
+                    "Asrama/Dormitori: Reka bentuk koridor terbuka - 3 hingga 5 tingkat": { pemadam: "G", penggera: "2" },
+                    "Asrama/Dormitori: Reka bentuk koridor terbuka - 6 hingga 10 tingkat, < 5,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Asrama/Dormitori: Reka bentuk koridor terbuka - > 10 tingkat atau > 5,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Asrama/Dormitori: Reka bentuk lain - 3 hingga 5 tingkat, < 3,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Asrama/Dormitori: Reka bentuk lain - > 5 tingkat atau > 3,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Pangsapuri/Rumah Pangsa: Lima tingkat dan ke bawah": { pemadam: "-", penggera: "7" },
+                    "Pangsapuri/Rumah Pangsa: Reka bentuk terbuka - 6 hingga 40 tingkat (< 120m)": { pemadam: "G", penggera: "2,5&7" },
+                    "Pangsapuri/Rumah Pangsa: Reka bentuk terbuka - > 40 tingkat (> 120m)": { pemadam: "A&G", penggera: "2,5&6" },
+                    "Pangsapuri/Rumah Pangsa: Tangga dalam/teras - 6 hingga 10 tingkat (< 30m)": { pemadam: "G", penggera: "2&7" },
+                    "Pangsapuri/Rumah Pangsa: Tangga dalam/teras - 11 hingga 40 tingkat (< 120m)": { pemadam: "G", penggera: "2,5&7" },
+                    "Pangsapuri/Rumah Pangsa: Tangga dalam/teras - > 40 tingkat (> 120m)": { pemadam: "A&G", penggera: "2,5&6" },
+                    "Pangsapuri Perkhidmatan: Hingga 10 tingkat (< 30m)": { pemadam: "G", penggera: "2,5&7" },
+                    "Pangsapuri Perkhidmatan: Melebihi 10 tingkat (> 30m)": { pemadam: "A&G", penggera: "2,4,5&6" }
+                },
+                "Pejabat": {
+                    "4 tingkat dan ke bawah atau < 1,000 m²": { pemadam: "-", penggera: "-" },
+                    "5 tingkat dan ke atas atau > 1,000 m²": { pemadam: "G", penggera: "2" },
+                    "Melebihi 18m tinggi dan < 10,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "30m dan ke atas atau > 10,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" }
+                },
+                "Kedai": {
+                    "Keluasan lantai < 250 m² setiap petak berasingan (bangunan < 4.5 tingkat / 18m)": { pemadam: "-", penggera: "-" },
+                    "Satu tingkat: < 1,000 m²": { pemadam: "-", penggera: "-" },
+                    "Satu tingkat: 1,000 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Satu tingkat: > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Dua tingkat dan ke atas: < 750 m²": { pemadam: "G", penggera: "2" },
+                    "Dua tingkat dan ke atas: 750 hingga 1,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Dua tingkat dan ke atas: 1,001 hingga 3,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Dua tingkat dan ke atas: > 3,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Pusat Penjaja/Medan Selera/Pasar: < 2,000 m² (struktur terbuka)": { pemadam: "-", penggera: "-" },
+                    "Pusat Penjaja/Medan Selera/Pasar: > 2,000 m²": { pemadam: "G", penggera: "2" },
+                    "Gabungan Kedai dan Hotel/Pejabat": { pemadam: "Keluasan kasar dihitung terhadap kehendak risiko tertinggi.", penggera: "Keluasan kasar dihitung terhadap kehendak risiko tertinggi." }
+                },
+                "Kilang": {
+                    "Unit 1 tingkat (asing/berkembar/teres): < 750 m²": { pemadam: "-", penggera: "-" },
+                    "Unit 1 tingkat (asing/berkembar/teres): 750 hingga 1,000 m²": { pemadam: "G", penggera: "2" },
+                    "Unit 1 tingkat (asing/berkembar/teres): 1,001 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Unit 1 tingkat (asing/berkembar/teres): > 2,000 m²": { pemadam: "A&G", penggera: "2,4&6" },
+                    "Struktur Terbuka (Kerja logam/risiko rendah)": { pemadam: "-", penggera: "-" },
+                    "Struktur Terbuka: Kilang Papan": { pemadam: "G&H", penggera: "2" },
+                    "Struktur Terbuka: Kilang Keluli": { pemadam: "G&H", penggera: "2" },
+                    "Unit 2 tingkat ke atas (petak berasingan): < 500 m² per lantai": { pemadam: "-", penggera: "2" },
+                    "Unit 2 tingkat ke atas (petak berasingan): 500 hingga 1,000 m² per lantai": { pemadam: "G", penggera: "1&2" },
+                    "Unit 2 tingkat ke atas (petak berasingan): > 1,000 m² per lantai": { pemadam: "A&G", penggera: "2,5&6" },
+                    "Blok Kilang Bertingkat: < 500 m² per lantai": { pemadam: "-", penggera: "2" },
+                    "Blok Kilang Bertingkat: 500 hingga 1,000 m² per lantai": { pemadam: "G", penggera: "2" },
+                    "Blok Kilang Bertingkat: > 1,000 m² per lantai atau > 7,000 m³ per petak": { pemadam: "A&G", penggera: "2,5&6" },
+                    "Tempat Pemasangan Kenderaan/Loji: < 1,000 m²": { pemadam: "-", penggera: "-" },
+                    "Tempat Pemasangan Kenderaan/Loji: 1,000 hingga 2,000 m²": { pemadam: "G&H", penggera: "2" },
+                    "Tempat Pemasangan Kenderaan/Loji: 2,001 hingga 5,000 m²": { pemadam: "G&H", penggera: "1&2" },
+                    "Tempat Pemasangan Kenderaan/Loji: > 5,000 m²": { pemadam: "A,G&H", penggera: "2,5&6" },
+                    "Struktur Khas (cth: Kilang Kelapa Sawit, Gula)": { pemadam: "G&H", penggera: "2" },
+                    "Struktur Khas: Prosesan Basah": { pemadam: "G", penggera: "2" },
+                    "Struktur Khas: Prosesan Berbahaya": { pemadam: "A,B,C,D,F,G&H (Lihat Nota 2)", penggera: "1,2,3,4,5&6 (Lihat Nota 2)" }
+                },
+                "Tempat Perhimpunan": {
+                    "Di bawah paras jalan keluar > 1,000 m²": { pemadam: "A&G", penggera: "2&6" },
+                    "Pusat Konvensyen/Komuniti/Muzium/Galeri: < 1,000 m²": { pemadam: "-", penggera: "-" },
+                    "Pusat Konvensyen/Komuniti/Muzium/Galeri: 1,001 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Pusat Konvensyen/Komuniti/Muzium/Galeri: > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Panggung Wayang/Dewan Konsert/Auditorium: < 1,000 m²": { pemadam: "-", penggera: "-" },
+                    "Panggung Wayang/Dewan Konsert/Auditorium: 1,000 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Panggung Wayang/Dewan Konsert/Auditorium: > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Pusat Hiburan: < 1,000 m²": { pemadam: "-", penggera: "-" },
+                    "Pusat Hiburan: 1,000 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Pusat Hiburan: > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Terminal Pengangkutan (Bas/Feri/Stesen Keretapi/Lapangan Terbang): < 1,000 m²": { pemadam: "-", penggera: "2" },
+                    "Terminal Pengangkutan: 1,000 hingga 2,000 m²": { pemadam: "G", penggera: "1&2" },
+                    "Terminal Pengangkutan: > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Tempat Ibadat": { pemadam: "-", penggera: "-" }
+                },
+                "Storan dan Am": {
+                    "Tempat Letak Kereta: Struktur terbuka, 1 tingkat atau < 750 m²": { pemadam: "-", penggera: "-" },
+                    "Tempat Letak Kereta: Struktur terbuka, >= 2 tingkat atau >= 750 m² per lantai": { pemadam: "G", penggera: "2" },
+                    "Tempat Letak Kereta: Dikepongi/Bawah Tanah, < 2,000 m²": { pemadam: "G", penggera: "2" },
+                    "Tempat Letak Kereta: Dikepongi/Bawah Tanah, > 2,000 m²": { pemadam: "A&G", penggera: "2,4,5&6" },
+                    "Tempat Letak Kereta: Pelbagai paras automatik": { pemadam: "A&G", penggera: "2,5&6" },
+                    "Gudang (Produk Tidak Boleh Bakar): 1 tingkat, < 2,000 m²": { pemadam: "-", penggera: "-" },
+                    "Gudang (Produk Tidak Boleh Bakar): 1 tingkat, > 2,000 m²": { pemadam: "G", penggera: "2" },
+                    "Gudang (Produk Tidak Boleh Bakar): >= 2 tingkat": { pemadam: "G", penggera: "2" },
+                    "Gudang (Produk Boleh Bakar): 1 tingkat, sisi terbuka > 1,000 m²": { pemadam: "G", penggera: "2" },
+                    "Gudang (Produk Boleh Bakar): 1 tingkat, < 250 m²": { pemadam: "-", penggera: "-" },
+                    "Gudang (Produk Boleh Bakar): 1 tingkat, 250 hingga 500 m²": { pemadam: "-", penggera: "2" },
+                    "Gudang (Produk Boleh Bakar): 1 tingkat, 501 hingga 1,000 m² & < 7,000 m³": { pemadam: "G", penggera: "1&2" },
+                    "Gudang (Produk Boleh Bakar): 1 tingkat, 1,001-10,000 m² & 7,001-70,000 m³": { pemadam: "A&G", penggera: "2&6" },
+                    "Gudang (Produk Boleh Bakar): 1 tingkat, > 10,000 m² atau > 70,000 m³": { pemadam: "A,G&H", penggera: "2&6" },
+                    "Gudang (Produk Boleh Bakar): >= 2 tingkat, < 1,000 m² atau < 7,000 m³": { pemadam: "G", penggera: "1&2" },
+                    "Gudang (Produk Boleh Bakar): >= 2 tingkat, > 1,000 m² atau > 7,000 m³": { pemadam: "A&G", penggera: "2&6" }
+                }
             };
 
-            const kategoriSelect = document.getElementById('kategoriBangunan');
+            const kumpulanSelect = document.getElementById('kumpulanMaksud');
+            const subKategoriSelect = document.getElementById('subKategori');
+            const subKategoriContainer = document.getElementById('subKategoriContainer');
             const resultsDiv = document.getElementById('results');
             const pemadamApiResultDiv = document.getElementById('pemadamApiResult');
             const penggeraKebakaranResultDiv = document.getElementById('penggeraKebakaranResult');
 
-            // Populate the single dropdown
-            Object.keys(jadualData).forEach(kategori => {
+            // Populate the main category dropdown
+            Object.keys(jadualData).forEach(kumpulan => {
                 const option = document.createElement('option');
-                option.value = kategori;
-                option.textContent = kategori;
-                kategoriSelect.appendChild(option);
+                option.value = kumpulan;
+                option.textContent = kumpulan;
+                kumpulanSelect.appendChild(option);
             });
 
-            kategoriSelect.addEventListener('change', function() {
-                const selectedKategori = this.value;
+            kumpulanSelect.addEventListener('change', function() {
+                const selectedKumpulan = this.value;
+                
+                // Clear previous sub-categories and results
+                subKategoriSelect.innerHTML = '<option value="">-- Sila Pilih Sub-Kategori --</option>';
+                resultsDiv.style.display = 'none';
 
-                if (selectedKategori) {
-                    const result = jadualData[selectedKategori];
+                if (selectedKumpulan) {
+                    const subKategoriData = jadualData[selectedKumpulan];
+                    Object.keys(subKategoriData).forEach(subKategori => {
+                        const option = document.createElement('option');
+                        option.value = subKategori;
+                        option.textContent = subKategori;
+                        subKategoriSelect.appendChild(option);
+                    });
+                    subKategoriContainer.style.display = 'block';
+                } else {
+                    subKategoriContainer.style.display = 'none';
+                }
+            });
+
+            subKategoriSelect.addEventListener('change', function() {
+                const selectedKumpulan = kumpulanSelect.value;
+                const selectedSubKategori = this.value;
+
+                if (selectedKumpulan && selectedSubKategori) {
+                    const result = jadualData[selectedKumpulan][selectedSubKategori];
                     displayResults(result);
                 } else {
                     resultsDiv.style.display = 'none';
