@@ -380,3 +380,6 @@ app.delete('/api/users/:id/reject', requireAuth, requireAdmin, async (req, res) 
 app.listen(port, () => {
     console.log(`Server sedia untuk digunakan di port ${port}.`);
 });
+
+// Export aplikasi untuk Vercel
+module.exports = app;
