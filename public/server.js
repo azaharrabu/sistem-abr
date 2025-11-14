@@ -51,6 +51,28 @@ app.use(express.static(__dirname));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// DIAGNOSTIC: Explicitly handle root path to debug static file serving
+app.get('/', (req, res) => {
+    const fs = require('fs');
+    const indexPath = path.join(__dirname, 'index.html');
+    console.log(`[DIAGNOSTIC] Attempting to serve index.html from: ${indexPath}`);
+    
+    fs.readdir(__dirname, (err, files) => {
+        if (err) {
+            console.error('[DIAGNOSTIC] Error reading directory:', err);
+        } else {
+            console.log('[DIAGNOSTIC] Files in __dirname:', files);
+        }
+        
+        res.sendFile(indexPath, (err) => {
+            if (err) {
+                console.error('[DIAGNOSTIC] Error sending index.html:', err);
+                res.status(404).send('index.html not found or error reading file.');
+            }
+        });
+    });
+});
+
 // 3. STATIC FILE SERVING (Fail Awam)
 // Laluan akar (/) kini dihidangkan secara automatik oleh express.static di atas.
 
