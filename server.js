@@ -1,6 +1,5 @@
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
-const axios = require('axios');
 const path = require('path');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -12,25 +11,12 @@ let supabaseAdmin;
 
 // 1. KONFIGURASI
 const app = express();
-const port = process.env.PORT || 3001;
 
 // Middleware untuk log semua permintaan masuk
 app.use((req, res, next) => {
     console.log(`[LOG] Request: ${req.method} ${req.path}`);
     next();
 });
-
-console.log('DIAGNOSTIC: SUPABASE_URL:', SUPABASE_URL ? 'Set' : 'Not Set');
-console.log('DIAGNOSTIC: SUPABASE_ANON_KEY:', SUPABASE_ANON_KEY ? 'Set' : 'Not Set');
-console.log('DIAGNOSTIC: SUPABASE_SERVICE_KEY:', SUPABASE_SERVICE_KEY ? 'Set' : 'Not Set');
-
-// Tambah log diagnostik untuk semua pembolehubah persekitaran yang bermula dengan SUPABASE_
-console.log('DIAGNOSTIC: All SUPABASE_ environment variables:');
-for (const key in process.env) {
-    if (key.startsWith('SUPABASE_')) {
-        console.log(`DIAGNOSTIC:   ${key}: ${process.env[key] ? 'Set' : 'Not Set'}`);
-    }
-}
 
 try {
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_KEY) {
@@ -42,35 +28,25 @@ try {
     });
 } catch (e) {
     console.error("FATAL: Gagal memulakan Supabase client.", e.message);
-    process.exit(1);
+    // In a serverless environment, we can't process.exit. We'll let requests fail.
 }
 
 // 2. MIDDLEWARE
-// Hidangkan fail statik dari folder 'public'.
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 3. LALUAN ASAS (ROOT ROUTE)
-// Hidangkan fail utama aplikasi (index.html) untuk laluan akar.
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 // Middleware untuk pengesahan (Authentication)
 const requireAuth = async (req, res, next) => {
     const { authorization } = req.headers;
     if (!authorization || !authorization.startsWith('Bearer ')) {
-        // Jika tiada token, cuba redirect ke login untuk akses browser
-        return res.redirect('/index.html');
+        return res.status(401).json({ error: 'Akses tidak sah. Token diperlukan.' });
     }
 
     const token = authorization.split(' ')[1];
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) {
-        // Jika token tidak sah, hantar ralat (untuk API calls) atau redirect
         return res.status(401).json({ error: 'Akses tidak sah. Sila log masuk semula.' });
     }
 
@@ -95,19 +71,13 @@ const requireAdmin = async (req, res, next) => {
     next();
 };
 
-
-
-
-
 // 4. API ENDPOINTS
 
 // Endpoint Pendaftaran (Awam)
 app.post('/api/signup', async (req, res) => {
-    // ... (logik pendaftaran sedia ada kekal sama)
     try {
         const { email, password, subscription_plan } = req.body;
 
-        // 1. Dapatkan jumlah pengguna sedia ada (guna klien admin)
         const { count, error: countError } = await supabaseAdmin
             .from('users')
             .select('*', { count: 'exact', head: true });
@@ -116,7 +86,6 @@ app.post('/api/signup', async (req, res) => {
             throw new Error('Ralat semasa mengira jumlah pengguna: ' + countError.message);
         }
 
-        // 2. Tentukan harga berdasarkan pelan dan promosi
         let amount = 0;
         const isPromoUser = count < 100;
 
@@ -131,11 +100,9 @@ app.post('/api/signup', async (req, res) => {
             return res.status(400).json({ error: 'Pelan langganan tidak sah.' });
         }
 
-        // 3. Daftar pengguna baru di Supabase Auth (guna klien biasa)
         const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
         if (authError) throw authError;
 
-        // 4. Cipta profil pengguna dengan maklumat langganan (guna klien admin)
         if (authData.user) {
             const subscriptionMonths = subscription_plan === '6-bulan' ? 6 : 12;
             const subscriptionEndDate = new Date();
@@ -149,7 +116,7 @@ app.post('/api/signup', async (req, res) => {
                 subscription_end_date: subscriptionEndDate.toISOString().split('T')[0], 
                 is_promo_user: isPromoUser,
                 payment_status: 'pending',
-                role: 'user' // Tetapkan peranan default sebagai 'user'
+                role: 'user'
             }]).select();
 
             if (profileError) {
@@ -167,10 +134,8 @@ app.post('/api/signup', async (req, res) => {
             }
         }
 
-        // 5. Pendaftaran Selesai - Log masuk pengguna secara automatik
         const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({ email, password });
         if (sessionError) {
-            // Walaupun pendaftaran berjaya, log masuk gagal. Maklumkan pengguna untuk log masuk secara manual.
             console.error('DIAGNOSTIC: Gagal log masuk automatik selepas daftar:', sessionError);
             return res.status(200).json({ 
                 message: "Pendaftaran berjaya! Sila log masuk secara manual.",
@@ -180,7 +145,6 @@ app.post('/api/signup', async (req, res) => {
             });
         }
 
-        // Dapatkan profil yang baru dicipta untuk dihantar kembali
         const { data: profile, error: finalProfileError } = await supabaseAdmin
             .from('users')
             .select('*, role')
@@ -188,7 +152,6 @@ app.post('/api/signup', async (req, res) => {
             .single();
 
         if (finalProfileError) {
-            // Ini tidak sepatutnya berlaku, tetapi sebagai langkah keselamatan
             return res.status(500).json({ error: 'Gagal mendapatkan profil pengguna selepas dicipta.' });
         }
 
@@ -213,10 +176,9 @@ app.post('/api/signin', async (req, res) => {
         });
         if (authError) throw authError;
 
-        // Dapatkan profil termasuk 'role'
         const { data: profile, error: profileError } = await supabase
             .from('users')
-            .select('*, role') // Pastikan 'role' dipilih
+            .select('*, role')
             .eq('user_id', authData.user.id)
             .single();
 
@@ -245,7 +207,7 @@ app.post('/api/submit-payment-proof', requireAuth, async (req, res) => {
             .from('users')
             .update({ 
                 payment_reference: payment_reference,
-                payment_status: 'pending' // Kekal/Set semula ke 'pending' sehingga disahkan admin
+                payment_status: 'pending'
             })
             .eq('user_id', user.id)
             .select();
@@ -261,49 +223,6 @@ app.post('/api/submit-payment-proof', requireAuth, async (req, res) => {
         res.status(error.status || 500).json({ error: error.message });
     }
 });
-
-
-// Callback Pembayaran (LAMA - Dilumpuhkan)
-/*
-app.post('/api/payment-callback', async (req, res) => {
-    const { refno, status, reason, billcode, amount } = req.body;
-    console.log('Callback diterima dari ToyyibPay:', req.body);
-
-    if (status === '1') { // Pembayaran berjaya
-        try {
-            const { data: profile, error } = await supabaseAdmin
-                .from('users')
-                .update({ payment_status: 'paid' })
-                .eq('toyyibpay_bill_code', billcode)
-                .select();
-
-            if (error) {
-                console.error('Ralat mengemaskini status pembayaran:', error.message);
-                return res.status(500).send('Internal Server Error');
-            }
-            if (profile && profile.length > 0) {
-                console.log(`Status pembayaran untuk BillCode ${billcode} dikemaskini.`);
-            } else {
-                console.warn(`Tiada pengguna ditemui dengan BillCode ${billcode}.`);
-            }
-        } catch (e) {
-            console.error('Ralat server semasa memproses callback:', e.message);
-            return res.status(500).send('Internal Server Error');
-        }
-    }
-    res.status(200).send('OK');
-});
-*/
-
-
-
-
-
-
-
-
-
-
 
 // Endpoint untuk dapatkan profil pengguna semasa
 app.get('/api/profile', requireAuth, async (req, res) => {
@@ -351,7 +270,6 @@ app.post('/api/users/:id/approve', requireAuth, requireAdmin, async (req, res) =
 
     if (error) {
         console.error('Ralat meluluskan pembayaran:', error);
-        // Log additional details for debugging on Vercel
         return res.status(500).json({ error: 'Gagal meluluskan pembayaran pelanggan.'});
     }
 
@@ -379,7 +297,5 @@ app.delete('/api/users/:id/reject', requireAuth, requireAdmin, async (req, res) 
     res.status(200).json(data[0]);
 });
 
-// 7. MULAKAN SERVER
-app.listen(port, () => {
-    console.log(`Server sedia untuk digunakan di port ${port}.`);
-});
+// 7. EKSPORT APP UNTUK VERCEL
+module.exports = app;
