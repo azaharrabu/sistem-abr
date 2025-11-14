@@ -236,6 +236,243 @@
         /* End of styles for Kalkulator 10 Langkah */
         /* End of styles for embedded calculator */
 
+        /* Styles for Kaedah Pengiraan Jadual Keenam */
+        .jadual-keenam-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            /* box-shadow: 0 2px 10px rgba(0,0,0,0.1); */ /* Removed to fit page style */
+        }
+        .jadual-keenam-container h3 {
+            color: #007bff;
+            border-bottom: 2px solid #eef;
+            padding-bottom: 10px;
+            font-size: 1.2em;
+        }
+        .jadual-keenam-container ol {
+            list-style-type: none;
+            counter-reset: step-counter;
+            padding-left: 0;
+        }
+        .jadual-keenam-container li {
+            counter-increment: step-counter;
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+        .jadual-keenam-container li::before {
+            content: "Langkah " counter(step-counter);
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #fff;
+            background-color: #007bff;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+        .jadual-keenam-container .formula {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin: 15px 0;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 1.1em;
+            white-space: pre-wrap;
+            border-radius: 0 5px 5px 0;
+        }
+        .jadual-keenam-container .example {
+            background-color: #f0f9ff;
+            border: 1px solid #cce5ff;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .jadual-keenam-container .disclaimer {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 30px;
+            text-align: justify;
+        }
+        .jadual-keenam-container .disclaimer strong {
+            color: #664d03;
+        }
+        /* End of styles for Kaedah Pengiraan Jadual Keenam */
+
+        /* Styles for Jadual Ketujuh Interaktif */
+        .jadual-ketujuh-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 900px;
+            margin: auto;
+        }
+        .jadual-ketujuh-container .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .jadual-ketujuh-container h1 {
+            color: #0056b3;
+            text-align: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .jadual-ketujuh-container .form-group {
+            margin-bottom: 20px;
+        }
+        .jadual-ketujuh-container label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .jadual-ketujuh-container select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            font-size: 16px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: .65em auto;
+        }
+        .jadual-ketujuh-container #results {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+            display: none;
+        }
+        .jadual-ketujuh-container .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .jadual-ketujuh-container .result-item {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 5px solid #0056b3;
+        }
+        .jadual-ketujuh-container .result-item h3 {
+            margin-top: 0;
+            color: #0056b3;
+            font-size: 1.1em;
+        }
+        .jadual-ketujuh-container .result-item p {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0;
+            color: #333;
+        }
+        .jadual-ketujuh-container .notes {
+            margin-top: 30px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        .jadual-ketujuh-container .notes h3 {
+            margin-top: 0;
+        }
+        .jadual-ketujuh-container .notes p {
+            margin-bottom: 10px;
+        }
+        .jadual-ketujuh-container .notes strong {
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+        /* End of styles for Jadual Ketujuh Interaktif */
+
+        /* Styles for Jadual Kesepuluh Interaktif */
+        .jadual-kesepuluh-container {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 900px;
+            margin: auto;
+        }
+        .jadual-kesepuluh-container .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .jadual-kesepuluh-container h1 {
+            color: #d32f2f;
+            text-align: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .jadual-kesepuluh-container .form-group {
+            margin-bottom: 20px;
+        }
+        .jadual-kesepuluh-container label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .jadual-kesepuluh-container select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            font-size: 16px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: .65em auto;
+        }
+        .jadual-kesepuluh-container #results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-left: 5px solid #d32f2f;
+            display: none;
+        }
+        .jadual-kesepuluh-container #results h2 {
+            margin-top: 0;
+            color: #d32f2f;
+        }
+        .jadual-kesepuluh-container #results ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .jadual-kesepuluh-container #results li {
+            background-color: #fff;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .jadual-kesepuluh-container #results .category {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        /* End of styles for Jadual Kesepuluh Interaktif */
+
         /* Original styles */
         :root {
             --primary-color: #d32f2f;
@@ -1019,29 +1256,29 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
                 <ol style="padding-left: 20px; margin-top: 5px; list-style-type: decimal;">
                     <li>Borang A - Perakuan Pelan-pelan Peruntuhan/ Bangunan/ Struktur</li>
                     <li>Borang B - Notis Memulakan/Penyambungan Semula Kerja Bangunan</li>
-                    <li>Borang F - Perakuan Siap dan Pematuhan</li>
-                    <li>Borang F1 - Perakuan Siap dan Pematuhan Sebahagian</li>
-                    <li>Borang G1 - Perakuan Kerja-kerja Tanah</li>
-                    <li>Borang G2 - Perakuan Pemancangan Tanda</li>
-                    <li>Borang G3 - Perakuan Asas Tapak</li>
-                    <li>Borang G4 - Perakuan Struktur</li>
-                    <li>Borang G5 - Perakuan Perpaipan Air Dalaman</li>
-                    <li>Borang G6 - Perakuan Perpaipan Kebersihan Dalaman</li>
-                    <li>Borang G7 - Perakuan Elektrikal Dalaman</li>
-                    <li>Borang G8 - Perakuan Kehendak-kehendak Pepasangan Keselamatan Kebakaran (Seni Bina)</li>
-                    <li>Borang G9 - Perakuan Sistem Penggera Kebakaran dan Sistem Pemadam Api (Mekanikal dan Elektrikal)</li>
-                    <li>Borang G10 - Perakuan Pengudaraan Mekanikal</li>
-                    <li>Borang G11 - Perakuan Pemasangan Lif/Eskalator</li>
-                    <li>Borang G12 - Perakuan Bangunan</li>
-                    <li>Borang G13 - Perakuan Sistem Bekalan Air Luaran</li>
-                    <li>Borang G14 - Perakuan Retikulasi Pembetungan</li>
-                    <li>Borang G15 - Perakuan Loji Rawatan Kumbahan</li>
-                    <li>Borang G16 - Perakuan Sistem Bekalan Elektrik Luaran</li>
-                    <li>Borang G17 - Perakuan Jalan dan Parit</li>
-                    <li>Borang G18 - Perakuan Lampu Jalan</li>
-                    <li>Borang G19 - Perakuan Parit Luaran Utama</li>
-                    <li>Borang G20 - Perakuan Komunikasi</li>
-                    <li>Borang G21 - Perakuan Pandangan Darat</li>
+                    <li>Borang F – Perakuan Siap dan Pematuhan</li>
+                    <li>Borang F1 – Perakuan Siap dan Pematuhan Sebahagian</li>
+                    <li>Borang G1 – Perakuan Kerja-kerja Tanah</li>
+                    <li>Borang G2 – Perakuan Pemancangan Tanda</li>
+                    <li>Borang G3 – Perakuan Asas Tapak</li>
+                    <li>Borang G4 – Perakuan Struktur</li>
+                    <li>Borang G5 – Perakuan Perpaipan Air Dalaman</li>
+                    <li>Borang G6 – Perakuan Perpaipan Kebersihan Dalaman</li>
+                    <li>Borang G7 – Perakuan Elektrikal Dalaman</li>
+                    <li>Borang G8 – Perakuan Kehendak-kehendak Pepasangan Keselamatan Kebakaran (Seni Bina)</li>
+                    <li>Borang G9 – Perakuan Sistem Penggera Kebakaran dan Sistem Pemadam Api (Mekanikal dan Elektrikal)</li>
+                    <li>Borang G10 – Perakuan Pengudaraan Mekanikal</li>
+                    <li>Borang G11 – Perakuan Pemasangan Lif/Eskalator</li>
+                    <li>Borang G12 – Perakuan Bangunan</li>
+                    <li>Borang G13 – Perakuan Sistem Bekalan Air Luaran</li>
+                    <li>Borang G14 – Perakuan Retikulasi Pembetungan</li>
+                    <li>Borang G15 – Perakuan Loji Rawatan Kumbahan</li>
+                    <li>Borang G16 – Perakuan Sistem Bekalan Elektrik Luaran</li>
+                    <li>Borang G17 – Perakuan Jalan dan Parit</li>
+                    <li>Borang G18 – Perakuan Lampu Jalan</li>
+                    <li>Borang G19 – Perakuan Parit Luaran Utama</li>
+                    <li>Borang G20 – Perakuan Komunikasi</li>
+                    <li>Borang G21 – Perakuan Pandangan Darat</li>
                 </ol>
             </li>
             <li><b>Jadual ketiga:</b> Undang-undang Kecil 41</li>
@@ -1600,7 +1837,7 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
         <p>Pengatup kebakaran berfungsi sebagai penghalang fizikal untuk mengelakkan api dan asap daripada merebak di dalam bangunan. Ia sering digunakan di bukaan besar seperti pintu masuk ke tempat letak kereta, ruang eskalator, dan bukaan di dinding atau lantai petak.</p>
         <ul>
             <li><b>Sebagai Dinding Petak:</b> Pengatup kebakaran boleh digunakan sebagai dinding petak (penghalang api), kecuali di kawasan yang sangat kritikal seperti Pusat Pemerintahan Kebakaran (PPK) atau laluan keluar kecemasan (tangga, ruang asap, dsb). Ini adalah kerana laluan kecemasan mesti sentiasa bebas halangan untuk memastikan keselamatan penghuni.</li>
-            <li><b>Melindungi Bukaan:</b> Pengatup kebakaran boleh digunakan untuk menutup bukaan dalam dinding petak atau lantai petak. Pengatup ini mesti mempunyai tahap ketahanan api (fire resistance) yang sama atau lebih baik daripada dinding/lantai petak yang dilindunginya. It also must have sufficient thermal insulation to prevent heat from spreading.</li>
+            <li><b>Melindungi Bukaan:</b> Pengatup kebakaran boleh digunakan untuk menutup bukaan dalam dinding petak atau lantai petak. Pengatup ini mesti mempunyai tahap ketahanan api (fire resistance) yang sama atau lebih baik daripada dinding/lantai petak yang dilindunginya. Ia juga mesti mempunyai penebat haba (thermal insulation) yang mencukupi untuk mengelakkan haba daripada merebak.</li>
             <li><b>Pengecualian Penebat Haba:</b> Penebat haba tidak diwajibkan untuk pengatup kebakaran yang dipasang di kawasan yang tidak mempunyai beban api (fire load) yang tinggi. Contohnya, di sisi atrium, ruang eskalator, laluan masuk tempat letak kereta, dan bukaan antara lantai. Ini kerana tujuan utama di kawasan ini adalah untuk menghentikan penyebaran asap, bukan haba yang melampau.</li>
         </ul>
         <h4>Jenis-Jenis Pengatup dan Piawaian</h4>
@@ -1886,12 +2123,6 @@ Jumlah jalan keluar = U/4 + 1
                     = 4.25 unit
                     = 4 unit
 </div>
-        <div style="font-style: italic; font-size: 0.9em; padding: 10px; margin-top: 10px; background-color: #f9f9f9; border-left: 3px solid #ccc; border-radius: 4px;">
-            Faktor 4 yang dinyatakan di dalam kaedah ini adalah mengambil kira jenis kelas binaan bangunan iaitu:<br>
-            Kelas A = 5<br>
-            Kelas B = 4<br>
-            Kelas C = 3
-</div>
         <p>Jika kita bahagi terus jumlah lebar dan jumlah tangga, satu lebar tangga yang diperlukan lebih kurang 1.8 meter tetapi merujuk kepada UUK 177 (a), satu daripada tangga keluar itu hendaklah dianggap tidak boleh dilalui dan tangga keluar yang tinggal itu hendaklah dari lebar dan bilangan yang mencukupi untuk menampung pendudukan yang berkenaan. Tangga yang dianggap tidak boleh digunakan mestilah tangga yang paling lebar sekali. Maka, semua tangga kita anggap mempunyai lebar yang sama. Oleh itu :</p>
         <div style="background-color: #f9f9f9; padding: 1em; border-radius: 5px; margin-top: 1em; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap;">
 Tangga pertama = 2500 mm
@@ -1988,15 +2219,159 @@ vi.	Tangga keenam =  2750 mm
 
     <div id="jadual-7" class="content-section">
         <h2>Jadual Ketujuh Interaktif</h2>
-        <iframe src="calculators/jadual_ketujuh_interaktif.html" frameborder="0" style="height: 100vh;"></iframe>
+    <div class="container jadual-ketujuh-container">
+        <h1>Sistem Rujukan Pantas: Jadual Ketujuh UBBL 1984</h1>
+        <h2>Jarak Perjalanan Maksimum (meter)</h2>
+        
+        <div class="form-group">
+            <label for="kumpulanMaksud">Pilih Kumpulan Maksud Bangunan:</label>
+            <select id="kumpulanMaksud">
+                <option value="">-- Sila Pilih --</option>
+            </select>
+        </div>
+
+        <div id="results">
+            <div class="result-grid">
+                <div class="result-item">
+                    <h3>Perjalanan Sehala (*Had Jalan Mati)</h3>
+                    <p id="sehala"></p>
+                </div>
+                <div class="result-item">
+                    <h3>Perjalanan Dua Hala (Tidak Disembur)</h3>
+                    <p id="duaHalaTidakDisembur"></p>
+                </div>
+                <div class="result-item">
+                    <h3>Perjalanan Dua Hala (Disembur)</h3>
+                    <p id="duaHalaDisembur"></p>
+                </div>
+                <div class="result-item">
+                    <h3>Koridor (*Had Jalan Mati)</h3>
+                    <p id="koridor"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes">
+            <h3>Nota & Simbol</h3>
+            <p><strong>TK</strong>: Tiada Keperluan atau Tidak Terpakai.</p>
+            <p><strong>*</strong>: Had jalan mati adalah merupakan jarak kepada suatu tempat keluar suatu tingkat atau suatu takat cara melepaskan diri alternatif tersedia dengan syarat bahawa jumlah jarak perjalanan hendaklah tidak melebihi had di bawah ruangan (2) [Perjalanan Dua Hala (Tidak Disembur)].</p>
+            <p><strong>x</strong>: Had jarak perjalanan atas suatu lantai di bawah jalan dalam garaj yang disembur hendaklah terhad kepada 45 meter.</p>
+            <p><strong>+</strong>: Merujuk hanya kepada sebuah bangsal kapal terbang. Untuk bangunan ini, jika jarak perjalanan melebihi 45m, ia boleh dipenuhi dengan syarat-syarat khas seperti tangga ke terowong keluar atau laluan atas, serta perlindungan sistem semburan automatik yang lengkap. Walaubagaimanapun, jarak perjalanan ke tempat keluar terdekat tidak boleh melebihi 120 meter.</p>
+             <p><strong>Pelan Terbuka</strong>: Dalam pelan terbuka, jarak terus hendaklah dua pertiga jarak perjalanan.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const jadualData = {
+                "Kediaman Kecil": { sehala: "TK", duaHalaTidakDisembur: "TK", duaHalaDisembur: "TK", koridor: "TK" },
+                "Institusional - Hospital, rumah rawatan, dan sebagainya": { sehala: "15", duaHalaTidakDisembur: "30", duaHalaDisembur: "45", koridor: "15" },
+                "Institusional - Sekolah": { sehala: "15", duaHalaTidakDisembur: "45", duaHalaDisembur: "60", koridor: "15" },
+                "Institusional - Pelan terbuka": { sehala: "TK", duaHalaTidakDisembur: "30", duaHalaDisembur: "45", koridor: "TK" },
+                "Institusional - Pelan lentur": { sehala: "TK", duaHalaTidakDisembur: "45", duaHalaDisembur: "60", koridor: "TK" },
+                "Kediaman Lain - Hotel": { sehala: "15", duaHalaTidakDisembur: "30", duaHalaDisembur: "45", koridor: "15" },
+                "Kediaman Lain - Pangsapuri, rumah pangsa atau pangsapuri perkhidmatan": { sehala: "20", duaHalaTidakDisembur: "30", duaHalaDisembur: "60", koridor: "20" },
+                "Kediaman Lain - Dormitori": { sehala: "15", duaHalaTidakDisembur: "45", duaHalaDisembur: "60", koridor: "15" },
+                "Pejabat": { sehala: "15", duaHalaTidakDisembur: "45", duaHalaDisembur: "60", koridor: "15" },
+                "Kedai": { sehala: "15", duaHalaTidakDisembur: "45", duaHalaDisembur: "60", koridor: "15" },
+                "Kilang - Maksud am atau khas": { sehala: "15", duaHalaTidakDisembur: "30", duaHalaDisembur: "60", koridor: "15" },
+                "Kilang - Bahaya tinggi": { sehala: "0", duaHalaTidakDisembur: "22", duaHalaDisembur: "35", koridor: "0" },
+                "Kilang - Struktur terbuka": { sehala: "TK", duaHalaTidakDisembur: "TK", duaHalaDisembur: "TK", koridor: "TK" },
+                "Tempat Perhimpunan": { sehala: "15", duaHalaTidakDisembur: "45", duaHalaDisembur: "60", koridor: "15" },
+                "Storan dan Am - Bahaya rendah dan biasa": { sehala: "15", duaHalaTidakDisembur: "30", duaHalaDisembur: "60", koridor: "15" },
+                "Storan dan Am - Bahaya tinggi": { sehala: "10", duaHalaTidakDisembur: "20", duaHalaDisembur: "35", koridor: "10" },
+                "Storan dan Am - Garaj letak kereta": { sehala: "15", duaHalaTidakDisembur: "45+", duaHalaDisembur: "60x", koridor: "15" },
+                "Storan dan Am - Bangsal kapal terbang (tingkat bawah)": { sehala: "15", duaHalaTidakDisembur: "30+", duaHalaDisembur: "45+", koridor: "15" },
+                "Storan dan Am - Bangsal kapal terbang (tingkat mezanin)": { sehala: "15", duaHalaTidakDisembur: "20", duaHalaDisembur: "20", koridor: "15" }
+            };
+
+            const kumpulanMaksudSelect = document.getElementById('kumpulanMaksud');
+            const resultsDiv = document.getElementById('results');
+            const sehalaP = document.getElementById('sehala');
+            const duaHalaTidakDisemburP = document.getElementById('duaHalaTidakDisembur');
+            const duaHalaDisemburP = document.getElementById('duaHalaDisembur');
+            const koridorP = document.getElementById('koridor');
+
+            // Populate dropdown
+            Object.keys(jadualData).forEach(kategori => {
+                const option = document.createElement('option');
+                option.value = kategori;
+                option.textContent = kategori;
+                kumpulanMaksudSelect.appendChild(option);
+            });
+
+            kumpulanMaksudSelect.addEventListener('change', function() {
+                const selectedKategori = this.value;
+
+                if (selectedKategori) {
+                    const data = jadualData[selectedKategori];
+                    sehalaP.textContent = data.sehala;
+                    duaHalaTidakDisemburP.textContent = data.duaHalaTidakDisembur;
+                    duaHalaDisemburP.textContent = data.duaHalaDisembur;
+                    koridorP.textContent = data.koridor;
+                    resultsDiv.style.display = 'block';
+                } else {
+                    resultsDiv.style.display = 'none';
+                }
+            });
+        });
+    </script>
     </div>
     <div id="jadual-10" class="content-section">
         <h2>Jadual Kesepuluh Interaktif</h2>
-        <iframe src="calculators/jadual_kesepuluh_interaktif.html" frameborder="0" style="height: 100vh;"></iframe>
+        <iframe src="jadual_kesepuluh_interaktif.html" frameborder="0" style="height: 100vh;"></iframe>
     </div>
     <div id="kaedah-pengiraan-jadual-keenam" class="content-section">
         <h2>Kaedah Pengiraan Jarak Bangunan Mengikut Jadual Keenam UBBL 1984</h2>
-        <iframe src="calculators/kaedah_pengiraan_jadual_keenam.html" frameborder="0" style="height: 120vh;"></iframe>
+        <div class="container jadual-keenam-container">
+            <h1>Kaedah Pengiraan Jarak Bangunan Mengikut Jadual Keenam UBBL 1984</h1>
+            <p>Panduan ini menerangkan langkah-langkah untuk mengira jarak pemisahan minimum antara bangunan bagi mengurangkan risiko penyebaran kebakaran, selaras dengan peruntukan dalam Jadual Keenam, Undang-Undang Kecil Bangunan Seragam (UBBL) 1984.</p>
+    
+            <ol>
+                <li>
+                    <h3>Kenal Pasti Dinding Luar yang Relevan</h3>
+                    <p>Pilih satu sisi dinding luar bangunan yang menghadap sempadan lot atau bangunan lain yang ingin dikira jaraknya. Proses ini perlu diulang untuk setiap sisi bangunan yang relevan.</p>
+                </li>
+                <li>
+                    <h3>Kira Jumlah Luas Dinding Luar</h3>
+                    <p>Kira luas keseluruhan bagi dinding yang telah anda pilih di Langkah 1.</p>
+                    <div class="formula">Panjang Dinding (m) &times; Tinggi Dinding (m) = Jumlah Luas Dinding (m&sup2;)</div>
+                </li>
+                <li>
+                    <h3>Kira Jumlah Luas Bukaan Tanpa Perlindungan</h3>
+                    <p>Pada dinding yang sama, kenal pasti dan kira jumlah luas semua bukaan yang tidak mempunyai ketahanan rintangan api (Fire Resistance Rating - FRP). Ini termasuk tingkap biasa, pintu biasa, dan sebarang ruang terbuka.</p>
+                    <div class="formula">Jumlah Luas Tingkap + Pintu + ... = Jumlah Luas Bukaan (m&sup2;)</div>
+                </li>
+                <li>
+                    <h3>Kira Peratusan Bukaan</h3>
+                    <p>Cari nisbah peratusan luas bukaan tanpa perlindungan berbanding jumlah luas keseluruhan dinding.</p>
+                    <div class="formula">(Jumlah Luas Bukaan / Jumlah Luas Dinding) &times; 100 = Peratusan Bukaan (%)</div>
+                </li>
+                <li>
+                    <h3>Rujuk Jadual Keenam UBBL 1984</h3>
+                    <p>Gunakan nilai yang diperolehi untuk merujuk Jadual Keenam. Cari baris yang sepadan dengan <strong>Jumlah Luas Dinding</strong> dan lajur yang sepadan dengan <strong>Peratusan Bukaan</strong>. Jika nilai anda jatuh di antara dua julat, gunakan julat yang lebih tinggi (lebih konservatif). Nilai persilangan adalah jarak pemisahan minimum yang diperlukan dalam meter.</p>
+                </li>
+            </ol>
+    
+            <div class="example">
+                <h2>Contoh Ringkas</h2>
+                <ul>
+                    <li><strong>Luas Dinding:</strong> 70 m&sup2;</li>
+                    <li><strong>Luas Bukaan:</strong> 15 m&sup2;</li>
+                    <li><strong>Peratusan Bukaan:</strong> (15 / 70) * 100 = 21.4%</li>
+                </ul>
+                <p><strong>Rujukan Jadual Keenam:</strong></p>
+                <ol style="list-style-type: decimal; padding-left: 20px;">
+                    <li style="padding: 5px; border: none; margin-bottom: 5px;">Cari baris luas dinding: Julat "melebihi 60 hingga 80 m&sup2;".</li>
+                    <li style="padding: 5px; border: none; margin-bottom: 5px;">Cari lajur peratusan bukaan: Julat "melebihi 20 hingga 30%".</li>
+                    <li style="padding: 5px; border: none; margin-bottom: 5px;">Nilai persilangan pada jadual akan memberikan jarak minimum yang diperlukan (cth: <strong>3.5 meter</strong>).</li>
+                </ol>
+            </div>
+    
+            <div class="disclaimer">
+                <strong>Penting:</strong> Penjelasan ini adalah sebagai panduan asas dan rujukan umum sahaja. Untuk tujuan pengemukaan pelan, pematuhan undang-undang, dan aplikasi sebenar, anda <strong>wajib</strong> merujuk kepada naskhah rasmi Undang-Undang Kecil Bangunan Seragam (UBBL) 1984 dan mendapatkan nasihat daripada profesional yang bertauliah seperti Arkitek atau Jurutera Perunding.
+            </div>
+        </div>
     </div>
 </div>
 
