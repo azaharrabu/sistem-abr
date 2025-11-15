@@ -400,20 +400,18 @@ app.post('/api/users/:id/approve', requireAuth, requireAdmin, async (req, res) =
     const { id } = req.params; // Ini adalah 'id' (integer) dari jadual 'users'
 
     try {
-        // Langkah 1: Dapatkan 'user_id' (UUID) dari jadual 'users' menggunakan 'id' yang diberi.
+        // Langkah 1: Dapatkan 'user_id' (UUID) dari jadual 'users'.
         const { data: userData, error: userError } = await supabaseAdmin
             .from('users')
             .select('user_id')
             .eq('id', id)
             .single();
 
-        if (userError || !userData) {
-            throw new Error('Pengguna tidak ditemui.');
-        }
+        if (userError || !userData) throw new Error('Pengguna tidak ditemui.');
+        
         const user_uuid = userData.user_id;
 
         // Langkah 2: Kemas kini status dalam jadual 'payments' kepada 'verified'.
-        // Kita sasarkan bayaran yang berstatus 'pending' untuk pengguna ini.
         const { error: paymentError } = await supabaseAdmin
             .from('payments')
             .update({ status: 'verified', verified_at: new Date().toISOString() })
@@ -421,8 +419,8 @@ app.post('/api/users/:id/approve', requireAuth, requireAdmin, async (req, res) =
             .eq('status', 'pending');
 
         if (paymentError) {
-            // Walaupun gagal, kita teruskan untuk kemaskini jadual users, tetapi log ralat ini.
             console.error('Ralat mengemas kini jadual payments:', paymentError);
+            throw new Error('Gagal mengemas kini rekod pembayaran.');
         }
 
         // Langkah 3: Kemas kini 'payment_status' dalam jadual 'users' kepada 'paid'.
@@ -432,9 +430,7 @@ app.post('/api/users/:id/approve', requireAuth, requireAdmin, async (req, res) =
             .eq('id', id)
             .select();
 
-        if (finalUserError) {
-            throw new Error('Gagal mengemas kini status pengguna.');
-        }
+        if (finalUserError) throw new Error('Gagal mengemas kini status pengguna.');
 
         res.status(200).json(updatedUserData[0]);
 
@@ -445,24 +441,48 @@ app.post('/api/users/:id/approve', requireAuth, requireAdmin, async (req, res) =
 });
 
 // Endpoint untuk Admin menolak pembayaran
-app.delete('/api/users/:id/reject', requireAuth, requireAdmin, async (req, res) => {
-    const { id } = req.params;
-    const { data, error } = await supabaseAdmin
-        .from('users')
-        .update({ payment_status: 'rejected' })
-        .eq('id', id)
-        .select();
+app.post('/api/users/:id/reject', requireAuth, requireAdmin, async (req, res) => {
+    const { id } = req.params; // Ini adalah 'id' (integer) dari jadual 'users'
 
-    if (error) {
-        console.error('Ralat menolak pembayaran:', error);
-        return res.status(500).json({ error: 'Gagal menolak pembayaran pelanggan.' });
+    try {
+        // Langkah 1: Dapatkan 'user_id' (UUID) dari jadual 'users'.
+        const { data: userData, error: userError } = await supabaseAdmin
+            .from('users')
+            .select('user_id')
+            .eq('id', id)
+            .single();
+
+        if (userError || !userData) throw new Error('Pengguna tidak ditemui.');
+
+        const user_uuid = userData.user_id;
+
+        // Langkah 2: Kemas kini status dalam jadual 'payments' kepada 'rejected'.
+        const { error: paymentError } = await supabaseAdmin
+            .from('payments')
+            .update({ status: 'rejected' })
+            .eq('user_id', user_uuid)
+            .eq('status', 'pending');
+
+        if (paymentError) {
+            console.error('Ralat mengemas kini jadual payments semasa menolak:', paymentError);
+            throw new Error('Gagal mengemas kini rekod pembayaran.');
+        }
+
+        // Langkah 3: Kemas kini 'payment_status' dalam jadual 'users' kepada 'rejected'.
+        const { data: updatedUserData, error: finalUserError } = await supabaseAdmin
+            .from('users')
+            .update({ payment_status: 'rejected' })
+            .eq('id', id)
+            .select();
+
+        if (finalUserError) throw new Error('Gagal mengemas kini status pengguna.');
+        
+        res.status(200).json(updatedUserData[0]);
+
+    } catch (error) {
+        console.error('Ralat semasa proses menolak pembayaran:', error);
+        return res.status(500).json({ error: error.message || 'Gagal menolak pembayaran pelanggan.' });
     }
-
-    if (!data || data.length === 0) {
-        return res.status(404).json({ error: 'Pelanggan tidak ditemui atau status pembayaran tidak berubah.' });
-    }
-
-    res.status(200).json(data[0]);
 });
 
 // 7. MULAKAN SERVER
