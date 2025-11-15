@@ -35,10 +35,14 @@ const getSessionToken = async () => {
 };
 
 // Fungsi untuk mengambil dan memaparkan permintaan pembayaran tertunda
-async function fetchPendingPayments() {
-    const token = await getSessionToken();
+async function fetchPendingPayments(token) {
+    // Jika token tidak dihantar, cuba dapatkannya dari sesi
     if (!token) {
-        pendingPaymentsTableBody.innerHTML = '<tr><td colspan="5">Sesi tidak sah. Sila log masuk semula.</td></tr>';
+        token = await getSessionToken();
+    }
+
+    if (!token) {
+        pendingPaymentsTableBody.innerHTML = '<tr><td colspan="6">Sesi tidak sah. Sila log masuk semula.</td></tr>';
         return;
     }
 
@@ -54,7 +58,7 @@ async function fetchPendingPayments() {
         pendingPaymentsTableBody.innerHTML = ''; // Kosongkan jadual sedia ada
 
         if (pendingPayments.length === 0) {
-            pendingPaymentsTableBody.innerHTML = '<tr><td colspan="5">Tiada permintaan pembayaran tertunda.</td></tr>';
+            pendingPaymentsTableBody.innerHTML = '<tr><td colspan="6">Tiada permintaan pembayaran tertunda.</td></tr>';
             return;
         }
 
@@ -71,7 +75,7 @@ async function fetchPendingPayments() {
         });
 
     } catch (error) {
-        pendingPaymentsTableBody.innerHTML = `<tr><td colspan="5" style="color: red;">Ralat: ${error.message}</td></tr>`;
+        pendingPaymentsTableBody.innerHTML = `<tr><td colspan="6" style="color: red;">Ralat: ${error.message}</td></tr>`;
     }
 }
 
@@ -150,7 +154,7 @@ async function handleApprovePayment(event) {
 }
 
 // Fungsi untuk memaparkan UI berdasarkan status & peranan pengguna
-const showUi = (user, profile) => {
+const showUi = (user, profile, token) => {
     // Sembunyikan semua bahagian utama dahulu
     authSection.style.display = 'none';
     paymentSection.style.display = 'none';
@@ -169,7 +173,7 @@ const showUi = (user, profile) => {
 
     if (profile && profile.role === 'admin') {
         adminPanelSection.style.display = 'block';
-        fetchPendingPayments(); // Muatkan data untuk admin
+        fetchPendingPayments(token); // Hantar token terus ke fungsi
     } 
     else if (profile && profile.role === 'user') {
         // Semak status pembayaran pengguna
@@ -221,7 +225,7 @@ const checkUserSession = async () => {
         // Jika tiada profil dalam cache atau profil tidak sepadan, dapatkan dari server
         if (!customerProfile || customerProfile.user_id !== session.user.id) {
             console.log("Mendapatkan profil dari server...");
-            const token = await getSessionToken();
+            const token = session.access_token;
             const response = await fetch('/api/profile', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -235,7 +239,7 @@ const checkUserSession = async () => {
             }
         }
         
-        showUi(session.user, customerProfile);
+        showUi(session.user, customerProfile, session.access_token);
     } else {
         showAuth();
     }
@@ -275,7 +279,7 @@ async function handleAuth(event, endpoint) {
             }
             await _supabase.auth.setSession(data.session);
             localStorage.setItem('customerProfile', JSON.stringify(data.profile));
-            showUi(data.user, data.profile);
+            showUi(data.user, data.profile, data.session.access_token);
         } else { 
             alert('Pendaftaran berjaya! Sila semak emel anda untuk pengesahan, kemudian log masuk.');
             signupContainer.style.display = 'none';
