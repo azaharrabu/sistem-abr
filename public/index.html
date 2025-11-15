@@ -80,7 +80,22 @@
                 <p><strong>Nama Pemegang Akaun:</strong> ABR Brillante PLT</p>
             </div>
             <form id="payment-proof-form">
-                <input type="text" id="payment-reference" placeholder="Nombor Rujukan Bank" required>
+                <div class="form-group">
+                    <label for="reference_no">Nombor Rujukan Bank</label>
+                    <input type="text" id="reference_no" placeholder="Cth: 123456789" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment_date">Tarikh Bayaran</label>
+                    <input type="date" id="payment_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment_time">Masa Bayaran</label>
+                    <input type="time" id="payment_time" required>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Jumlah Bayaran (RM)</label>
+                    <input type="number" id="amount" step="0.01" placeholder="Cth: 50.00" required>
+                </div>
                 <button type="submit">Hantar Bukti Pembayaran</button>
             </form>
         </div>

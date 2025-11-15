@@ -251,27 +251,44 @@ app.post('/api/signin', async (req, res) => {
 });
 
 // Endpoint untuk Pengesahan Pembayaran Manual (Dilindungi)
-app.post('/api/submit-payment-proof', requireAuth, async (req, res) => {
+app.post('/api/submit-payment', requireAuth, async (req, res) => {
     try {
-        const { payment_reference } = req.body;
+        const { reference_no, payment_date, payment_time, amount } = req.body;
         const user = req.user;
 
-        if (!payment_reference) {
-            return res.status(400).json({ error: 'Sila masukkan nombor rujukan pembayaran.' });
+        // 1. Pengesahan Input
+        if (!reference_no || !payment_date || !payment_time || !amount) {
+            return res.status(400).json({ error: 'Semua medan diperlukan: rujukan, tarikh, masa, dan jumlah.' });
         }
 
-        const { data, error } = await supabaseAdmin
-            .from('users')
-            .update({ 
-                payment_reference: payment_reference,
-                payment_status: 'pending' // Kekal/Set semula ke 'pending' sehingga disahkan admin
-            })
-            .eq('user_id', user.id)
-            .select();
+        // 2. Masukkan butiran bayaran ke dalam jadual 'payments'
+        const { error: paymentError } = await supabaseAdmin
+            .from('payments')
+            .insert([{
+                user_id: user.id,
+                reference_no: reference_no,
+                payment_date: payment_date,
+                payment_time: payment_time,
+                amount: amount,
+                status: 'pending' // Status awal untuk rekod bayaran ini
+            }]);
 
-        if (error) {
-            console.error("Ralat mengemas kini bukti pembayaran:", error);
-            throw new Error('Gagal menyimpan rujukan pembayaran.');
+        if (paymentError) {
+            console.error("Ralat memasukkan data ke jadual payments:", paymentError);
+            throw new Error('Gagal menyimpan butiran pembayaran.');
+        }
+
+        // 3. Kemas kini status pengguna di jadual 'users'
+        const { error: userError } = await supabaseAdmin
+            .from('users')
+            .update({ payment_status: 'pending' })
+            .eq('user_id', user.id);
+
+        if (userError) {
+            console.error("Ralat mengemas kini status pengguna:", userError);
+            // Secara teknikal, butiran bayaran telah disimpan.
+            // Ini adalah ralat sekunder, tetapi penting untuk aliran UI.
+            // Kita boleh teruskan tetapi log ralat ini.
         }
 
         res.status(200).json({ message: 'Terima kasih. Bukti pembayaran anda telah dihantar dan akan disemak.' });

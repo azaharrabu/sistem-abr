@@ -277,45 +277,44 @@ async function handlePaymentProofSubmit(event) {
         return;
     }
 
-    const referenceInput = document.getElementById('payment-reference');
-    const payment_reference = referenceInput.value;
+    // Dapatkan nilai dari semua medan borang
+    const reference_no = document.getElementById('reference_no').value;
+    const payment_date = document.getElementById('payment_date').value;
+    const payment_time = document.getElementById('payment_time').value;
+    const amount = document.getElementById('amount').value;
 
-    if (!payment_reference.trim()) {
-        alert('Sila masukkan nombor rujukan bank.');
+    if (!reference_no.trim() || !payment_date || !payment_time || !amount) {
+        alert('Sila lengkapkan semua butiran pembayaran.');
         return;
     }
 
+    const body = {
+        reference_no,
+        payment_date,
+        payment_time,
+        amount
+    };
+
     try {
-        const response = await fetch('/api/submit-payment-proof', {
+        const response = await fetch('/api/submit-payment', { // Guna endpoint baru
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ payment_reference })
+            body: JSON.stringify(body)
         });
 
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Gagal menghantar bukti pembayaran.');
 
-        // This part of the UI might not exist, so we add checks
-        const paymentMessage = document.getElementById('payment-message');
-        if (paymentMessage) {
-            paymentMessage.style.color = 'green';
-            paymentMessage.textContent = 'Terima kasih. Permohonan anda akan disemak dan diproses dalam masa 3 hari bekerja.';
-        }
-        if (paymentProofForm) {
-            paymentProofForm.style.display = 'none';
-        }
+        // Kemas kini UI selepas berjaya hantar
+        alert('Terima kasih. Permohonan anda akan disemak dan diproses dalam masa 3 hari bekerja.');
+        paymentSection.style.display = 'none';
+        pendingApprovalSection.style.display = 'block';
 
     } catch (error) {
-        const paymentMessage = document.getElementById('payment-message');
-        if (paymentMessage) {
-            paymentMessage.style.color = 'red';
-            paymentMessage.textContent = `Ralat: ${error.message}`;
-        } else {
-            alert(`Ralat: ${error.message}`);
-        }
+        alert(`Ralat: ${error.message}`);
     }
 }
 
