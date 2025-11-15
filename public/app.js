@@ -5,29 +5,27 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Rujukan kepada elemen DOM
 const authSection = document.getElementById('auth-section');
-const dashboardSection = document.getElementById('dashboard-section');
 const loginForm = document.getElementById('login-form');
 const signupForm = document.getElementById('signup-form');
-const logoutButton = document.getElementById('logout-button');
 const showSignup = document.getElementById('show-signup');
 const showLogin = document.getElementById('show-login');
 const loginContainer = document.getElementById('login-container');
 const signupContainer = document.getElementById('signup-container');
-const userInfo = document.getElementById('user-info');
-const navLinksContainer = document.getElementById('nav-links-container');
-const openInteractiveButton = document.getElementById('open-interactive-button');
 
-// Elemen untuk aliran baru
-const paymentVerificationSection = document.getElementById('payment-verification-section');
-const paymentProofForm = document.getElementById('payment-proof-form');
-const paymentMessage = document.getElementById('payment-message');
+// Bahagian-bahagian utama aplikasi
+const paymentSection = document.getElementById('payment-section');
+const pendingApprovalSection = document.getElementById('pending-approval-section');
+const mainContentSection = document.getElementById('main-content-section');
 const adminPanelSection = document.getElementById('admin-panel-section');
+
+// Borang dan butang lain
+const paymentProofForm = document.getElementById('payment-proof-form');
+const openInteractiveButton = document.getElementById('open-interactive-button');
 const pendingPaymentsTableBody = document.getElementById('pending-payments-table-body');
-const adminSections = {
-    addCustomer: document.getElementById('admin-add-customer-section'),
-    customerListHeader: document.getElementById('admin-customer-list-header'),
-    customerList: document.getElementById('customer-list')
-};
+
+// Elemen yang dikongsi (diuruskan secara berasingan dalam fungsi UI)
+const logoutButtons = document.querySelectorAll('#logout-button-payment, #logout-button-pending, #logout-button-main, #logout-button-admin');
+const userInfoDisplays = document.querySelectorAll('#payment-user-info, #pending-user-info, #main-user-info, #admin-user-info');
 
 
 // Fungsi untuk mendapatkan token sesi semasa
@@ -152,33 +150,46 @@ async function handleApprovePayment(event) {
 }
 
 // Fungsi untuk memaparkan UI berdasarkan status & peranan pengguna
-const showUi = (user, customer) => {
+const showUi = (user, profile) => {
+    // Sembunyikan semua bahagian utama dahulu
     authSection.style.display = 'none';
-    dashboardSection.style.display = 'block';
-    userInfo.innerHTML = `Log masuk sebagai: <strong>${user.email}</strong>`;
+    paymentSection.style.display = 'none';
+    pendingApprovalSection.style.display = 'none';
+    mainContentSection.style.display = 'none';
+    adminPanelSection.style.display = 'none';
 
-    // Sembunyikan semua bahagian spesifik secara lalai
-    navLinksContainer.style.display = 'none';
-    paymentVerificationSection.style.display = 'none';
-    Object.values(adminSections).forEach(el => el.style.display = 'none');
-    adminPanelSection.style.display = 'none'; // Sembunyikan admin panel secara lalai
+    // Paparkan maklumat pengguna di semua tempat yang berkenaan
+    userInfoDisplays.forEach(display => {
+        if (user && user.email) {
+            display.innerHTML = `Log masuk sebagai: <strong>${user.email}</strong>`;
+        } else {
+            display.innerHTML = '';
+        }
+    });
 
-    if (customer && customer.role === 'admin') {
-        adminPanelSection.style.display = 'block'; // Paparkan admin panel
-        fetchPendingPayments(); // Muatkan pembayaran tertunda
-        // Sembunyikan bahagian admin lain yang tidak berkaitan dengan kelulusan pembayaran
-        adminSections.addCustomer.style.display = 'none';
-        adminSections.customerListHeader.style.display = 'none';
-        adminSections.customerList.style.display = 'none';
+    if (profile && profile.role === 'admin') {
+        adminPanelSection.style.display = 'block';
+        fetchPendingPayments(); // Muatkan data untuk admin
     } 
-    else if (customer && customer.role === 'user') {
-        if (customer.payment_status === 'paid') {
-            navLinksContainer.style.display = 'block';
-        } else if (customer.payment_status === 'pending') {
-            paymentVerificationSection.style.display = 'block';
+    else if (profile && profile.role === 'user') {
+        // Semak status pembayaran pengguna
+        switch (profile.payment_status) {
+            case 'paid':
+                mainContentSection.style.display = 'block'; // Pengguna yang telah bayar
+                break;
+            case 'pending':
+                pendingApprovalSection.style.display = 'block'; // Pengguna menunggu kelulusan
+                break;
+            case 'rejected':
+            default:
+                // Untuk status 'rejected' atau status tidak diketahui, tunjukkan skrin pembayaran
+                paymentSection.style.display = 'block'; 
+                break;
         }
     } 
     else {
+        // Jika tiada profil atau berlaku ralat, hantar pengguna ke skrin log masuk
+        console.warn("showUi dipanggil tanpa profil yang sah atau pengguna bukan admin/user. Kembali ke Auth.");
         showAuth();
     }
 };
@@ -186,10 +197,17 @@ const showUi = (user, customer) => {
 // Fungsi untuk memaparkan borang log masuk/daftar
 const showAuth = () => {
     authSection.style.display = 'block';
-    dashboardSection.style.display = 'none';
-    navLinksContainer.style.display = 'none';
-    loginContainer.style.display = 'none';
-    signupContainer.style.display = 'block';
+    
+    // Sembunyikan semua bahagian lain
+    paymentSection.style.display = 'none';
+    pendingApprovalSection.style.display = 'none';
+    mainContentSection.style.display = 'none';
+    adminPanelSection.style.display = 'none';
+
+    // Tetapkan semula borang
+    signupContainer.style.display = 'none';
+    loginContainer.style.display = 'block'; // Tunjuk borang log masuk secara lalai
+    
     localStorage.removeItem('customerProfile');
 };
 
@@ -200,7 +218,9 @@ const checkUserSession = async () => {
     if (session) {
         let customerProfile = JSON.parse(localStorage.getItem('customerProfile'));
 
+        // Jika tiada profil dalam cache atau profil tidak sepadan, dapatkan dari server
         if (!customerProfile || customerProfile.user_id !== session.user.id) {
+            console.log("Mendapatkan profil dari server...");
             const token = await getSessionToken();
             const response = await fetch('/api/profile', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -209,7 +229,8 @@ const checkUserSession = async () => {
                 customerProfile = await response.json();
                 localStorage.setItem('customerProfile', JSON.stringify(customerProfile));
             } else {
-                handleSignOut();
+                console.error("Gagal mendapatkan profil, log keluar...");
+                handleSignOut(); // Log keluar jika gagal dapatkan profil
                 return;
             }
         }
@@ -248,16 +269,20 @@ async function handleAuth(event, endpoint) {
         if (!response.ok) throw new Error(data.error || 'Ralat tidak diketahui');
 
         if (endpoint === '/api/signin') {
+            // Pastikan data yang diterima adalah betul
+            if (!data.session || !data.profile) {
+                throw new Error("Respons log masuk tidak lengkap dari server.");
+            }
             await _supabase.auth.setSession(data.session);
-            localStorage.setItem('customerProfile', JSON.stringify(data.customer));
-            showUi(data.user, data.customer);
+            localStorage.setItem('customerProfile', JSON.stringify(data.profile));
+            showUi(data.user, data.profile);
         } else { 
-            alert('Pendaftaran berjaya! Sila log masuk untuk membuat pengesahan pembayaran.');
+            alert('Pendaftaran berjaya! Sila semak emel anda untuk pengesahan, kemudian log masuk.');
             signupContainer.style.display = 'none';
             loginContainer.style.display = 'block';
         }
     } catch (error) {
-        alert(`Ralat: ${error.message}`);
+        alert(`Ralat Log Masuk: ${error.message}`);
     }
     form.reset();
 }
