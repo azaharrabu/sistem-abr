@@ -167,7 +167,7 @@ app.post('/api/signup', async (req, res) => {
                 subscription_price: amount,
                 subscription_end_date: subscriptionEndDate.toISOString().split('T')[0], 
                 is_promo_user: isPromoUser,
-                payment_status: 'pending',
+                payment_status: 'rejected', // Status awal untuk pengguna baru, memaksa mereka ke halaman bayaran.
                 role: 'user' // Tetapkan peranan default sebagai 'user'
             }]).select();
 

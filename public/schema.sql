@@ -16,7 +16,7 @@ CREATE TABLE public.users (
     subscription_price NUMERIC(10, 2), -- Harga dengan 2 titik perpuluhan.
     subscription_end_date DATE,
     is_promo_user BOOLEAN DEFAULT FALSE,
-    payment_status TEXT DEFAULT 'pending', -- Contoh: 'pending', 'paid', 'rejected'.
+    payment_status TEXT DEFAULT 'rejected', -- Contoh: 'pending', 'paid', 'rejected'.
     payment_reference TEXT,
     created_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
