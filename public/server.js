@@ -397,20 +397,51 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
 
 // Endpoint untuk Admin meluluskan pembayaran
 app.post('/api/users/:id/approve', requireAuth, requireAdmin, async (req, res) => {
-    const { id } = req.params;
-    const { data, error } = await supabaseAdmin
-        .from('users')
-        .update({ payment_status: 'paid' })
-        .eq('id', id)
-        .select();
+    const { id } = req.params; // Ini adalah 'id' (integer) dari jadual 'users'
 
-    if (error) {
-        console.error('Ralat meluluskan pembayaran:', error);
-        // Log additional details for debugging on Vercel
-        return res.status(500).json({ error: 'Gagal meluluskan pembayaran pelanggan.'});
+    try {
+        // Langkah 1: Dapatkan 'user_id' (UUID) dari jadual 'users' menggunakan 'id' yang diberi.
+        const { data: userData, error: userError } = await supabaseAdmin
+            .from('users')
+            .select('user_id')
+            .eq('id', id)
+            .single();
+
+        if (userError || !userData) {
+            throw new Error('Pengguna tidak ditemui.');
+        }
+        const user_uuid = userData.user_id;
+
+        // Langkah 2: Kemas kini status dalam jadual 'payments' kepada 'verified'.
+        // Kita sasarkan bayaran yang berstatus 'pending' untuk pengguna ini.
+        const { error: paymentError } = await supabaseAdmin
+            .from('payments')
+            .update({ status: 'verified', verified_at: new Date().toISOString() })
+            .eq('user_id', user_uuid)
+            .eq('status', 'pending');
+
+        if (paymentError) {
+            // Walaupun gagal, kita teruskan untuk kemaskini jadual users, tetapi log ralat ini.
+            console.error('Ralat mengemas kini jadual payments:', paymentError);
+        }
+
+        // Langkah 3: Kemas kini 'payment_status' dalam jadual 'users' kepada 'paid'.
+        const { data: updatedUserData, error: finalUserError } = await supabaseAdmin
+            .from('users')
+            .update({ payment_status: 'paid' })
+            .eq('id', id)
+            .select();
+
+        if (finalUserError) {
+            throw new Error('Gagal mengemas kini status pengguna.');
+        }
+
+        res.status(200).json(updatedUserData[0]);
+
+    } catch (error) {
+        console.error('Ralat semasa proses meluluskan pembayaran:', error);
+        return res.status(500).json({ error: error.message || 'Gagal meluluskan pembayaran pelanggan.' });
     }
-
-    res.status(200).json(data[0]);
 });
 
 // Endpoint untuk Admin menolak pembayaran
