@@ -417,7 +417,10 @@ showLogin.addEventListener('click', (e) => { e.preventDefault(); signupContainer
 
 loginForm.addEventListener('submit', (e) => handleAuth(e, '/api/signin'));
 signupForm.addEventListener('submit', (e) => handleAuth(e, '/api/signup'));
-logoutButton.addEventListener('click', handleSignOut);
+// Tambahkan event listener ke semua butang log keluar
+logoutButtons.forEach(button => {
+    button.addEventListener('click', handleSignOut);
+});
 paymentProofForm.addEventListener('submit', handlePaymentProofSubmit);
 openInteractiveButton.addEventListener('click', handleOpenInteractiveSystem);
 
