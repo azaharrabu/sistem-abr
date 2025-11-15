@@ -33,38 +33,47 @@ async function fetchPendingPayments(token) {
         token = await getSessionToken();
     }
     if (!token) {
-        pendingPaymentsTableBody.innerHTML = '<tr><td colspan="6">Sesi tidak sah. Sila log masuk semula.</td></tr>';
+        pendingPaymentsTableBody.innerHTML = '<tr><td colspan="8">Sesi tidak sah. Sila log masuk semula.</td></tr>';
         return;
     }
 
     try {
-        const response = await fetch('/api/users', {
+        const response = await fetch('/api/users', { // Endpoint ini kini mengembalikan senarai bayaran tertunda
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!response.ok) throw new Error((await response.json()).error || 'Gagal mengambil data pengguna.');
+        if (!response.ok) throw new Error((await response.json()).error || 'Gagal mengambil data bayaran.');
 
-        const users = await response.json();
-        const pendingPayments = users.filter(user => user.payment_status === 'pending');
-
+        const pendingPayments = await response.json();
+        
         pendingPaymentsTableBody.innerHTML = '';
 
         if (pendingPayments.length === 0) {
-            pendingPaymentsTableBody.innerHTML = '<tr><td colspan="6">Tiada permintaan pembayaran tertunda.</td></tr>';
+            pendingPaymentsTableBody.innerHTML = '<tr><td colspan="8">Tiada permintaan pembayaran tertunda.</td></tr>';
             return;
         }
 
-        pendingPayments.forEach(user => {
+        pendingPayments.forEach(payment => {
             const row = pendingPaymentsTableBody.insertRow();
+            const user = payment.users; // Dapatkan objek pengguna yang berkaitan
+
+            if (!user) {
+                // Langkau jika tiada data pengguna yang berkaitan (langkah keselamatan)
+                console.warn("Rekod bayaran ditemui tanpa pengguna yang sepadan:", payment);
+                return;
+            }
 
             row.insertCell().textContent = user.email;
             row.insertCell().textContent = user.subscription_plan;
-            row.insertCell().textContent = `RM${user.subscription_price}`;
-            row.insertCell().textContent = user.payment_reference || 'Tiada';
+            row.insertCell().textContent = payment.reference_no;
+            row.insertCell().textContent = new Date(payment.payment_date).toLocaleDateString(); // Format tarikh
+            row.insertCell().textContent = payment.payment_time;
+            row.insertCell().textContent = `RM${Number(payment.amount).toFixed(2)}`; // Format jumlah
 
             const approveCell = row.insertCell();
             const approveButton = document.createElement('button');
             approveButton.textContent = 'Luluskan';
             approveButton.className = 'approve-button';
+            // Penting: Guna user.id untuk tindakan lulus/tolak
             approveButton.addEventListener('click', (event) => handleApprovePayment(event, user.id, token));
             approveCell.appendChild(approveButton);
 
@@ -77,7 +86,7 @@ async function fetchPendingPayments(token) {
         });
 
     } catch (error) {
-        pendingPaymentsTableBody.innerHTML = `<tr><td colspan="6" style="color: red;">Ralat: ${error.message}</td></tr>`;
+        pendingPaymentsTableBody.innerHTML = `<tr><td colspan="8" style="color: red;">Ralat: ${error.message}</td></tr>`;
     }
 }
 

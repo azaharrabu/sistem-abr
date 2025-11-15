@@ -359,8 +359,27 @@ app.get('/api/profile', requireAuth, async (req, res) => {
 // 6. API ADMIN (Perlu log masuk sebagai admin)
 
 app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
-    const { data, error } = await supabaseAdmin.from('users').select('*');
-    if (error) return res.status(500).json({ error: error.message });
+    // Endpoint ini kini mengambil data dari jadual 'payments' yang berstatus 'pending'
+    // dan menggabungkannya dengan maklumat pengguna yang berkaitan.
+    const { data, error } = await supabaseAdmin
+        .from('payments')
+        .select(`
+            *,
+            users (
+                id,
+                email,
+                subscription_plan,
+                subscription_price
+            )
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error("Ralat mengambil data bayaran tertunda:", error);
+        return res.status(500).json({ error: 'Gagal mengambil data bayaran tertunda.' });
+    }
+    
     res.status(200).json(data);
 });
 
