@@ -320,28 +320,11 @@ async function handlePaymentProofSubmit(event) {
 }
 
 // Fungsi untuk membuka sistem interaktif yang dilindungi
-async function handleOpenInteractiveSystem() {
-    const token = await getSessionToken();
-    if (!token) {
-        alert("Sesi tidak sah. Sila log masuk semula.");
-        return;
-    }
-
-    try {
-        const response = await fetch('/rujukan_interaktif.html', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-            const pageBlob = await response.blob();
-            const pageUrl = URL.createObjectURL(pageBlob);
-            window.open(pageUrl, '_blank');
-        } else {
-            throw new Error('Akses ditolak. Langganan anda mungkin tidak aktif.');
-        }
-    } catch (error) {
-        alert(`Ralat: ${error.message}`);
-    }
+function handleOpenInteractiveSystem() {
+    // Pengguna sudah disahkan kerana mereka boleh melihat butang ini.
+    // Halaman ini adalah fail statik dan tidak dilindungi oleh pengesahan API.
+    // Oleh itu, kita boleh membukanya secara terus.
+    window.open('/rujukan_interaktif.html', '_blank');
 }
 
 // Fungsi untuk log keluar
