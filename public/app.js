@@ -43,13 +43,13 @@ async function fetchPendingPayments() {
     }
 
     try {
-        const response = await fetch('/api/customers', {
+        const response = await fetch('/api/users', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!response.ok) throw new Error((await response.json()).error || 'Gagal mengambil data pelanggan.');
+        if (!response.ok) throw new Error((await response.json()).error || 'Gagal mengambil data pengguna.');
 
-        const customers = await response.json();
-        const pendingPayments = customers.filter(customer => customer.payment_status === 'pending');
+        const users = await response.json();
+        const pendingPayments = users.filter(user => user.payment_status === 'pending');
 
         pendingPaymentsTableBody.innerHTML = ''; // Kosongkan jadual sedia ada
 
@@ -58,15 +58,15 @@ async function fetchPendingPayments() {
             return;
         }
 
-        pendingPayments.forEach(customer => {
+        pendingPayments.forEach(user => {
             const row = pendingPaymentsTableBody.insertRow();
             row.innerHTML = `
-                <td>${customer.email}</td>
-                <td>${customer.subscription_plan}</td>
-                <td>RM${customer.subscription_price}</td>
-                <td>${customer.payment_reference || 'Tiada'}</td>
-                <td><button class="approve-button" data-customer-id="${customer.id}">Luluskan</button></td>
-                <td><button class="reject-button" data-customer-id="${customer.id}">Tolak</button></td>
+                <td>${user.email}</td>
+                <td>${user.subscription_plan}</td>
+                <td>RM${user.subscription_price}</td>
+                <td>${user.payment_reference || 'Tiada'}</td>
+                <td><button class="approve-button" data-customer-id="${user.id}">Luluskan</button></td>
+                <td><button class="reject-button" data-customer-id="${user.id}">Tolak</button></td>
             `;
         });
 
@@ -81,7 +81,7 @@ async function handleRejectPayment(event) {
 
     const customerId = event.target.dataset.customerId;
     if (!customerId) {
-        alert('ID pelanggan tidak ditemui.');
+        alert('ID pengguna tidak ditemui.');
         return;
     }
 
@@ -96,7 +96,7 @@ async function handleRejectPayment(event) {
     }
 
     try {
-        const response = await fetch(`/api/customers/${customerId}/reject`, {
+        const response = await fetch(`/api/users/${customerId}/reject`, {
             method: 'DELETE', // Menggunakan DELETE untuk penolakan
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -118,7 +118,7 @@ async function handleApprovePayment(event) {
 
     const customerId = event.target.dataset.customerId;
     if (!customerId) {
-        alert('ID pelanggan tidak ditemui.');
+        alert('ID pengguna tidak ditemui.');
         return;
     }
 
@@ -133,7 +133,7 @@ async function handleApprovePayment(event) {
     }
 
     try {
-        const response = await fetch(`/api/customers/${customerId}/approve`, {
+        const response = await fetch(`/api/users/${customerId}/approve`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
         });
