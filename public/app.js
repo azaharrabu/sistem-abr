@@ -119,37 +119,46 @@ async function handleRejectPayment(event) {
 // Fungsi untuk meluluskan pembayaran
 async function handleApprovePayment(event) {
     if (!event.target.classList.contains('approve-button')) return;
+    
+    alert("Checkpoint 1: Butang 'Luluskan' berjaya ditekan.");
 
     const customerId = event.target.dataset.customerId;
     if (!customerId) {
-        alert('ID pengguna tidak ditemui.');
+        alert("Ralat Diagnostik: ID pengguna tidak ditemui pada butang.");
         return;
     }
+    alert(`Checkpoint 2: ID Pengguna yang akan diluluskan ialah '${customerId}'.`);
 
     if (!confirm('Anda pasti mahu meluluskan pembayaran ini?')) {
+        alert("Diagnostik: Proses kelulusan dibatalkan oleh admin.");
         return;
     }
 
     const token = await getSessionToken();
     if (!token) {
-        alert('Sesi anda telah tamat. Sila log masuk semula.');
+        alert("Ralat Diagnostik: Token sesi tidak ditemui. Sila log masuk semula.");
         return;
     }
+    alert("Checkpoint 3: Token sesi ditemui. Menghantar permintaan ke server...");
 
     try {
         const response = await fetch(`/api/users/${customerId}/approve`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        alert(`Checkpoint 4: Server memberi respons dengan kod status: ${response.status}`);
 
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Gagal meluluskan pembayaran.');
+        if (!response.ok) {
+            throw new Error(data.error || `Proses gagal dengan status ${response.status}`);
+        }
 
-        alert('Pembayaran berjaya diluluskan!');
-        fetchPendingPayments(); // Muat semula senarai pembayaran tertunda
+        alert("Checkpoint 5: Pembayaran berjaya diluluskan! Memuat semula senarai...");
+        fetchPendingPayments(token); // Hantar token untuk muat semula
 
     } catch (error) {
-        alert(`Ralat: ${error.message}`);
+        alert(`Ralat Diagnostik Peringkat Akhir: ${error.message}`);
     }
 }
 
