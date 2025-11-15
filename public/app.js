@@ -424,23 +424,82 @@ async function handleDeleteCustomer(event) {
     }
 }
 
-// Event Listeners
-showSignup.addEventListener('click', (e) => { e.preventDefault(); loginContainer.style.display = 'none'; signupContainer.style.display = 'block'; });
-showLogin.addEventListener('click', (e) => { e.preventDefault(); signupContainer.style.display = 'none'; loginContainer.style.display = 'block'; });
+function initializeEventListeners() {
 
-loginForm.addEventListener('submit', (e) => handleAuth(e, '/api/signin'));
-signupForm.addEventListener('submit', (e) => handleAuth(e, '/api/signup'));
-// Tambahkan event listener ke semua butang log keluar
-logoutButtons.forEach(button => {
-    button.addEventListener('click', handleSignOut);
+    if (showSignup && loginContainer && signupContainer) {
+
+        showSignup.addEventListener('click', (e) => { e.preventDefault(); loginContainer.style.display = 'none'; signupContainer.style.display = 'block'; });
+
+    }
+
+    if (showLogin && signupContainer && loginContainer) {
+
+        showLogin.addEventListener('click', (e) => { e.preventDefault(); signupContainer.style.display = 'none'; loginContainer.style.display = 'block'; });
+
+    }
+
+
+
+    if (loginForm) loginForm.addEventListener('submit', (e) => handleAuth(e, '/api/signin'));
+
+    if (signupForm) signupForm.addEventListener('submit', (e) => handleAuth(e, '/api/signup'));
+
+
+
+    logoutButtons.forEach(button => {
+
+        button.addEventListener('click', handleSignOut);
+
+    });
+
+
+
+    if (paymentProofForm) paymentProofForm.addEventListener('submit', handlePaymentProofSubmit);
+
+    if (openInteractiveButton) openInteractiveButton.addEventListener('click', handleOpenInteractiveSystem);
+
+
+
+    // Event listener untuk admin
+
+    const addCustomerForm = document.getElementById('add-customer-form');
+
+    if (addCustomerForm) addCustomerForm.addEventListener('submit', handleAddCustomer);
+
+    
+
+    const customerList = document.getElementById('customer-list');
+
+    if (customerList) customerList.addEventListener('click', handleDeleteCustomer);
+
+
+
+    if (pendingPaymentsTableBody) {
+
+        pendingPaymentsTableBody.addEventListener('click', (event) => {
+
+            if (event.target.classList.contains('approve-button')) {
+
+                handleApprovePayment(event);
+
+            } else if (event.target.classList.contains('reject-button')) {
+
+                handleRejectPayment(event);
+
+            }
+
+        });
+
+    }
+
+}
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    checkUserSession();
+
+    initializeEventListeners();
+
 });
-paymentProofForm.addEventListener('submit', handlePaymentProofSubmit);
-openInteractiveButton.addEventListener('click', handleOpenInteractiveSystem);
-
-// Event listener untuk admin
-document.getElementById('add-customer-form').addEventListener('submit', handleAddCustomer);
-document.getElementById('customer-list').addEventListener('click', handleDeleteCustomer);
-pendingPaymentsTableBody.addEventListener('click', handleApprovePayment); // Event listener untuk butang luluskan
-pendingPaymentsTableBody.addEventListener('click', handleRejectPayment); // Event listener untuk butang tolak
-
-document.addEventListener('DOMContentLoaded', checkUserSession);
