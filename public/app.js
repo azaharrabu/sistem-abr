@@ -93,20 +93,80 @@ async function fetchPendingPayments(token) {
 
 // Fungsi untuk menolak pembayaran
 async function handleRejectPayment(event, customerId, token) {
+    console.log("LOG: handleRejectPayment dipanggil untuk customerId:", customerId);
+
+    if (!confirm('Anda pasti mahu menolak pembayaran ini? Tindakan ini tidak boleh diundur.')) {
+        console.log("LOG: Pengguna membatalkan penolakan.");
+        return;
+    }
+
     if (!token) {
         alert('Sesi anda telah tamat. Sila log masuk semula.');
         return;
     }
-    // ... (logik sedia ada)
+
+    try {
+        console.log("LOG: Menghantar permintaan (fetch) ke /api/users/" + customerId + "/reject");
+        const response = await fetch(`/api/users/${customerId}/reject`, {
+            method: 'POST', // Menggunakan POST seperti di server.js
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        console.log("LOG: Permintaan (fetch) selesai. Status respons:", response.status);
+        const data = await response.json();
+        if (!response.ok) {
+            console.error("LOG: Respons tidak OK. Data ralat:", data);
+            throw new Error(data.error || 'Gagal menolak pembayaran.');
+        }
+
+        alert('Pembayaran berjaya ditolak!');
+        console.log("LOG: Proses penolakan berjaya. Memuat semula senarai...");
+        fetchPendingPayments(token);
+
+    } catch (error) {
+        console.error("LOG: Ralat berlaku di dalam blok catch (reject):", error);
+        alert(`Ralat: ${error.message}`);
+    }
 }
 
 // Fungsi untuk meluluskan pembayaran
 async function handleApprovePayment(event, customerId, token) {
+    console.log("LOG: handleApprovePayment dipanggil untuk customerId:", customerId);
+
+    if (!confirm('Anda pasti mahu meluluskan pembayaran ini?')) {
+        console.log("LOG: Pengguna membatalkan pengesahan.");
+        return;
+    }
+    
+    console.log("LOG: Pengesahan diluluskan oleh pengguna. Token sedia:", token ? 'Ya' : 'Tiada');
+
     if (!token) {
         alert('Sesi anda telah tamat. Sila log masuk semula.');
         return;
     }
-    // ... (logik sedia ada)
+
+    try {
+        console.log("LOG: Menghantar permintaan (fetch) ke /api/users/" + customerId + "/approve");
+        const response = await fetch(`/api/users/${customerId}/approve`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        console.log("LOG: Permintaan (fetch) selesai. Status respons:", response.status);
+        const data = await response.json();
+        if (!response.ok) {
+            console.error("LOG: Respons tidak OK. Data ralat:", data);
+            throw new Error(data.error || 'Gagal meluluskan pembayaran.');
+        }
+
+        alert('Pembayaran berjaya diluluskan!');
+        console.log("LOG: Proses kelulusan berjaya. Memuat semula senarai...");
+        fetchPendingPayments(token);
+
+    } catch (error) {
+        console.error("LOG: Ralat berlaku di dalam blok catch (approve):", error);
+        alert(`Ralat: ${error.message}`);
+    }
 }
 
 // Fungsi untuk memaparkan UI berdasarkan status & peranan pengguna
