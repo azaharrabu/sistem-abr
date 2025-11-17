@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contoh Pengiraan</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 2em;
+            background-color: #fff;
+            color: #333;
+            line-height: 1.6;
+        }
+        .content-section {
+            max-width: 800px;
+            margin: auto;
+        }
+        h2, h3 {
+            color: #d32f2f;
+            border-bottom: 2px solid #f4f4f4;
+            padding-bottom: 0.5em;
+            margin-top: 1.5em;
+        }
+        h3 {
+            color: #555;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1em auto;
+            border-radius: 4px;
+        }
+        ul {
+            padding-left: 20px;
+            list-style-position: inside;
+        }
+        li {
+            margin-bottom: 0.5em;
+        }
+        .formula-box {
+            background-color: #f9f9f9;
+            padding: 1em;
+            border-radius: 5px;
+            margin-top: 1em;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+        }
+        .note {
+            font-style: italic;
+            font-size: 0.9em;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #f9f9f9;
+            border-left: 3px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="contoh-kira" class="content-section">
+        <h2>Contoh Pengiraan</h2>
+        
+        <h3>Contoh Pengiraan Lebar Tangga Pejabat</h3>
+        <img src="../images/kira-lebar.jpg" alt="Pelan Lantai Pejabat untuk Contoh Pengiraan">
+        <p>Katakan kita mempunyai bangunan empat tingkat yang terdiri daripada 3 tingkat pasaraya dan 1 tingkat pejabat di bahagian atas sekali. Jadi kita akan kira berapa lebar tangga dan jumlah tangga yang perlu diadakan. Saiz pejabat adalah seperti berikut.</p>
+        <img src="../images/lebar-pintu-2.jpg" alt="Saiz Pejabat">
+        <img src="../images/faktor-lebar-tangga.jpg" alt="Faktor Lebar Tangga">
+        <ul>
+            <li><b>Keluasan lantai:</b> 100m x 45m = 4,500 m²</li>
+            <li><b>Jumlah orang:</b> 4,500 / 10 (faktor pejabat) = 450 orang</li>
+            <li><b>Lebar diperlukan (tangga):</b> 450 / 60 (kapasiti tangga) = 7.5 unit -> <b>8 unit</b></li>
+            <li style="list-style-type: none; font-style: italic; font-size: 0.9em; padding-top: 5px; padding-bottom: 5px;">Nota: Hasil bahagi 1/3 atau lebih hendaklah dibulatkan kepada nombor besar yang hampir dan sebaliknya.</li>
+            <li><b>Jumlah lebar tangga:</b> 8 unit x 550 mm = 4400 mm</li>
+            <li style="list-style-type: none; padding-top: 1em;">Berdasarkan kepada pengiraan di atas, kita telah berjaya mendapatkan jumlah lebar tangga yang diperlukan. Isu yang seterusnya ialah berapa jumalah tangga yang diperlukan pula? Merujuk kepada Building Research Establishment, British Standard, jumlah jalan keluar yang diperlukan boleh diperolehi dengan menggunakan formula di bawah:-</li>
+            <li><b>Jumlah tangga:</b> (U/F) + 1 = (8/4) + 1 = <b>3 buah tangga</b> (menggunakan Faktor 4 untuk bangunan Kelas B)</li>
+            <li style="list-style-type: none; padding-top: 1em;">
+                Kelebaran minima tangga yang diperlukan:<br>
+                Jumlah lebar = 4400 mm<br>
+                Jumlah tangga = 3 unit<br>
+                Jika kita bahagi terus jumlah lebar dan jumlah tangga, satu lebar tangga yang diperlukan lebih kurang 1.5 meter tetapi merujuk kepada UUK 177 (a), satu daripada tangga keluar itu hendaklah dianggap tidak boleh dilalui dan tangga keluar yang tinggal itu hendaklah dari lebar dan bilangan yang mencukupi untuk menampung pendudukan yang berkenaan. Tangga yang dianggap tidak boleh digunakan mestilah tangga yang paling lebar sekali. Maka, semua tangga kita anggap mempunyai lebar yang sama. Oleh itu :
+                <ul style="list-style-type: lower-roman; padding-left: 20px; margin-top: 0.5em;">
+                    <li>Tangga pertama = 2200 mm</li>
+                    <li>Tangga kedua = 2200 mm</li>
+                    <li>Tangga ketiga = 2200 mm</li>
+                </ul>
+            </li>
+        </ul>
+        <img src="../images/lebar-tangga.jpg" alt="Ilustrasi Lebar Tangga">
+        <img src="../images/lebar-tangga-2.jpg" alt="Ilustrasi Lebar Tangga 2">
+
+        <h3>Contoh Pengiraan Lebar Pintu Keluar Pejabat</h3>
+        <img src="../images/lebar-pintu.jpg" alt="Ilustrasi Lebar Pintu Keluar">
+        <img src="../images/lebar-pintu-2.jpg" alt="Ilustrasi Lebar Pintu Keluar 2">
+        <img src="../images/jadual-beban.jpg" alt="Jadual Hitungan Beban Pendudukan dan Muatan Pintu Keluar" style="margin: 2em auto 1em;">
+        <div class="formula-box">
+            <p>Keluasan lantai = 100 meter panjang x 45 meter lebar = 4,500 meter persegi</p>
+            <p>Jumlah orang = keluasan lantai / beban pendudukan semeter persegi<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 4,500 / 10<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 450 orang</p>
+            <p>Lebar yang diperlukan = 450 orang / 100<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 4.5 unit<br> 
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 5 unit</p>
+            <p style="font-style: italic; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 0.9em;">Nota: Hasil bahagi 1/3 atau lebih hendaklah dibulatkan kepada nombor besar yang hampir dan sebaliknya.</p>
+            <p>Jumlah lebar pintu yang diperlukan = 5 unit x 550 mm<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 2750 mm @ 2.75 meter</p>
+        </div>
+
+        <div style="padding: 1em; margin-top: 1em;">
+            <p><b>Kelebaran minima pintu tangga yang diperlukan:</b></p>
+            <p>Jumlah lebar = 2750 mm<br>
+            Jumlah tangga = 3 unit</p>
+            <p>Jika kita bahagi terus jumlah lebar pintu tangga dengan jumlah tangga, satu lebar pintu tangga yang diperlukan lebih kurang 0.92 meter. Saiz pintu api satu daun yang umum ialah 900mm x 1200mm. Merujuk kepada UUK 177 (a), satu daripada tangga keluar itu hendaklah dianggap tidak boleh dilalui dan tangga keluar yang tinggal itu hendaklah dari lebar dan bilangan yang mencukupi untuk menampung pendudukan yang berkenaan. Jadi, setiap tangga perlu menggunakan pintu api jenis dua daun. Oleh itu:</p>
+            <ul style="list-style-type: lower-roman; padding-left: 20px; margin-top: 0.5em;">
+                <li>Lebar pintu tangga pertama = 1800 mm</li>
+                <li>Lebar pintu tangga kedua = 1800 mm</li>
+                <li>Lebar pintu tangga ketiga = 1800 mm</li>
+            </ul>
+        </div>
+
+        <img src="../images/lebar-pintu-3.jpg" alt="Ilustrasi Lebar Pintu Keluar 3">
+
+        <h3>Contoh Pengiraan Lebar Tangga Pasaraya</h3>
+        <p>Dalam menentukan lebar pintu tangga pasaraya, kita perlu berhati-hati dalam memilih faktor beban pendudukan. Seperti yang kita ketahui, pasaraya adalah di bawah kategori kumpulan maksud kedai. Di bawah kumpulan maksud kedai, faktor beban pandudukan adalah berbeza mengikut tingkat. Bagi lantai paras jalan dan tingkat jualan bawah tanah, faktor beban pendudukan semeter persegi ialah 3 kasar. Manakala bagi lantai-lantai lain, faktor beban pendudukan semeter persegi ialah 6 kasar.</p>
+        <img src="../images/faktor-lebar-tangga.jpg" alt="Jadual Hitungan Beban Pendudukan dan Muatan Pintu Keluar">
+        <p>Contoh pengiraan lebar tangga ini adalah merujuk kepada lantai-lantai lain bagi pasaraya. Memandangkan ruang pasaraya adalah sama besar dengan ruang pejabat, maka saiz ruang pasaraya adalah seperti berikut:</p>
+        <img src="../images/lantai-pasaraya-1.jpg" alt="Pelan Lantai Pasaraya 100m x 45m">
+        <div class="formula-box">
+Keluasan lantai = 100 meter panjang x 45 meter lebar = 4,500 meter persegi
+
+Jumlah orang = keluasan lantai / beban pendudukan semeter persegi
+             = 4,500 / 6
+             = 750 orang
+
+Lebar yang diperlukan = 750 orang / 60
+                      = 12.5 unit 
+                      = 13 unit 
+<span style="font-style: italic; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 0.9em;">Nota: Hasil bahagi 1/3 atau lebih hendaklah dibulatkan kepada nombor besar yang hampir dan sebaliknya.</span>
+
+Jumlah lebar tangga yang diperlukan = 13 unit x 550 mm
+                                  = 7150 mm
+
+Jumlah tangga = (13/4) + 1 = 4.25 -> 4 buah tangga
+</div>
+        <p>Berdasarkan kepada pengiraan di atas, kita telah berjaya mendapatkan jumlah lebar tangga yang diperlukan. Isu yang seterusnya ialah berapa jumlah tangga yang diperlukan pula? Merujuk kepada Building Research Establishment, British Standard, jumlah jalan keluar yang diperlukan boleh diperolehi dengan menggunakan formula di bawah:-</p>
+        <div class="formula-box">
+Jumlah jalan keluar = U/4 + 1
+                    = 13/4 + 1
+                    = 4.25 unit
+                    = 4 unit
+</div>
+        <p>Jika kita bahagi terus jumlah lebar dan jumlah tangga, satu lebar tangga yang diperlukan lebih kurang 1.8 meter tetapi merujuk kepada UUK 177 (a), satu daripada tangga keluar itu hendaklah dianggap tidak boleh dilalui dan tangga keluar yang tinggal itu hendaklah dari lebar dan bilangan yang mencukupi untuk menampung pendudukan yang berkenaan. Tangga yang dianggap tidak boleh digunakan mestilah tangga yang paling lebar sekali. Maka, semua tangga kita anggap mempunyai lebar yang sama. Oleh itu :</p>
+        <div class="formula-box">
+Tangga pertama = 2500 mm
+Tangga kedua = 2500 mm
+Tangga ketiga = 2500 mm
+Tangga keempat = 2500 mm
+</div>
+        <img src="../images/lantai-pasaraya-2.jpg" alt="Cadangan Kedudukan Tangga Pasaraya">
+        <img src="../images/lantai-pasaraya-3.jpg" alt="Cadangan Kedudukan Tangga Pasaraya Paras Jalan">
+
+        <p>Bagi contoh pengiraan lebar tangga lantai paras jalan dan tingkat jualan bawah tanah adalah seperti berikut:</p>
+        <img src="../images/lantai-pasaraya-4.jpg" alt="Pelan Lantai Pasaraya Paras Jalan">
+
+        <div class="formula-box">
+Keluasan lantai = 100 meter panjang x 45 meter lebar = 4,500 meter persegi
+
+Jumlah orang = keluasan lantai / beban pendudukan semeter persegi
+             = 4,500 / 3
+             = 1500 orang
+
+Lebar yang diperlukan = 1500 orang / 60
+                      = 25 unit
+<span style="font-style: italic; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 0.9em;">Nota: Hasil bahagi 1/3 atau lebih hendaklah dibulatkan kepada nombor besar yang hampir dan sebaliknya.</span>
+
+Jumlah lebar tangga yang diperlukan = 25 unit x 550 mm
+                                  = 13,750 mm
+</div>
+        <p>Berdasarkan kepada pengiraan di atas, kita telah berjaya mendapatkan jumlah lebar tangga yang diperlukan. Isu yang seterusnya ialah berapa jumlah tangga yang diperlukan pula? Merujuk kepada Building Research Establishment, British Standard, jumlah jalan keluar yang diperlukan boleh diperolehi dengan menggunakan formula di bawah:-</p>
+        <div class="formula-box">
+Jumlah jalan keluar = U/4 + 1
+                    = 25/4 + 1
+                    = 6.25 unit
+                    = 6 unit
+</div>
+        <div class="note">
+            Faktor 4 yang dinyatakan di dalam kaedah ini adalah mengambil kira jenis kelas binaan bangunan iaitu:<br>
+            Kelas A = 5<br>
+            Kelas B = 4<br>
+            Kelas C = 3
+</div>
+        <p>Jika kita bahagi terus jumlah lebar dan jumlah tangga, satu lebar tangga yang diperlukan lebih kurang 2.3 meter tetapi merujuk kepada UUK 177 (a), satu daripada tangga keluar itu hendaklah dianggap tidak boleh dilalui dan tangga keluar yang tinggal itu hendaklah dari lebar dan bilangan yang mencukupi untuk menampung pendudukan yang berkenaan. Tangga yang dianggap tidak boleh digunakan mestilah tangga yang paling lebar sekali. Maka, semua tangga kita anggap mempunyai lebar yang sama. Oleh itu :</p>
+        <div class="formula-box">
+i.	Tangga pertama = 2750 mm
+ii.	Tangga kedua = 2750 mm
+iii.	Tangga ketiga = 2750 mm
+iv.	Tangga keempat = 2750 mm
+v.	Tangga kelima = 2750 mm
+vi.	Tangga keenam =  2750 mm
+</div>
+        <img src="../images/lantai-pasaraya-5.jpg" alt="Cadangan Kedudukan 6 Tangga di Lantai Pasaraya Paras Jalan">
+        <img src="../images/lantai-pasaraya-6.jpg" alt="Pelan Lantai Pasaraya - Butiran Tambahan">
+    </div>
+</body>
+</html>
