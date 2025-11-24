@@ -201,110 +201,6 @@
         .kalkulator-10-langkah-container .error { color: red; font-weight: bold; }
         /* End of styles for Kaedah Pengiraan Jadual Keenam */
 
-        /* Styles for Kalkulator 10 Langkah */
-        .kalkulator-10-langkah-container {
-            max-width: 800px; 
-            margin: auto;
-        }
-        .kalkulator-10-langkah-container .step { 
-            margin-bottom: 1.5em; 
-            border-left: 3px solid #ccc; 
-            padding-left: 1em; 
-        }
-        .kalkulator-10-langkah-container .step h2 { 
-            color: #333; 
-            font-size: 1.2em;
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-        .kalkulator-10-langkah-container label { 
-            display: block; 
-            margin-top: 1em; 
-        }
-        .kalkulator-10-langkah-container input, 
-        .kalkulator-10-langkah-container select { 
-            width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; 
-        }
-        .kalkulator-10-langkah-container button { 
-            padding: 10px 15px; background-color: var(--primary-color); color: white; border: none; cursor: pointer; margin-top: 1em; width: 100%;
-        }
-        .kalkulator-10-langkah-container button:hover { 
-            background-color: #b71c1c; 
-        }
-        .kalkulator-10-langkah-container #output-10-langkah { margin-top: 1.5em; padding: 1em; border: 1px solid #ddd; background-color: #f9f9f9; }
-        .kalkulator-10-langkah-container .error { color: red; font-weight: bold; }
-        /* End of styles for Kalkulator 10 Langkah */
-        /* End of styles for embedded calculator */
-
-        /* Styles for Kaedah Pengiraan Jadual Keenam */
-        .jadual-keenam-container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            /* box-shadow: 0 2px 10px rgba(0,0,0,0.1); */ /* Removed to fit page style */
-        }
-        .jadual-keenam-container h3 {
-            color: #007bff;
-            border-bottom: 2px solid #eef;
-            padding-bottom: 10px;
-            font-size: 1.2em;
-        }
-        .jadual-keenam-container ol {
-            list-style-type: none;
-            counter-reset: step-counter;
-            padding-left: 0;
-        }
-        .jadual-keenam-container li {
-            counter-increment: step-counter;
-            margin-bottom: 25px;
-            padding: 15px;
-            background-color: #fdfdfd;
-            border: 1px solid #eee;
-            border-radius: 5px;
-        }
-        .jadual-keenam-container li::before {
-            content: "Langkah " counter(step-counter);
-            font-weight: bold;
-            font-size: 1.2em;
-            color: #fff;
-            background-color: #007bff;
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 15px;
-            margin-right: 15px;
-            margin-bottom: 10px;
-        }
-        .jadual-keenam-container .formula {
-            background-color: #e9ecef;
-            padding: 15px;
-            border-left: 4px solid #007bff;
-            margin: 15px 0;
-            font-family: "Courier New", Courier, monospace;
-            font-size: 1.1em;
-            white-space: pre-wrap;
-            border-radius: 0 5px 5px 0;
-        }
-        .jadual-keenam-container .example {
-            background-color: #f0f9ff;
-            border: 1px solid #cce5ff;
-            padding: 20px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        .jadual-keenam-container .disclaimer {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            color: #856404;
-            padding: 20px;
-            border-radius: 5px;
-            margin-top: 30px;
-            text-align: justify;
-        }
-        .jadual-keenam-container .disclaimer strong {
-            color: #664d03;
-        }
-        /* End of styles for Kaedah Pengiraan Jadual Keenam */
-
         /* Styles for Jadual Ketujuh Interaktif */
         .jadual-ketujuh-container {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -474,12 +370,6 @@
         /* End of styles for Jadual Kesepuluh Interaktif */
 
         /* Original styles */
-        :root {
-            --primary-color: #d32f2f;
-            --secondary-color: #f4f4f4;
-            --text-color: #333;
-            --sidebar-width: 280px;
-        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
@@ -1242,20 +1132,23 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
         <div id="perlindungan-aktif" class="content-section">
         <h2>Sistem Perlindungan Aktif</h2>
         <p>Sistem perlindungan aktif merujuk kepada sistem perlindungan kebakaran yang dipasang tetap pada sesuatu bangunan yang memerlukan pengaktifan (sama ada manual atau automatik) untuk berfungsi. Ia direka untuk bertindak balas terhadap kebakaran dan memerlukan penyelenggaraan berterusan untuk memastikan keberkesanannya.</p>
-        
+ 
         <h3>Empat Cara Bertindak Sistem Aktif:</h3>
-        <ul>
-            <li><b>Mengesan</b> - Mengenalpasti tanda-tanda awal kebakaran (contoh: asap, haba, api).</li>
-            <li><b>Memberi Isyarat</b> - Memberi amaran kepada penghuni dan/atau pihak berkuasa tentang kebakaran.</li>
-            <li><b>Mengawal</b> - Mengurangkan atau menghadkan penyebaran api dan asap.</li>
-            <li><b>Memadam Kebakaran</b> - Secara langsung memadam api. Tindakan ini boleh berlaku secara manual atau automatik.</li>
-        </ul>
+        <ol style="list-style-type: lower-roman;">
+            <li>Mengesan - Mengenalpasti tanda-tanda awal kebakaran (contoh: asap, haba, api).</li>
+            <li>Memberi Isyarat - Memberi amaran kepada penghuni dan/atau pihak berkuasa tentang kebakaran.</li>
+            <li>Mengawal - Mengurangkan atau menghadkan penyebaran api dan asap.</li>
+            <li>Memadam Kebakaran - Secara langsung memadam api. Tindakan ini boleh berlaku secara manual (perlu diaktifkan oleh manusia) atau automatik (diaktifkan oleh sensor atau sistem).</li>
+        </ol>
 
         <h3>Syarat/Peraturan Pemasangan:</h3>
         <ol>
-            <li><b>Penentuan pemasangan sistem berdasarkan pada sesuatu rekabentuk bangunan:</b> Jenis dan skop sistem aktif yang diperlukan ditentukan oleh ciri-ciri dan kerumitan reka bentuk bangunan.</li>
-            <li><b>Menentukan penempatan sistem:</b> Lokasi pemasangan komponen sistem (contoh: kepala pemercik di siling, pengesan di tembok luar, panel kawalan di lobi).</li>
-            <li><b>Pemasangan mematuhi syarat-syarat yang ditetapkan:</b> Pemasangan mesti mengikut piawaian industri dan peraturan yang ketat seperti:
+            <li><b>Penentuan pemasangan sistem berdasarkan pada sesuatu rekabentuk bangunan</b><br>
+                Jenis dan skop sistem aktif yang diperlukan ditentukan oleh ciri-ciri dan kerumitan reka bentuk bangunan (contoh: ketinggian, keluasan, fungsi, bilangan penghuni).</li>
+            <li><b>Menentukan penempatan sistem</b><br>
+                Lokasi pemasangan komponen sistem (contoh: kepala pemercik di siling, pengesan di tembok luar, panel kawalan di lobi).</li>
+            <li><b>Pemasangan mematuhi syarat-syarat yang ditetapkan</b><br>
+                Pemasangan mesti mengikut piawaian industri dan peraturan yang ketat seperti:
                 <ol style="list-style-type: lower-alpha; padding-left: 20px; margin-top: 5px;">
                     <li>MS (Malaysian Standards): Piawaian kebangsaan Malaysia.</li>
                     <li>NFPA (National Fire Protection Association): Piawaian antarabangsa yang diiktiraf luas.</li>
@@ -1263,20 +1156,603 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
                     <li>Lain-lain standard yang berkaitan: Piawaian lain yang mungkin relevan mengikut jenis sistem atau bangunan.</li>
                 </ol>
             </li>
-            <li><b>Pemasangan sistem mekanikal yang dikhaskan:</b> Merujuk kepada sistem yang melibatkan komponen mekanikal seperti pam, paip, injap, dan kipas, yang perlu dipasang oleh kontraktor yang berkelayakan.</li>
-            <li><b>Menentukan pengawasan dan penyelenggaraan sistem:</b> Sistem aktif memerlukan pengawasan berterusan dan jadual penyelenggaraan yang ketat (ujian berkala, servis) untuk memastikan ia berfungsi dengan baik apabila diperlukan.</li>
+            <li><b>Pemasangan sistem mekanikal yang dikhaskan</b><br>
+                Merujuk kepada sistem yang melibatkan komponen mekanikal seperti pam, paip, injap, dan kipas, yang perlu dipasang oleh kontraktor yang berkelayakan.</li>
+            <li><b>Menentukan pengawasan dan penyelenggaraan sistem</b><br>
+                Sistem aktif memerlukan pengawasan berterusan dan jadual penyelenggaraan yang ketat (ujian berkala, servis) untuk memastikan ia berfungsi dengan baik apabila diperlukan.</li>
         </ol>
 
-        <h3>Jenis-jenis Pemasangan Sistem Aktif:</h3>
-        <ol>
-            <li><b>Sistem pili bomba (Fire Hydrant System):</b> Rangkaian paip dan pili yang membekalkan air bertekanan tinggi kepada anggota bomba untuk memadam kebakaran berskala besar dari luar atau dari titik akses tertentu.</li>
-            <li><b>Sistem pancuran (Wet Riser/Dry Riser System):</b> Paip tegak di dalam bangunan yang membekalkan air ke setiap tingkat, sama ada sentiasa mempunyai air bertekanan (wet riser) atau perlu disambung ke pam bomba (dry riser). Digunakan oleh bomba untuk memadam kebakaran di tingkat tinggi.</li>
-            <li><b>Sistem salur bantu mula (Hose Reel System):</b> Gelung hos yang dipasang di dalam bangunan, membekalkan air bertekanan rendah untuk penghuni memadam kebakaran kecil di peringkat awal.</li>
-            <li><b>Sistem semburan automatik (Automatic Sprinkler System):</b> Rangkaian paip dengan kepala pemercik yang akan pecah apabila suhu ambang tertentu dicapai, melepaskan air secara automatik untuk memadam atau mengawal kebakaran.</li>
-            <li><b>Sistem penggera kebakaran (Fire Alarm System):</b> Terdiri daripada pengesan, panel kawalan, dan peranti amaran (loceng, siren, lampu berkelip) yang memberi amaran tentang kebakaran.</li>
-            <li><b>Sistem karbon dioksida (CO2 System):</b> Sistem pemadam kebakaran yang menggunakan gas karbon dioksida untuk menghilangkan oksigen dan memadam api, biasanya digunakan di bilik pelayan atau kawasan yang sensitif terhadap air.</li>
+        <p>Sistem perlindungan aktif terbahagi kepada tiga jenis iaitu sistem pemadaman manual, sistem pemadaman automatik dan sistem memberi amaran.</p>
+
+        <h3>Sistem Pemadaman Manual</h3>
+        <img src="images/sistem-pemadaman-manual.jpg" alt="Carta Alir Sistem Pemadaman Manual" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+        
+        <h4>Pili Bomba</h4>
+        <p>Dalam konteks Undang-Undang Kecil Bangunan Seragam (UBBL) 1984 Pindaan 2021 dan arahan Jabatan Bomba dan Penyelamat Malaysia (JBPM), istilah "Pili Bomba" merujuk kepada sambungan air luaran yang digunakan oleh pihak bomba. Istilah "Pili Bomba Biasa" biasanya merujuk kepada pili awam, manakala "Pili Bomba Bertekanan" merujuk kepada pili yang disambungkan kepada sistem perpaipan tekanan tinggi.</p>
+        <img src="images/pili-bomba9.jpg" alt="Ilustrasi Pili Bomba" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+        <p>Secara umumnya pili bomba terbahagi kepada dua iaitu pili bomba awam dan pili bomba swasta. Salah satu kaedah menentukan jenis pili bomba ini ialah melalui warna pili bomba tersebut. Pili bomba awam (biasanya berwarna merah) dipasang untuk memudahkan operasi memadam kebakaran sekiranya berlaku di tempat-tempat awam, perumahan awam dan di tempat lain yang berkaitan dengan orang awam. Pili bomba ini tidak mempunyai meter dan ia juga tidak dimiliki oleh mana-mana premis persendirian seperti yang terdapat di bahu jalan.</p>
+        <p>Manakala pili bomba swasta (biasanya berwarna kuning) dipasang di premis persendirian seperti di kilang, wisma ataupun syarikat swasta. Pili bomba swasta ini mempunyai meter dan ia digunakan untuk menyediakan bekalan air sekiranya berlaku kebakaran di premis persendirian yang terlibat.. Pili bomba awam disediakan untuk memadam kebakaran di kawasan awam, manakala pili bomba swasta memberikan bekalan air yang tersuai kepada premis swasta.</p>
+        
+        <h4>Ciri-ciri Utama Pili Bomba Awam</h4>
+        <ol style="list-style-type: lower-roman;">
+            <li><b>Tujuan:</b> Menyediakan bekalan air yang mudah diakses dan berterusan kepada pihak bomba untuk operasi memadam kebakaran.</li>
+            <li><b>Bekalan Air:</b> Disambungkan terus ke paip retikulasi utama awam.</li>
+            <li><b>Tekanan:</b> Tekanan air bergantung kepada tekanan dalam sistem paip air awam. Ia sering kali tidak mempunyai tekanan yang konsisten dan mencukupi untuk pertempuran api yang besar. Oleh itu, pihak bomba biasanya akan menggunakan pili ini untuk mengisi semula tangki air jentera mereka atau menyambungkannya ke pam jentera mereka untuk meningkatkan tekanan.</li>
+            <li><b>Penempatan (UBBL):</b>
+                <ol style="list-style-type: lower-alpha; padding-left: 20px; margin-top: 5px;">
+                    <li>UUK 236: Menghendaki kemudahan pili bomba yang mencukupi disediakan dalam had lot bangunan atau dalam jarak yang mudah dicapai oleh JBPM.</li>
+                </ol>
+            </li>
         </ol>
-        <p>Secara keseluruhan, Kawalan Kemerebakan Api Dalaman adalah pendekatan keselamatan kebakaran yang menyeluruh, di mana sistem pasif membentuk pertahanan pertama dengan reka bentuk dan bahan bangunan, manakala sistem aktif menyediakan tindak balas segera dan dinamik terhadap kebakaran. Kombinasi kedua-dua sistem ini adalah penting untuk mewujudkan persekitaran bangunan yang selamat dan berdaya tahan kebakaran.</p>
+
+        <h4>Piawaian Pemasangan:</h4>
+        <ol style="list-style-type: lower-roman;">
+            <li><b>MS 1395 (Hydrants Systems):</b> Piawaian ini merangkumi reka bentuk dan pemasangan sistem pili.</li>
+            <li><b>Spesifikasi:</b> Pili Bomba mesti mematuhi spesifikasi teknikal JBPM termasuk jenis sambungan (couplings) dan kadar alir minimum.</li>
+        </ol>
+        <p>Terdapat beberapa bentuk pili bomba yang biasa kita jumpa iaitu jenis bertiang (pillar), 2 way pillar fire hydrant dan 3 way pillar fire hydrant.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/pili-bomba1.jpg" alt="Pili Bomba Jenis Bertiang" style="width:100%; max-width:180px; border-radius: 4px;">
+            <img src="images/pili-bomba2.jpg" alt="Pili Bomba 2 Way" style="width:100%; max-width:180px; border-radius: 4px;">
+            <img src="images/pili-bomba3.jpg" alt="Pili Bomba 3 Way" style="width:100%; max-width:180px; border-radius: 4px;">
+            <img src="images/pili-bomba7.jpg" alt="Contoh Pili Bomba" style="width:100%; max-width:180px; border-radius: 4px;">
+        </div>
+        <p>Lukisan skematik di bawah menunjukkan perbezaan di antara pili bomba biasa dan pili bomba bertekanan. Kadar pengeluaran air bagi pili bomba biasa ialah 1000 liter seminit manakala kadar pengeluaran air bagi pili bomba bertekanan ialah 1500 liter seminit.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/pili-bomba5.jpg" alt="Skematik Pili Bomba Biasa" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/pili-bomba12.jpg" alt="Skematik Pili Bomba Bertekanan" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+
+        <p style="font-style: italic; background-color: #f9f9f9; padding: 1em; border-left: 3px solid #ccc; margin-top: 2em;">"Tiap-tiap bangunan hendaklah dilengkapkan dengan sekurang-kurangnya satu pili bomba ditempatkan tidak lebih daripada 30 meter daripada suatu kemasukan ke mana-mana bangunan atau salur masuk dan direka bentuk dan dipasang mengikut PM 1489, dan dalam sesuatu hal, pili bomba hendaklah ditempatkan tidak lebih daripada 90 meter jauhnya."</p>
+
+        <ul style="margin-top: 1.5em;">
+            <li><b>Piawaian Jarak Minimum:</b> Sekurang-kurangnya satu pili bomba mesti ditempatkan dalam jarak 30 meter dari mana-mana akses utama ke bangunan (atau dari salur masuk siam bomba - fire fighting inlet).</li>
+            <li><b>Piawaian Jarak Maksimum:</b> Pili bomba sedia ada yang bersebelahan antara satu sama lain tidak boleh diletakkan lebih daripada 90 meter jauhnya. Ini memastikan liputan yang mencukupi untuk kawasan perbandaran.</li>
+            <li><b>Piawaian Reka Bentuk (PM 1489):</b> Pili bomba mesti direka bentuk dan dipasang mengikut Piawaian Malaysia (PM) 1489 (yang menggariskan keperluan teknikal untuk sistem hos dan pili bomba).</li>
+            <li><b>Tujuan:</b> Untuk memastikan perkakas bomba (jentera bomba) dapat mengakses sumber air yang mencukupi dengan pantas sebaik sahaja tiba di tapak kebakaran.</li>
+        </ul>
+
+        <p>Jika kita merujuk kepada kehendak-kebombaan berkaitan dengan pili bomba, semua keperluan di bawah perlu dipatuhi:</p>
+        <ol>
+            <li>Kedudukan Pili Bomba pertama hendaklah ditempatkan tidak lebih daripada 45 meter daripada pintu masuk ke Akses Perkakas Bomba atau pili bomba sedia ada.</li>
+            <li>Mengadakan Pili Bomba jenis pengeluaran dua hala dan jarak di antara pili-pili bomba hendaklah tidak lebih daripada 90 meter.</li>
+            <li>Mengadakan Pili Bomba jenis berikut:-
+                <ol style="list-style-type: lower-alpha; padding-left: 20px; margin-top: 5px;">
+                    <li>Pili Bomba dengan pengeluaran air sebanyak 1,000 liter seminit bagi setiap pili bomba dan dipasang mengikut MS 1489.</li>
+                    <li>Sistem Pili Bomba Bertekanan dengan pengeluaran air sebanyak 1,500 liter seminit bagi setiap pili bomba dan 3,000/4,500 liter/minit apabila 2/3 buah pili bomba dibuka serentak. Pemasangannya mengikut MS1489</li>
+                </ol>
+            </li>
+            <li>Mengadakan 2 gelung hos berukuran 64mm x 30 meter dan satu unit nozel yang ditempatkan di dalam peti kabinet berhampiran dengan tiap-tiap pili bomba kecuali bagi Kumpulan Maksud I, Jadual Kelima.</li>
+            <li>Kedudukan Pili Bomba dengan injap masuk (breeching inlet) PKK hendaklah tidak melebihi 30 meter.</li>
+            <li>Pili bomba sediada hendaklah dalam keadaan baik dan berfungsi serta ditandakan di dalam pelan.</li>
+        </ol>
+
+        <h3>Sistem Pancur Kering</h3>
+        <p>Sistem pancur terbahagi kepada dua iaitu sistem pancur kering dan sistem pancur basah. Keperluan mengadakan sistem pancur kering terletak di bawah UUK 230. Suatu sistem pancur kering hendaklah disediakan dalam tiap-tiap bangunan yang tingkat paling atas yang diduduki adalah melebihi daripada 18 meter tetapi kurang daripada 30 meter di atas paras akses perkakas bomba</p>
+        <img src="images/sistem-pancur-kering3.jpg" alt="Gambarajah Sistem Pancur Kering" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+        <p>Sistem pancur kering diperlukan di bangunan yang sederhana tinggi. Di bawah 18 meter, jentera bomba biasanya masih boleh menggunakan hos terus dari tanah. Di atas 30 meter, sistem Pancur Basah (Wet Riser) yang lebih berkuasa (yang mempunyai bekalan air dan pam sendiri).</p>
+        <p>Tujuan sistem pancur kering diadakan adalah untuk memberi kemudahan kepada anggota bomba untuk memadam kebakaran di dalam bangunan. Ianya merupakan pili bomba menegak di dalam bangunan.</p>
+        <p>Reka bentuk dan pemasangan sistem ini mesti mematuhi Piawaian Malaysia (PM) 1489 (yang merangkumi sistem pili bomba dan gelung hos). Suatu sambungan hos hendaklah disediakan dalam setiap ruang akses menentang kebakaran atau berhampiran suatu tangga menentang kebakaran di tiap-tiap lantai. Tujuannya adalah untuk memastikan anggota bomba dapat menyambungkan hos mereka kepada injap air di tingkat yang terbakar dari tempat yang selamat dan terlindung daripada api/asap.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/sistem-pancur-kering9.jpg" alt="Komponen Sistem Pancur Kering" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/sistem-pancur-kering10.jpg" alt="Komponen Tambahan Sistem Pancur Kering" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+        <p>Sistem pancur kering ialah alat penting untuk pemadaman api menegak. Ia membolehkan bomba memintas keperluan untuk membawa hos yang panjang dan berat dari tingkat bawah ke tingkat yang terbakar, menjimatkan masa kritikal semasa operasi menyelamat.</p>
+        <p>Antara sebab lain ia digelar sistem pancur kering adalah kerana ia merupakan sistem paip yang tidak mempunyai air di dalamnya. Sumber air begantung kepada jentera bomba yang disalurkan melalui injap alir masuk (breeching inlet) pada sistem ini.</p>
+        <img src="images/sistem-pancur-kering11.jpg" alt="Gambarajah Breeching Inlet Sistem Pancur Kering" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+        <p>Lokasi injap alir masuk hendaklah berhampiran dengan akses bomba iaitu pada jarak yang tidak melebihi 18 meter, tidak terhalang dan mudah dilihat dari jalan. Jarak injap alir masuk dengan pili bomba tidak lebih dari 30 meter.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/sistem-pancur-kering4.jpg" alt="Contoh Injap Alir Masuk Pancur Kering" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/sistem-pancur-kering5.jpg" alt="Contoh Lain Injap Alir Masuk Pancur Kering" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+        <p>Antara syarat lain injap alir masuk ini ialah:</p>
+        <ol style="list-style-type: lower-alpha;">
+            <li>Dipasang pada dinding luar bangunan</li>
+            <li>Paling hampir dengan pancur menegaknya</li>
+            <li>Larian mendatar condong ke arah injap masuk</li>
+            <li>Boleh dilihat dari akses bomba</li>
+            <li>Hendaklah berhampiran pili bomba</li>
+            <li>Terhindar dari kejatuhan kaca tingkap bangunan semasa kebakaran</li>
+            <li>Akses tidak terhalang oleh apa-apa hal keadaan semasa kebakaran</li>
+        </ol>
+        <img src="images/sistem-pancur-kering6.jpg" alt="Gambarajah Breeching Inlet Sistem Pancur Kering" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+        
+        <p>Bagi syarat paip sistem pancur kering ini pula ialah :</p>
+        <ol style="list-style-type: lower-alpha;">
+            <li>Terletak di dalam ruang akses menentang kebakaran</li>
+            <li>Coverage area ialah 900 meter persegi atau 45 meter</li>
+            <li>Jarak antara riser tidak boleh lebih 60 meter</li>
+        </ol>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/sistem-pancur-kering7.jpg" alt="Contoh Paip Sistem Pancur Kering" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/sistem-pancur-kering8.jpg" alt="Contoh Lain Paip Sistem Pancur Kering" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+
+        <div style="margin-top: 2em; text-align: center;">
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/6mEM7r9LF-E" frameborder="0" allowfullscreen></iframe>
+        </div>
+
+        <h3>Sistem Pancur Basah</h3>
+        <p>Sistem pancur basah merupakan salah satu keperluan di dalam ruang akses menentang kebakaran. Ia merupakan sesalur yang direkabentuk dan dipasang menegak dalam sesuatu bangunan, yang mengandungi air bertekanan untuk menentang dan melawan kebakaran dalam sesebuah bangunan.</p>
+        <img src="images/sistem-pancur-basah10.jpg" alt="Gambarajah Sistem Pancur Basah" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+        <p>Merujuk UUK 231, suatu sistem pancur basah hendaklah disediakan dalam tiap-tiap bangunan yang mana tingkat paling tinggi yang diduduki adalah melebihi 30 meter di atas paras akses perkakas bomba.</p>
+        <img src="images/sistem-pancur-basah1.jpg" alt="Gambarajah Sistem Pancur Basah" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <p>Bagi bangunan yang sedang dibina, perlu mengadakan sekurang-kurangnya satu sistem pancur basah apabila mencapai ketinggian 30 meter. Pancur hendaklah dilanjutkan mengikut kemajuan binaan hingga ke takat dua tingkat daripada tingkat yang paling tinggi yang sedang dibina. Sistem pancur basah hendaklah dilanjutkan ke tingkat besmen jika kedalaman besmen melebihi 9 meter dari aras tanah.</p>
+
+        <img src="images/sistem-pancur-basah2.jpg" alt="Komponen Sistem Pancur Basah" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <p>Jarak dan coverage sistem pancur basah adalah sama seperti seperti sistem pancur kering juga.</p>
+
+        <img src="images/sistem-pancur-basah18.jpg" alt="Contoh Sistem Pancur Basah" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <p>Komponen sistem pancur basah terdiri daripada injap alir masuk, tangki bekalan air, set pam, pump starter panel, sistem paip, injap pelantar, suis dan tolok tekanan.</p>
+
+        <img src="images/sistem-pancur-basah3.jpg" alt="Komponen-komponen Sistem Pancur Basah" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <h4>Injap Alir Masuk</h4>
+        <ol style="list-style-type: lower-alpha;">
+            <li>Injap alir masuk hendaklah 4 hala dan digunakan untuk menyalurkan air dari pam bomba ke tangki sistem pancur basah.</li>
+        </ol>
+        <img src="images/sistem-pancur-basah4.jpg" alt="Contoh Injap Alir Masuk 4 Hala" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+        <p>Injap ini hendaklah ditempatkan dalam kotak dengan ditandakan dengan ’Injap Pancur Basah’. Kotak ini hendaklah di cat merah.</p>
+
+        <img src="images/sistem-pancur-basah5.jpg" alt="Kotak Injap Pancur Basah" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <p>Lokasi injap alir masuk hendaklah berhampiran dengan akses bomba iaitu pada jarak tidak melebihi 18 meter. Pastikan ia tidak terhalang dan mudah dilihat dari jalan.</p>
+
+        <img src="images/sistem-pancur-kering4.jpg" alt="Lokasi Injap Alir Masuk" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <p>Jarak injap alir masuk dengan pili bomba tidak boleh lebih dari 30 meter.</p>
+
+        <img src="images/sistem-pancur-kering5.jpg" alt="Jarak Injap Alir Masuk dengan Pili Bomba" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <p>Ketinggian injap alir masuk tidak melebihi 750mm dan paip sambungan antara injap masuk dengan paip menegak hendaklah seberapa pendek yang boleh.</p>
+
+        <img src="images/sistem-pancur-basah6.jpg" alt="Ketinggian Injap Alir Masuk" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <h4>Tangki Bekalan Air</h4>
+        <ol style="list-style-type: lower-alpha;">
+            <li>Muatan tangki utama ialah 45,500 liter dan tangki pemecah ialah 11,375 liter.</li>
+            <li>Jenis tangki ialah ‘reinforced concrete’, ‘fibre reinforced polyester’, ‘press steel’ atau yang diluluskan oleh JBPM.</li>
+            <li>Lokasi tangka hendaklah diletak sama ada di lantai aras tanah, besmen 1 atau besmen 2 sahaja.</li>
+            <li>Tangki dilengkapkan dengan penanda aras air, paip limpah, paip buangan dan ’ball float valve’.</li>
+            <li>Tangki hendaklah diletakkan di atas tapak ’plinth’.</li>
+            <li>Tangki hendaklah dicat dengan warna merah atau satu garisan merah setinggi 200 mm di bahagian permukaan luar tangki.</li>
+            <li>Tangki hendaklah dilabelkan dengan perkataan Tangki Sistem Pancur Basah.</li>
+            <li>Tangki hendaklah dikompatmen bagi memudahkan kerja penyelenggaraan supaya ianya tidak menjejaskan bekalan air pada sistem.</li>
+            <li>Tangki sistem pancur basah hendaklah diasingkan dengan tangki bekalan air lain-lain sistem</li>
+        </ol>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/sistem-pancur-basah11.jpg" alt="Contoh Tangki Bekalan Air" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/sistem-pancur-basah16.jpg" alt="Contoh Lain Tangki Bekalan Air" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+
+        <h4>Pam</h4>
+        <ol style="list-style-type: lower-alpha;">
+            <li>
+                Pam sistem basah mempunyai set yang terdiri daripada:
+                <ol style="list-style-type: lower-roman; padding-left: 20px; margin-top: 5px;">
+                    <li>
+                        <b>Jockey pump</b>
+                        <ul style="padding-left: 20px; margin-top: 5px;">
+                            <li>Berfungsi mengimbangi tekanan air dalam paip</li>
+                            <li>Boleh bertindak secara manual dan automatik dengan menggunakan kuasa elektrik</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>Duty pump</b>
+                        <ul style="padding-left: 20px; margin-top: 5px;">
+                            <li>Berfungsi untuk memberi tekanan dan pengeluaran air semasa melawan kebakaran</li>
+                            <li>Berfungsi secara automatik dan manual dengan menggunakan kuasa elektrik</li>
+                            <li>Kuasa pam bergantung kepada pengeluaran dan ketinggian bangunan. Walaubagaimanapun, boleh memberi tekanan di hujung nozel tidak kurang daripada 4 hingga 7 bar denagn bukaan tida landing valve secara serentak</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>Standby pump</b>
+                        <ul style="padding-left: 20px; margin-top: 5px;">
+                            <li>Berfungsi sama seperti ‘duty pump’ tetapi hanya akan berfungsi apabila ’duty pump’ rosak atau bekalan kuasa terputus</li>
+                            <li>Boleh digerak dengan diesel atau elektrik jika bangunan tersebut mempunyai generator</li>
+                            <li>Kuasa pam hendaklah tidak boleh melebihi kuasa ’duty pump’</li>
+                            <li>Boleh berfungsi secara manual dan automatik. Sekiranya enjin diesel, perlu dimatikan secara manual</li>
+                            <li>Kapasiti diesel hendaklah mampu menggerakkan pam tidak kurang 2 jam</li>
+                            <li>Ekzos paip hendaklah dibalut dengan bahan penebat</li>
+                        </ul>
+                    </li>
+                </ol>
+            </li>
+            <li>Set pam ini hendaklah dilindungi daripada bahaya kebakaran dan keadaan banjir</li>
+            <li>Pendawaian elektrik bagi pam hendaklah dari kable jenis penebat minral tahan api atau di dalam konduit logam.</li>
+        </ol>
+
+        <img src="images/sistem-pancur-basah7.jpg" alt="Contoh Pam Sistem Pancur Basah" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <h4>Suis Tekanan</h4>
+        <ol style="list-style-type: lower-alpha;">
+            <li>Berfungsi untuk memberi isyarat kepada ’pump starter panel’ untuk menggerakkan pam</li>
+            <li>Setiap pam dikawal oleh satu suis tekanan</li>
+            <li>Setiap pam ’cut in’ Adalah untuk gerakkan pam pada tekanan tertentu iaitu:
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    <li>Jockey Pump – berfungsi pada 90% dan berhenti pada 110%</li>
+                    <li>Duty Pump – 80% daripada tekanan dalam sistem</li>
+                    <li>Standby Pump – 60% daripada tekanan dalam sistem</li>
+                </ul>
+            </li>
+            <li>Set pam ’cut out’ Adalah untuk hentikan pam pada tekanan tertentu</li>
+            <li>Setting pam Adalah bergantung pada performance sesuatu pam</li>
+            <li>Setiap suis tekanan mesti ditempatkan di lokasi yang jelas</li>
+            <li>Hendaklah ditandakan ’cut in’ dan ’cut out’ pada setiap suis tekanan</li>
+        </ol>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/sistem-pancur-basah8.jpg" alt="Contoh Suis Tekanan" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/sistem-pancur-basah19.jpg" alt="Contoh Lain Suis Tekanan" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+
+        <h4>Tolok Tekanan</h4>
+        <ol style="list-style-type: lower-alpha;">
+            <li>Untuk menyukat tekanan air di dalam paip</li>
+            <li>Mengesan tekanan air yang mengalir dalam paip seterusnya memberi isyarat kepada suis tekanan untuk menghidupkan pam dan sebaliknya</li>
+            <li>Tekanan dibaca pada sukatan bar atau p.s.i.</li>
+        </ol>
+
+        <img src="images/sistem-pancur-basah12.jpg" alt="Contoh Tolok Tekanan" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <h4>Pump Starter Panel</h4>
+        <ol style="list-style-type: lower-alpha;">
+            <li>Berfungsi sebagai penggerak kepada ketiga-tiga pam</li>
+            <li>Mempunyai butang tekan untuk gerakkan dan mematikan pam</li>
+            <li>Terdapat beberapa petunjuk seperti ’fault’, ’battery fail’, ‘pump fail’ dan lain-lain</li>
+            <li>Dari jenis ‘wall mounted’ dan terletak berhampiran dengan pam</li>
+            <li>Pendawaian elektrik hendaklah daripada ‘mineral isolated copper cable’ atau tahan api</li>
+        </ol>
+
+        <img src="images/sistem-pancur-basah13.jpg" alt="Contoh Pump Starter Panel" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <h4>Sistem Paip</h4>
+        <ol style="list-style-type: lower-alpha;">
+            <li>Semua paip dicat menggunakan warna merah</li>
+            <li>Injap pelepas udara hendaklah dipasang pada bahagian paling atas paip bagi membolehkan pengeluaran udara dalam sesalur untuk mengelakkan berlakunya ’air lock’ di dalam paip</li>
+            <li>Paip hendaklah dibumikan</li>
+        </ol>
+
+        <img src="images/sistem-pancur-basah14.jpg" alt="Contoh Sistem Paip" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <h4>Injap Pelantar</h4>
+        <ol style="list-style-type: lower-alpha;">
+            <li>Jarak antara lantai dengan injap adalah 750mm</li>
+            <li>Injap pelantar di bumbung hendaklah dari jenis 3 hala</li>
+            <li>Ditempatkan pada setiap tingkat di dalam lobi menentang kebakaran</li>
+        </ol>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/sistem-pancur-basah17.jpg" alt="Contoh Injap Pelantar" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/sistem-pancur-basah15.jpg" alt="Contoh Lain Injap Pelantar" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+
+        <h3>Sistem Salur Bantu Mula</h3>
+        <p>Keperluan mengandakan sistem salur bantu mula ini terletak di dalam jadual kesepuluh. Sistem salur bantu mula adalah untuk kegunaan orang awam yang terlatih bagi memadam kebakaran pada peringkat permulaan. Dengan kaedah yang betul, sistem ini mampu mengelakkan kebakaran menjadi lebih besar atau dapat dipadamkan terus. Hal ini juga dapat mengurangkan penggunaan peralatan pemadaman yang lain. Sistem salur bantu mula ini hendaklah ditempatkan di tempat yang mudah dilihat dan senang digunakan seperti lobi, koridor, bersebelahan tangga dan luar bangunan.</p>
+
+        <img src="images/sistem-hr1.jpg" alt="Contoh Sistem Salur Bantu Mula" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <h4>Tangki</h4>
+        <p>Muatan minima sebanyak 2275 liter bagi gelung hos pertama. Tambahan sebanyak 1137.5 liter begi setiap gelung kedua sehingga maksimum sebanyak 9100 liter. Tangki ini boleh dibina secara berasingan atau berkongsi dengan tangki sistem pancur basah atau sistem pili bomba bertekanan. Tetapi perlu memasang ’pressure reducing valve (PRV)’.</p>
+        <p>Tangki perlu mendapat air masuk secara automatik melalui paip sekurang-kurangnya bersaiz 50mm garis pusat dengan kadar 25 liter sesaat. Tangki perlu di cat warna merah atau lilitan warna merah (red band) dan ditulis ’TANGKI AIR SISTEM BANTU MULA’.</p>
+
+        <img src="images/sistem-hr2.jpg" alt="Contoh Tangki Sistem Salur Bantu Mula" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <p>Tangki sistem salur bantu mula boleh berkongsi dengan tangki domestik juga tetapi perlu mematuhi beberapa syarat dalam memastikan bekalan air untuk sistem ini sentiasa ada dan mencukupi. Kaedah yang dibenarkan sama ada asingkan kompatmen di dalam tangki atau kedudukan ’outlet’ tangki domestik mestilah berada di atas ’outlet’ sistem salur bantu mula ini.</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/sistem-hr4.jpeg" alt="Kaedah Perkongsian Tangki 1" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/sistem-hr5.jpg" alt="Kaedah Perkongsian Tangki 2" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+
+        <h4>Bilik Pam</h4>
+        <p>Bilik pam hendaklah diadakan bagi tujuan melindungi pam dari cuaca panas, hujan, banjir atau pun kebakaran. Mesti mempunyai pengudaraan yang baik dan diadakan papan tanda bilik pam tersebut. Pam bagi sistem ini terdiri daripada pam utama (duty) atau pam pendua (standby). Setiap pam hendaklah diberi tanda nama. Bateri bagi enjin diesel hendaklah dari jenis bebas selenggara seperti ’nikel cadmium’.</p>
+        <p>Pam sistem ini dibenarkan berganding dengan sistem pemasangan tetap lain (tidak perlu ada pam sendiri) sama ada dari sistem pancur basah dan pili bomba bertekanan dengan syarat diadakan injap pengurang tekanan (pressure reducing valve).</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/sistem-hr3.jpg" alt="Contoh Bilik Pam" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/sistem-hr7.jpg" alt="Contoh Lain Bilik Pam" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+
+        <h4>Pam Starter Panel</h4>
+        <p>Sebaik-baik kedudukannya hendaklah berdekatan dengan pam supaya mudah untuk menjalankan ujian. Hendaklah disambungkan ke panel utama.</p>
+
+        <img src="images/sistem-hr8.jpg" alt="Contoh Pam Starter Panel" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <h4>Sistem Paip</h4>
+        <p>Paip mestilah dari jenis ’galvanised iron (G.I) kelas C. G.I kelas B dibenarkan hanya untuk pemasangan di atas tanah. Saiz paip utama sekurang-kurangnya 2 inci dan paip ke salu bantu mula bergaris pusat 1 inci. Hos mestilah dari jenis ’double braided’ dan ’non kinked bergaris pusat bahagian dalam 25mm dan Panjang 30 meter. Nozel mestilah dari jenis jet atau kombinasi jet dan spray.</p>
+
+        <h4>Keperluan undang-undang</h4>
+        <p>Keperluan mengadakan sistem salur bantu mula ini terletak di dalam jadual kesepuluh. Dari segi pemasangan perlu merujuk kepada MS 1489. Merujuk kepada MS 1489:Part1, satu salur bantu mula hendaklah disediakan setiap 800 meter persegi keluasan lantai. Walaubagaimanapun, JBPM telah menetapkan jarak dan diameter sistem ini seperti di bawah.</p>
+
+        <img src="images/sistem-hr11.jpg" alt="Jarak dan Diameter Sistem Salur Bantu Mula" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <h3>Sistem Pemadaman Automatik</h3>
+
+        <img src="images/sistem-pemadaman-automatik.jpg" alt="Carta Alir Sistem Pemadaman Automatik" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <p>Menurut Undang-Undang Kecil Bangunan Seragam 1984 (Pindaan 2021), Sistem Pemadaman Automatik merujuk kepada sistem pemasangan tetap yang direka untuk mengesan, mengawal, atau memadamkan kebakaran secara automatik tanpa campur tangan manusia yang segera.</p>
+        <p>Sistem ini adalah sebahagian daripada langkah-langkah Perlindungan Kebakaran Aktif yang diwajibkan oleh undang-undang kecil untuk bangunan-bangunan tertentu, terutamanya yang mempunyai risiko kebakaran yang tinggi, ketinggian tertentu, atau diduduki untuk tujuan berbahaya.</p>
+
+        <h4>Sistem Penyembur Air Automatik</h4>
+
+        <img src="images/sprinkler1.jpg" alt="Gambarajah Sistem Penyembur Air Automatik" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <p>Sistem penyembur air automatik merupakan sistem pemasangan tetap yang mempunyai bekalan air sendiri, paip, injap dan tempat pancuran untuk bertindak secara automatik. Sistem ini bertindak dengan cara mengesan, memberi isyarat, mengawal dan memadam kebakaran secara automatik.</p>
+        <p>Sistem ini beroperasi pada suhu yang ditetapkan. Suhu dipilih mengikut kesesuaian suhu persekitaran kawasan yang dilindungi/ proses produksi/ penggunaan ruang. Hanya penyembur air automatik di kawasan yang terlibat dengan kebakaran sahaja yang akan bertindak.</p>
+        <p>Terapat beberapa tempat yang boleh dikecualikan untuk memasang sistem ini seperti silo, ruang yang dilindungi oleh sistem yang berfungsi seperti sprinkler (sistem gas, water mist, etc), kawasan di mana semburan air boleh mewujudkan bahaya seperti kilang proses aluminium dan tempat atau bilik yang basah seperti tandas.</p>
+        <p>Tiga kaedah pemasangan sistem ini termasuklah ’Light Hazard’, ’Ordinary Hazard’ dan ’High Hazard’. Bagi kaedah pemasangan ’Light Hazard’, ianya adalah untuk kegunaan industri yang mempunyai risiko yang rendah dari segi kebakaran dengan bilik atau koridor yang tidak melebihi 126 meter persegi.</p>
+        <p>Bagi kaedah pemasangan ’Ordinari Hazard’ pula, ianya untuk kegunaan industri yang mempunyai risiko yang tinggi dari segi kebakaran. Terdapat 4 jenis pemasangan iaitu OH Group I, OH Group II, OH Group III dan OH Group III Special.</p>
+        <p>Bagi pemasangan ‘High Hazard, ianya adalah untuk kegunaan industri yang mempunyai risiko yang luar biasa dari segi kebakaran. Terdiri daripada process risk dan storage risk. Terdapat 4 jenis pemasangan iaitu HH Group I, HH Group II, HH Group III dan HH Group IV.</p>
+
+        <h4>Jenis-jenis Sprinkler</h4>
+        <ol style="list-style-type: lower-alpha;">
+            <li>
+                <b>Conventional</b>
+                <ol style="list-style-type: lower-roman; padding-left: 20px; margin-top: 5px;">
+                    <li>Boleh diletakkan sama ada secara ’upright’ atau ’pendant’</li>
+                    <li>50% spray upwards.</li>
+                    <li>50% spray downwards.</li>
+                    <li>Titisan yang banyak dan menembusi kebakaran.</li>
+                    <li>Percikan air akan membentuk sfera pada bahagian atas dan bawah kepala sprinkler.</li>
+                </ol>
+            </li>
+            <li>
+                <b>Jenis Spray</b>
+                <ol style="list-style-type: lower-roman; padding-left: 20px; margin-top: 5px;">
+                    <li>80% downwards dan 20% upwards.</li>
+                    <li>Direkabentuk untuk upright atau pendant tetapi tidak boleh digunakan untuk kedua-duanya.</li>
+                    <li>Titisan air yang berbentuk ’parabolic discharge’.</li>
+                </ol>
+            </li>
+            <li>
+                <b>Ceiling atau Flush</b>
+                <ol style="list-style-type: lower-roman; padding-left: 20px; margin-top: 5px;">
+                    <li>Sesuai untuk suspended ceilings.</li>
+                    <li>Sebahagian dari badannya diletakkan di dalam siling.</li>
+                    <li>Bahagian yang mempunya bulb perlu diletakkan di bahagian bawah.</li>
+                </ol>
+            </li>
+            <li>
+                <b>Recessed</b><br>
+                Badan sprinkler serta bulb diletakkan terus di dalam ruang siling.
+            </li>
+            <li>
+                <b>Concealed</b>
+                <ol style="list-style-type: lower-roman; padding-left: 20px; margin-top: 5px;">
+                    <li>Keseluruhan disembunyikan tetapi terdapat plat cover di bawah.</li>
+                    <li>Cover plat akan terkena haba dahulu dan ianya akan jatuh untuk membenarkan haba mengenai bulb untuk memberi semburan.</li>
+                </ol>
+            </li>
+            <li>
+                <b>Side Wall</b>
+                <ol style="list-style-type: upper-roman; padding-left: 20px; margin-top: 5px;">
+                    <li>Direkabentuk untuk diletakkan di tepi dinding.</li>
+                    <li>Semburan (Spray pattern) akan disasarkan pada sesuatu arah.</li>
+                </ol>
+            </li>
+            <li><b>ESFR</b>
+                <ol style="list-style-type: lower-roman; padding-left: 20px; margin-top: 5px;">
+                    <li>Factory mutual.</li>
+                    <li>Cepat bertindak.</li>
+                    <li>Berkeupayaan tinggi.</li>
+                    <li>Bertindak dari atas.</li>
+                </ol>
+            </li>
+            <li><b>Quick Response Sprinkler</b><br>
+                Lagi kecil bulb pada kepala sprinkler maka semakin cepat ianya akan mencapai tahap haba maksima.</li>
+        </ol>
+
+        <img src="images/sprinkler2.jpg" alt="Jenis-jenis Sprinkler" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <p>Komponen-komponen sistem penyembur air automatik ialah:</p>
+        <ol style="list-style-type: lower-roman;">
+            <li>Kepala penyembur (sprinkler head).</li>
+        </ol>
+
+        <img src="images/sprinkler10.jpg" alt="Contoh Kepala Penyembur" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <ol style="list-style-type: lower-roman;" start="2">
+            <li>Paip (suction pipe)</li>
+        </ol>
+
+        <img src="images/sprinkler3.jpg" alt="Contoh Paip Penyembur" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <ol style="list-style-type: lower-roman;" start="3">
+            <li>Flow switch, butterfly valve dan drain pipe</li>
+        </ol>
+
+        <img src="images/sprinkler4.jpg" alt="Contoh Flow Switch, Butterfly Valve, dan Drain Pipe" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <ol style="list-style-type: lower-roman;" start="4">
+            <li>Injap kawalan utama</li>
+        </ol>
+
+        <img src="images/sprinkler5.jpg" alt="Contoh Injap Kawalan Utama" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <ol style="list-style-type: lower-roman;" start="5">
+            <li>Set pam (jockey, duty, standby)</li>
+        </ol>
+
+        <img src="images/sprinkler11.jpg" alt="Contoh Set Pam" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <ol style="list-style-type: lower-roman;" start="6">
+            <li>Injap masuk (breeching inlet)</li>
+        </ol>
+
+        <img src="images/sprinkler12.jpg" alt="Contoh Injap Masuk" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <ol style="list-style-type: lower-roman;" start="7">
+            <li>Tangki air</li>
+        </ol>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/sprinkler7.png" alt="Contoh Tangki Air Sistem Penyembur" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/sprinkler8.jpg" alt="Contoh Lain Tangki Air Sistem Penyembur" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+
+        <ol style="list-style-type: lower-roman;" start="8">
+            <li>Stater panel.</li>
+        </ol>
+
+        <img src="images/sprinkler9.jpg" alt="Contoh Stater Panel" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+
+        <h4>Sistem Pemasangan Tetap Gas</h4>
+        <p>Merupakan satu sistem pemasangan tetap yang diadakan untuk mengesan dan memadam kebakaran dengan menggunakan gas sebagai media pemadaman. Sistem pemasangan tetap gas ialah kaedah pemadaman kebakaran automatik yang menggunakan agen pemadam dalam bentuk gas, bukannya air, buih, atau serbuk. Sistem ini berfungsi dengan memadamkan salah satu unsur dalam "Segi Tiga Api" (Haba, Oksigen, Bahan Api):</p>
+        <ul>
+            <li><b>Penghapusan Oksigen:</b> Contohnya, sistem Karbon Dioksida (CO2) atau Gas Inert (seperti IG-55 atau IG-541) berfungsi dengan mengurangkan kepekatan oksigen dalam ruang yang dilindungi sehingga api tidak dapat dikekalkan.</li>
+            <li><b>Penyejukan dan Gangguan Rantai Kimia:</b> Agen pemadam bersih (Clean Agents) seperti HFC-227ea (FM-200) atau FK-5-1-12 (NOVEC 1230) bertindak balas secara kimia dengan api, menyekat tindak balas berantai yang mengekalkan pembakaran.</li>
+        </ul>
+        <p>Sistem gas biasanya diwajibkan oleh Jabatan Bomba dan Penyelamat Malaysia (JBPM), selaras dengan semangat Undang-Undang Kecil 226 dan Undang-Undang Kecil 235 (Sistem pemadam tetap), untuk melindungi kawasan di mana:</p>
+        <ul>
+            <li><b>Peralatan Bernilai Tinggi dan Sensitif:</b> Air boleh menyebabkan kerosakan teruk.
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    <li>Pusat Data (Data Centers/Server Rooms): Di mana ketidaksinambungan operasi dan kerosakan elektronik perlu dielakkan.</li>
+                    <li>Bilik Kawalan (Control Rooms) dan Arkib/Perpustakaan (Arkib/Dokumen Berharga).</li>
+                </ul>
+            </li>
+            <li><b>Bahaya Elektrik Voltan Tinggi:</b> Kawasan yang melibatkan kebakaran peralatan elektrik.
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    <li>Bilik Pengubah (Transformer Rooms), Bilik Suis Voltan Tinggi.</li>
+                    <li>Bilik Janakuasa (Generator Rooms).</li>
+                </ul>
+            </li>
+        </ul>
+        <p>Berdasarkan agen pemadam, terdapat tiga kategori utama yang diiktiraf di Malaysia iaitu:</p>
+        <style>
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 1.5em;
+                font-size: 0.9em;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+                font-weight: bold;
+            }
+        </style>
+        <table>
+            <thead>
+                <tr>
+                    <th>Jenis Sistem</th>
+                    <th>Agen Pemadam</th>
+                    <th>Mekanisme Pemadaman</th>
+                    <th>Catatan Utama</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Gas Inert</td>
+                    <td>IG-55, IG-541</td>
+                    <td>Mengurangkan kepekatan Oksigen (Asfiksia)</td>
+                    <td>Selamat digunakan dalam ruang yang diduduki, tetapi memerlukan pelepasan yang lebih lama.</td>
+                </tr>
+                <tr>
+                    <td>Agen Bersih (Clean Agent)</td>
+                    <td>FM-200 (HFC-227ea), NOVEC 1230 (FK-5-1-12)</td>
+                    <td>Gangguan Rantai Kimia (Menyahaktifkan radikal bebas api)</td>
+                    <td>Pemadaman yang pantas, tidak meninggalkan sisa, dan selamat untuk elektronik.</td>
+                </tr>
+                <tr>
+                    <td>Karbon Dioksida (CO2)</td>
+                    <td>Karbon Dioksida</td>
+                    <td>Mengurangkan kepekatan Oksigen</td>
+                    <td>Sangat berbahaya kepada manusia pada kepekatan pemadaman. Penggunaan adalah terhad kepada bilik tanpa penghuni atau memerlukan prosedur keselamatan yang ketat.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>Terdapat 4 teknik pemadaman bagi sistem karbon dioksida iaitu:</p>
+        <ol style="list-style-type: lower-roman;">
+            <li><b>’total flooding’</b> – system ini bertindak dengan mendiscajkan gas karbon dioksida ke dalam satu ruang yang terkurung yang mengandungi ’hazard’ yang hendaklah dilindungi dengan cara membanjiri keseluruhan itu dengan gas karbon dioksida. Pemasangan jenis ’total flooding’ sesuai untuk memadam kebakaran jenis permukaan yang melibatkan bahan pepejal, cecair dan gas serta kebakaran jenis dalaman yang melibatkan bahan pepejal (smoldering).</li>
+            <li><b>’local application’</b> - Sistem ini bertindak dengan cara mendiscajkan gas karbon dioksioda terus ke atas material yang terbakar seperti komputer atau enjin.</li>
+            <li><b>’hand hose line’</b> - Satu jenis sistem yang mengandungi gelung hos dan nozel. Gas karbon dioksida dibekalkan daripada tangki dan dipasangkan dengan paip yang tetap ke gelung hos dan boleh mengandungi beberapa gelung hos pada sistem ini.</li>
+            <li><b>‘standpipe system & mobile supply’</b> – satu jenis system pemasangan tetap yang boleh merupakan jenis total flooding, local application atau hand hose line system tetapi tanpa gas karbon dioksida yang disambungkan dengan tetap pada sistem tersebut. Gas karbon dioksida boleh diangkut dari luar dan disambungkan kepada inlet masuk sistem jika perlu.</li>
+        </ol>
+
+        <p>Terdapat dua rekabentuk sistem karbon dioksida iaitu sistem dengan silinder pandu ( pilot cylinder) dan sistem tanpa silinder pandu. Fungsi utama Silinder Pandu pada sistem pemadaman Karbon Dioksida ialah sebagai unit pemicu (actuator) untuk mengaktifkan pelepasan gas dari bank silinder utama. Secara ringkasnya, silinder pandu adalah komponen penting yang menterjemahkan isyarat pengesanan kebakaran automatik kepada tindakan mekanikal yang diperlukan untuk membuka injap bank silinder utama. Ini memastikan pelepasan gas pemadam yang berkesan dan serentak ke dalam zon kebakaran.</p>
+
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 1em;">
+            <img src="images/sistem-co2.jpg" alt="Contoh Sistem CO2" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/sistem-co22.jpg" alt="Contoh Lain Sistem CO2" style="width:100%; max-width:350px; border-radius: 4px;">
+        </div>
+
+        <h4>Sistem Pemadaman Menggunakan Buih</h4>
+        <p>Sistem pemadaman menggunakan buih, atau Sistem Pemadam Buih Kebakaran (Fire Foam Suppression System), ialah sejenis sistem pemadaman automatik tetap yang menggunakan buih sebagai agen pemadam api. Sistem ini direka khas untuk memadamkan kebakaran yang melibatkan cecair mudah terbakar, yang dikenali sebagai kebakaran Kelas B (seperti petrol, minyak, pelarut, dan bahan kimia lain).</p>
+        <p>Tidak seperti sistem air yang menyejukkan, buih memadamkan api melalui tiga mekanisme utama:</p>
+        <ol style="list-style-type: lower-roman;">
+            <li><b>Menyekat Oksigen (Smothering/Blanketing):</b> Buih adalah lapisan selimut tebal dan stabil yang terapung di atas permukaan cecair yang terbakar. Lapisan buih ini menghalang wap bahan api naik dan memotong bekalan oksigen dari udara, memadamkan api.</li>
+            <li><b>Penyejukan (Cooling):</b> Kandungan air di dalam buih membantu menyejukkan permukaan cecair mudah terbakar dan struktur di sekelilingnya, mengurangkan kadar pengeluaran wap bahan api.</li>
+            <li><b>Pengasingan (Separation):</b> Lapisan buih berfungsi sebagai penghalang fizikal, menghalang wap bahan api daripada bercampur dengan udara dan menyekat penyalaan semula (re-ignition).</li>
+        </ol>
+        <p>Berdasarkan UBBL 1984 (Pindaan 2021) dan garis panduan JBPM, sistem buih biasanya diwajibkan untuk:</p>
+        <ol style="list-style-type: lower-roman;">
+            <li>Kemudahan Penyimpanan Cecair Mudah Terbakar: Tangki penyimpanan minyak, petrol, atau alkohol yang besar.</li>
+            <li>Hangar Pesawat: Digunakan untuk kebakaran melibatkan bahan api pesawat.</li>
+            <li>Pelantar Minyak dan Gas: Digunakan di kawasan pemprosesan yang melibatkan hidrokarbon.</li>
+            <li>Loji Kimia dan Petrokimia: Kawasan di mana tumpahan cecair mudah terbakar berisiko tinggi berlaku.</li>
+            <li>Pemuatan/Pemunggah Jeti dan Stesen Pam: Tempat di mana bahan api dipindahkan.</li>
+        </ol>
+        <p>Sistem buih terdiri daripada beberapa komponen asas yang membolehkan campuran air, pekatan buih, dan udara disebarkan sebagai buih:</p>
+        <ol style="list-style-type: lower-roman;">
+            <li>Bekalan Air: Sumber air yang mencukupi untuk bercampur dengan pekatan buih.</li>
+            <li>Pekatan Buih (Foam Concentrate): Cecair pekat yang disimpan di dalam tangki dan menjadi asas buih. Jenis buih yang biasa digunakan ialah Aqueous Film-Forming Foam (AFFF) atau Alcohol-Resistant Foam (AR-AFFF).</li>
+            <li>Peranti Dos (Proportioning Device): Alat mekanikal (seperti In-line Inductor atau Bladder Tank) yang mencampurkan pekatan buih dengan air pada nisbah yang tepat (biasanya 1%, 3%, atau 6%).</li>
+            <li>Peranti Pelepasan Buih (Foam Discharge Devices):
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    <li>Penyembur Buih (Foam Sprinklers): Mirip penyembur air, tetapi direka untuk buih.</li>
+                    <li>Monitor Buih (Foam Monitors): Untuk melepaskan buih dalam kuantiti yang besar dari jarak jauh.</li>
+                    <li>Penjana Buih Volum Tinggi (High-Expansion Foam Generators): Digunakan untuk mengisi ruang tertutup (seperti hangar) dengan buih ringan yang cepat.</li>
+                </ul>
+            </li>
+        </ol>
+        <p>Secara ringkas, sistem pemadaman buih adalah pertahanan yang paling berkesan terhadap risiko kebakaran yang melibatkan bahan api cecair mudah terbakar.</p>
+
+        <h3>Sistem Memberi Amaran</h3>
+        <img src="images/sistem-memberi-amaran.jpg" alt="Carta Alir Sistem Memberi Amaran" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+        <p>Sistem memberi amaran, atau lebih dikenali sebagai Sistem Penggera Kebakaran (Fire Alarm System), ialah satu set peranti dan peralatan yang direka untuk mengesan kehadiran kebakaran pada peringkat awal dan memberi amaran kepada penghuni bangunan dan pihak berkuasa yang berkaitan. Menurut UBBL 1984 (Pindaan 2021), sistem ini adalah komponen penting dalam langkah-langkah Perlindungan Kebakaran Aktif, bertujuan untuk memastikan keselamatan nyawa dengan memberi masa yang mencukupi untuk pemindahan.</p>
+        <p>Sistem memberi amaran yang lengkap terdiri daripada tiga komponen asas yang berfungsi secara bersepadu:</p>
+        <ol>
+            <li><b>Pengesanan (Detection)</b><br>
+                Komponen ini bertanggungjawab mengesan tanda-tanda awal kebakaran. Peranti pengesan utama termasuk:
+                <ul>
+                    <li>Pengesan Asap (Smoke Detectors): Mengesan zarah asap di udara.
+                        <ul style="padding-left: 20px; margin-top: 5px;">
+                            <li>Jenis: Ionisasi (untuk asap pantas, api terbuka) atau Fotoelektrik (untuk asap perlahan, api membara).</li>
+                        </ul>
+                    </li>
+                    <li>Pengesan Haba (Heat Detectors): Mengesan kenaikan suhu yang pantas atau suhu ambang yang telah ditetapkan.</li>
+                    <li>Pengesan Api (Flame Detectors): Mengesan sinaran ultraungu (UV) atau inframerah (IR) yang dihasilkan oleh api.</li>
+                    <li>Titik Panggilan Manual (Manual Call Points / Break Glass Points): Kotak amaran yang membolehkan sesiapa sahaja mencetuskan penggera secara manual setelah mengesan kebakaran.</li>
+                </ul>
+            </li>
+            <li><b>Kawalan (Control)</b><br>
+                Pusat otak bagi keseluruhan sistem:
+                <ul>
+                    <li>Panel Kawalan Penggera Kebakaran (Fire Alarm Control Panel - FACP): Peranti utama yang menerima isyarat daripada pengesan, menentukan zon kebakaran, mengaktifkan peranti amaran, dan memantau integriti sistem (seperti wayar atau bekalan kuasa).</li>
+                    <li>Bekalan Kuasa: FACP mesti mempunyai bekalan kuasa utama dan bateri sandaran untuk memastikan sistem berfungsi semasa gangguan elektrik.</li>
+                </ul>
+            </li>
+            <li><b>Pemberian Amaran (Notification)</b><br>
+                Komponen yang memberi amaran kepada penghuni apabila FACP menerima isyarat kebakaran:
+                <ul>
+                    <li>Penggera Bunyi (Audible Alarms): Loceng, siren, atau hon yang mengeluarkan bunyi nyaring.</li>
+                    <li>Penggera Visual (Visual Alarms): Lampu strobe (berkelip) yang penting untuk penghuni yang mempunyai masalah pendengaran.</li>
+                    <li>Sistem Pengumuman Awam (Public Address - PA System): Sistem komunikasi suara yang membolehkan pengurus bangunan atau kakitangan kecemasan memberikan arahan pemindahan yang jelas.</li>
+                </ul>
+            </li>
+        </ol>
+        <p>Kesimpulannya ialah sistem memberi amaran adalah garis pertahanan pertama yang penting dalam keselamatan kebakaran, memastikan pengesanan cepat dan pemindahan yang teratur.</p>
     </div>
         <div id="fakta-ubbl" class="content-section">
         <h2>Fakta Ringkas & Kronologi UBBL 1984</h2>
