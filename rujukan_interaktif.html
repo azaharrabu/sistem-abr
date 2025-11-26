@@ -738,13 +738,8 @@
         }
     </style>
     <style>
-        /* Disable text selection */
-        body {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
+        
+
         /* On print, hide everything and show a message */
         @media print {
             body * {
@@ -768,19 +763,7 @@
             }
         }
     </style>
-    <script>
-        // Disable right-click menu
-        document.addEventListener("contextmenu", function(e){
-            e.preventDefault();
-        }, false);
 
-        // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+P
-        document.addEventListener("keydown", function(e){
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.shiftKey && e.key === 'J') || (e.ctrlKey && e.key === 'U') || (e.ctrlKey && e.key === 'p')) {
-                e.preventDefault();
-            }
-        });
-    </script>
 </head>
 <body>
 
@@ -2867,10 +2850,18 @@ vi.	Tangga keenam =  2750 mm
                         ? 'http://localhost:3000/register-affiliate' 
                         : '/api/register-affiliate';
 
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                    if (sessionError || !session) {
+                        throw new Error('Sesi pengguna tidak ditemui. Sila log masuk semula.');
+                    }
+
                     const response = await fetch(apiUrl, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ userId: user.id })
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                        }
+                        // Body tidak lagi diperlukan, ID pengguna diambil dari token di backend.
                     });
 
                     const result = await response.json();

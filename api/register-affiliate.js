@@ -15,11 +15,22 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { userId } = req.body;
+  // Get the JWT from the Authorization header (e.g., 'Bearer YOUR_JWT_TOKEN')
+  const token = req.headers.authorization?.split('Bearer ')[1];
 
-  if (!userId) {
-    return res.status(400).json({ error: 'ID Pengguna (userId) diperlukan.' });
+  if (!token) {
+    return res.status(401).json({ error: 'Tidak disahkan: Tiada token disediakan.' });
   }
+
+  // Get the user object from the token
+  const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+  if (userError || !user) {
+    return res.status(401).json({ error: 'Tidak disahkan: Token tidak sah atau telah tamat tempoh.' });
+  }
+
+  // Use the securely obtained user ID
+  const userId = user.id;
 
   try {
     // 1. Generate a unique and simple-to-read affiliate code.
