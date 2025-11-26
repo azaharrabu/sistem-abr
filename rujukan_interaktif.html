@@ -662,6 +662,58 @@
                 padding: 1em;
             }
         }
+
+        /* Styles for Affiliate Program Section */
+        .affiliate-container {
+            background-color: #fff;
+            padding: 2em;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .affiliate-container h2, .affiliate-container h3 {
+            color: var(--primary-color);
+        }
+        .affiliate-container .btn-affiliate {
+            display: inline-block;
+            background-color: #28a745; /* Green */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 1em;
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .affiliate-container .btn-affiliate:hover {
+            background-color: #218838;
+        }
+        #affiliate-dashboard-view {
+            display: none; /* Hide by default */
+            margin-top: 2em;
+            background-color: #f9f9f9;
+            padding: 1.5em;
+            border-left: 5px solid var(--primary-color);
+            border-radius: 5px;
+        }
+        .dashboard-item {
+            margin-bottom: 1em;
+        }
+        .dashboard-item label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+        }
+        .dashboard-item input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #e9ecef;
+            margin-top: 5px;
+        }
     </style>
     <style>
         /* CSS untuk Watermark */
@@ -761,6 +813,8 @@
         <li><a href="#kalkulator-10-langkah" class="nav-link">Kalkulator 10 Langkah</a></li>
         <li><a href="#jadual-7" class="nav-link">Jadual Ketujuh Interaktif</a></li>
         <li><a href="#jadual-10" class="nav-link">Jadual Kesepuluh Interaktif</a></li>
+        <li><a href="#affiliate-program" class="nav-link">Program Affiliate</a></li>
+        <li><a href="#affiliate-leaderboard" class="nav-link">Papan Pendahulu Affiliate</a></li>
 
     </ul>
 </div>
@@ -776,6 +830,37 @@
                         <img src="images/abr.jpg.jpeg" alt="Ts Azahar Bin Rabu" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;" />
                         <p style="font-size: 1.2rem; font-style: italic; color: #555; margin: 0;">by: Ts Azahar Bin Rabu</p>
                     </div>
+
+                    <!-- Affiliate Section Start -->
+                    <div id="affiliate-section" style="margin-top: 2.5em; padding: 1.5em; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                        
+                        <!-- 1. Register View (shown if user is eligible but not yet an affiliate) -->
+                        <div id="affiliate-register-view" style="display: none;">
+                            <h3 style="margin-top:0; color: #343a40;">Program Rakan Affiliate</h3>
+                            <p style="color: #6c757d; margin-bottom: 1.5em;">Sertai program affiliate kami dan jana pendapatan dengan mempromosikan sistem rujukan interaktif ini.</p>
+                            <button id="btn-register-affiliate" class="btn-affiliate">Daftar Sebagai Agen Affiliate</button>
+                        </div>
+
+                        <!-- 2. Dashboard View (shown if user is already an affiliate) -->
+                        <div id="affiliate-dashboard-view" style="display: none; text-align: left;">
+                            <h3 style="margin-top:0; color: #343a40;">Papan Pemuka Affiliate Anda</h3>
+                            <div class="dashboard-item">
+                                <label for="affiliate-link">Pautan Affiliate Unik Anda:</label>
+                                <input type="text" id="affiliate-link" readonly style="cursor: copy;">
+                            </div>
+                            <div class="dashboard-item">
+                                <label>Jumlah Jualan:</label>
+                                <p id="affiliate-sales-value" style="font-size: 1.5em; font-weight: bold; margin: 5px 0;">RM 0.00</p>
+                            </div>
+                            <div class="dashboard-item">
+                                <label>Anggaran Komisyen:</label>
+                                <p id="affiliate-commission" style="font-size: 1.5em; font-weight: bold; margin: 5px 0;">RM 0.00</p>
+                            </div>
+                            <small style="color: #6c757d;">Papan pemuka ini akan dikemas kini dengan lebih banyak statistik pada masa hadapan.</small>
+                        </div>
+                    </div>
+                    <!-- Affiliate Section End -->
+
                 </div>
             </div>
     <div id="penafian" class="content-section">
@@ -2656,6 +2741,260 @@ vi.	Tangga keenam =  2750 mm
             });
         }
     });
-</script>
+
+    <!-- Konfigurasi dan Skrip Aplikasi -->
+    <script>
+    // --- Konfigurasi Supabase Client (untuk Frontend) ---
+    // PENTING: Gantikan dengan URL dan Kunci 'anon' projek Supabase anda.
+    // Untuk Vercel, pastikan pembolehubah persekitaran (environment variables) ini ditetapkan.
+    const supabaseUrl = 'URL_PROJEK_SUPABASE_ANDA';
+    const supabaseKey = 'KUNCI_ANON_SUPABASE_ANDA';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- Ciri-Ciri Affiliate ---
+        const registerView = document.getElementById('affiliate-register-view');
+        const dashboardView = document.getElementById('affiliate-dashboard-view');
+        const btnRegister = document.getElementById('btn-register-affiliate');
+        const affiliateLinkInput = document.getElementById('affiliate-link');
+
+        // Fungsi untuk memaparkan papan pemuka affiliate
+        function showDashboard(affiliateData) {
+            if (!dashboardView || !registerView || !affiliateLinkInput) return;
+
+            // Jana pautan affiliate yang dinamik berdasarkan domain semasa
+            affiliateLinkInput.value = `${window.location.origin}${window.location.pathname}?ref=${affiliateData.affiliate_code}`;
+            
+            // Tetapkan nilai-nilai lain (pada masa hadapan, data ini akan datang dari backend)
+            document.getElementById('affiliate-sales-value').textContent = `RM ${parseFloat(affiliateData.total_sales_value || 0).toFixed(2)}`;
+            document.getElementById('affiliate-commission').textContent = `RM ${parseFloat(affiliateData.total_commission_earned || 0).toFixed(2)}`;
+            
+            registerView.style.display = 'none';
+            dashboardView.style.display = 'block';
+        }
+
+        // Fungsi untuk menyemak status langganan dan affiliate pengguna
+        async function checkUserStatus() {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !session) {
+                if(registerView) registerView.style.display = 'none';
+                if(dashboardView) dashboardView.style.display = 'none';
+                return;
+            }
+            const userId = session.user.id;
+            const token = session.access_token;
+
+            // Semak status langganan
+            const { data: userProfile, error: profileError } = await supabase
+                .from('users')
+                .select('subscription_plan, subscription_end_date, payment_status')
+                .eq('user_id', userId)
+                .single();
+
+            if (profileError || !userProfile) {
+                if(registerView) registerView.style.display = 'none';
+                if(dashboardView) dashboardView.style.display = 'none';
+                return;
+            }
+            
+            const today = new Date();
+            const endDate = new Date(userProfile.subscription_end_date);
+            const isSubscriptionActive = userProfile.payment_status === 'paid' && endDate > today;
+            const isEligiblePlan = ['6 bulan', '12 bulan'].includes(userProfile.subscription_plan);
+
+            if (isSubscriptionActive && isEligiblePlan) {
+                // Pengguna layak, sekarang semak jika mereka sudah menjadi affiliate
+                const { data: affiliate, error: affiliateError } = await supabase
+                    .from('affiliates')
+                    .select('id') // Hanya perlu semak kewujudan
+                    .eq('user_id', userId)
+                    .single();
+
+                if (affiliate) {
+                    // Jika affiliate, panggil API untuk data dashboard
+                    try {
+                        const response = await fetch('/api/affiliate-dashboard', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (!response.ok) {
+                            const errData = await response.json();
+                            throw new Error(errData.error || 'Gagal memuatkan data dashboard.');
+                        }
+                        
+                        const dashboardData = await response.json();
+                        showDashboard(dashboardData);
+
+                    } catch (err) {
+                        console.error("Dashboard API error:", err.message);
+                        if(dashboardView) {
+                            dashboardView.innerHTML = `<p style="color: red;">Gagal memuatkan data dashboard anda. Sila muat semula laman. (${err.message})</p>`;
+                            dashboardView.style.display = 'block';
+                        }
+                        if(registerView) registerView.style.display = 'none';
+                    }
+                } else {
+                    // Jika layak tetapi belum mendaftar, paparkan butang pendaftaran
+                    if(dashboardView) dashboardView.style.display = 'none';
+                    if(registerView) registerView.style.display = 'block';
+                }
+            } else {
+                // Jika tidak layak, sembunyikan kedua-dua bahagian
+                if(registerView) registerView.style.display = 'none';
+                if(dashboardView) dashboardView.style.display = 'none';
+            }
+        }
+
+        // Jalankan semakan status apabila halaman dimuatkan
+        checkUserStatus();
+
+        // Tambah event listener untuk butang pendaftaran
+        if (btnRegister) {
+            btnRegister.addEventListener('click', async function() {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    alert('Sila log masuk untuk mendaftar sebagai agen affiliate.');
+                    return;
+                }
+
+                try {
+                    btnRegister.disabled = true;
+                    btnRegister.textContent = 'Mendaftar...';
+
+                    // Hantar permintaan POST ke server Vercel (production) atau local
+                    // Skrip ini akan menggunakan laluan relatif untuk production di Vercel, dan URL penuh untuk localhost
+                    const apiUrl = window.location.hostname === 'localhost' 
+                        ? 'http://localhost:3000/register-affiliate' 
+                        : '/api/register-affiliate';
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: user.id })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Pendaftaran gagal. Anda mungkin sudah berdaftar.');
+                    }
+
+                    alert('Tahniah! Anda telah berjaya mendaftar sebagai agen affiliate.');
+                    showDashboard(result);
+
+                } catch (error) {
+                    alert(`Ralat: ${error.message}`);
+                    btnRegister.disabled = false;
+                    btnRegister.textContent = 'Daftar Sebagai Agen Affiliate';
+                }
+            });
+        }
+        
+        // Tambah fungsi salin ke papan keratan (copy to clipboard)
+        if (affiliateLinkInput) {
+            affiliateLinkInput.addEventListener('click', function() {
+                this.select();
+                document.execCommand('copy');
+                alert('Pautan affiliate telah disalin ke papan keratan!');
+            });
+        }
+
+        // --- Logik untuk Papan Pendahulu (Leaderboard) ---
+        const leaderboardLink = document.querySelector('a[href="#affiliate-leaderboard"]');
+        let leaderboardLoaded = false;
+
+        async function loadLeaderboard() {
+            if (leaderboardLoaded) return; // Elakkan muatan berganda
+
+            let leaderboardSection = document.getElementById('affiliate-leaderboard');
+            
+            // Cipta seksyen jika tidak wujud
+            if (!leaderboardSection) {
+                const mainContent = document.getElementById('main-content');
+                leaderboardSection = document.createElement('div');
+                leaderboardSection.id = 'affiliate-leaderboard';
+                leaderboardSection.className = 'content-section';
+                leaderboardSection.innerHTML = `
+                    <h2>Papan Pendahulu Affiliate</h2>
+                    <p>Berikut adalah senarai 10 rakan affiliate dengan jumlah jualan tertinggi. Teruskan usaha anda!</p>
+                    <div id="leaderboard-container"><p>Memuatkan data...</p></div>
+                `;
+                mainContent.appendChild(leaderboardSection);
+            }
+
+            const container = document.getElementById('leaderboard-container');
+            container.innerHTML = '<p>Memuatkan data papan pendahulu...</p>';
+
+            try {
+                const response = await fetch('/api/affiliate-leaderboard');
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error || 'Gagal memuatkan data.');
+                }
+                const leaderboardData = await response.json();
+                leaderboardLoaded = true; // Tandakan sebagai sudah dimuatkan
+
+                if (leaderboardData.length === 0) {
+                    container.innerHTML = '<p>Tiada data jualan affiliate untuk dipaparkan lagi.</p>';
+                    return;
+                }
+
+                // Bina jadual HTML
+                let tableHTML = `
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: #f2f2f2;">
+                                <th style="padding: 12px; border-bottom: 2px solid #ddd;">Kedudukan</th>
+                                <th style="padding: 12px; border-bottom: 2px solid #ddd;">Nama Agen</th>
+                                <th style="padding: 12px; border-bottom: 2px solid #ddd; text-align: right;">Jumlah Jualan (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                leaderboardData.forEach(entry => {
+                    tableHTML += `
+                        <tr>
+                            <td style="padding: 12px; border-bottom: 1px solid #eee;">${entry.rank}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid #eee;">${entry.name}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">${Number(entry.total_sales).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+
+            } catch (err) {
+                container.innerHTML = `<p style="color: red;">Ralat semasa memuatkan papan pendahulu: ${err.message}</p>`;
+            }
+        }
+
+        if (leaderboardLink) {
+            leaderboardLink.addEventListener('click', function(e) {
+                // Skrol ke seksyen dan panggil fungsi load
+                // Fungsi navigasi sedia ada sepatutnya mengendalikan paparan seksyen
+                loadLeaderboard();
+            });
+        }
+        
+        // --- Skrip Penjejakan Rujukan Affiliate (Cookie) ---
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const affiliateCode = urlParams.get('ref');
+
+        if (affiliateCode) {
+            setCookie('affiliate_ref_code', affiliateCode, 30);
+            console.log(`Kod affiliate ${affiliateCode} telah disimpan dalam cookie.`);
+        }
+    });
+    </script>
 </body>
 </html>

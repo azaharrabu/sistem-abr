@@ -1,494 +1,66 @@
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
-const axios = require('axios');
-const path = require('path');
+const cors = require('cors'); // Diperlukan untuk membenarkan komunikasi antara frontend dan backend
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-
-let supabase;
-let supabaseAdmin;
-
-// 1. KONFIGURASI
 const app = express();
-const port = process.env.PORT || 3001;
+const port = 3000;
 
-// Middleware untuk log semua permintaan masuk
-app.use((req, res, next) => {
-    console.log(`[LOG] Request: ${req.method} ${req.path}`);
-    next();
-});
+// --- Konfigurasi Asas ---
+app.use(cors()); // Benarkan semua permintaan Cross-Origin
+app.use(express.json()); // Benarkan server menerima data dalam format JSON
 
-console.log('DIAGNOSTIC: SUPABASE_URL:', SUPABASE_URL ? 'Set' : 'Not Set');
-console.log('DIAGNOSTIC: SUPABASE_ANON_KEY:', SUPABASE_ANON_KEY ? 'Set' : 'Not Set');
-console.log('DIAGNOSTIC: SUPABASE_SERVICE_KEY:', SUPABASE_SERVICE_KEY ? 'Set' : 'Not Set');
+// --- Konfigurasi Supabase ---
+// Gantikan dengan URL dan Kunci 'service_role' projek Supabase anda
+// Penting: Gunakan kunci 'service_role' di backend untuk kebenaran penuh (admin). JANGAN dedahkan kunci ini di frontend.
+const supabaseUrl = 'URL_PROJEK_SUPABASE_ANDA';
+const supabaseKey = 'KUNCI_SERVICE_ROLE_SUPABASE_ANDA';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Tambah log diagnostik untuk semua pembolehubah persekitaran yang bermula dengan SUPABASE_
-console.log('DIAGNOSTIC: All SUPABASE_ environment variables:');
-for (const key in process.env) {
-    if (key.startsWith('SUPABASE_')) {
-        console.log(`DIAGNOSTIC:   ${key}: ${process.env[key] ? 'Set' : 'Not Set'}`);
+console.log("Server sedang cuba dihidupkan...");
+
+// === API Endpoint untuk Pendaftaran Affiliate ===
+app.post('/register-affiliate', async (req, res) => {
+    const { userId } = req.body;
+
+    if (!userId) {
+        return res.status(400).json({ error: 'ID Pengguna (userId) diperlukan.' });
     }
-}
 
-try {
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_KEY) {
-        throw new Error("Pembolehubah persekitaran Supabase tidak ditetapkan sepenuhnya.");
-    }
-    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-        auth: { autoRefreshToken: false, persistSession: false }
-    });
-} catch (e) {
-    console.error("FATAL: Gagal memulakan Supabase client.", e.message);
-    process.exit(1);
-}
+    try {
+        // 1. Jana kod affiliate yang unik
+        // Kita gunakan 8 aksara rawak untuk kod yang ringkas
+        const uniqueCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+        const affiliateCode = `RAKAN-${uniqueCode}`;
 
-// 2. MIDDLEWARE
-// Penting: Hidangkan fail statik dari folder 'public' SEBELUM mana-mana laluan lain.
-app.use(express.static(__dirname));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+        // 2. Masukkan data agen baru ke dalam jadual 'affiliates'
+        const { data, error } = await supabase
+            .from('affiliates')
+            .insert({
+                user_id: userId,
+                affiliate_code: affiliateCode,
+            })
+            .select() // Minta Supabase pulangkan data yang baru dimasukkan
+            .single(); // Kita jangkakan hanya satu rekod
 
-// DIAGNOSTIC: Explicitly handle root path to debug static file serving
-app.get('/', (req, res) => {
-    const fs = require('fs');
-    const indexPath = path.join(__dirname, 'index.html');
-    console.log(`[DIAGNOSTIC] Attempting to serve index.html from: ${indexPath}`);
-    
-    fs.readdir(__dirname, (err, files) => {
-        if (err) {
-            console.error('[DIAGNOSTIC] Error reading directory:', err);
-        } else {
-            console.log('[DIAGNOSTIC] Files in __dirname:', files);
-        }
-        
-        res.sendFile(indexPath, (err) => {
-            if (err) {
-                console.error('[DIAGNOSTIC] Error sending index.html:', err);
-                res.status(404).send('index.html not found or error reading file.');
+        if (error) {
+            console.error('Ralat Supabase:', error.message);
+            // Jika ralat disebabkan pengguna sudah menjadi agen (kerana user_id adalah UNIQUE)
+            if (error.code === '23505') {
+                return res.status(409).json({ error: 'Pengguna ini sudah berdaftar sebagai agen.' });
             }
-        });
-    });
-});
-
-// 3. STATIC FILE SERVING (Fail Awam)
-// Laluan akar (/) kini dihidangkan secara automatik oleh express.static di atas.
-
-
-// Middleware untuk pengesahan (Authentication)
-const requireAuth = async (req, res, next) => {
-    const { authorization } = req.headers;
-    if (!authorization || !authorization.startsWith('Bearer ')) {
-        // Jika tiada token, cuba redirect ke login untuk akses browser
-        return res.redirect('/index.html');
-    }
-
-    const token = authorization.split(' ')[1];
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-
-    if (error || !user) {
-        // Jika token tidak sah, hantar ralat (untuk API calls) atau redirect
-        return res.status(401).json({ error: 'Akses tidak sah. Sila log masuk semula.' });
-    }
-
-    req.user = user;
-    next();
-};
-
-// Middleware untuk kebenaran (Authorization) - Admin sahaja
-const requireAdmin = async (req, res, next) => {
-    const { user } = req; // Pengguna dari middleware requireAuth
-
-    const { data: profile, error } = await supabaseAdmin
-        .from('users')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
-    if (error || !profile || profile.role !== 'admin') {
-        return res.status(403).json({ error: 'Akses terhad kepada admin sahaja.' });
-    }
-
-    next();
-};
-
-
-
-
-
-// 4. API ENDPOINTS
-
-// Endpoint Pendaftaran (Awam)
-app.post('/api/signup', async (req, res) => {
-    // ... (logik pendaftaran sedia ada kekal sama)
-    try {
-        const { email, password, subscription_plan } = req.body;
-
-        // 1. Dapatkan jumlah pengguna sedia ada (guna klien admin)
-        const { count, error: countError } = await supabaseAdmin
-            .from('users')
-            .select('*', { count: 'exact', head: true });
-
-        if (countError) {
-            throw new Error('Ralat semasa mengira jumlah pengguna: ' + countError.message);
+            return res.status(500).json({ error: 'Gagal mendaftar sebagai agen.' });
         }
 
-        // 2. Tentukan harga berdasarkan pelan dan promosi
-        let amount = 0;
-        const isPromoUser = count < 100;
+        console.log('Pendaftaran affiliate berjaya untuk user_id:', userId);
+        // 3. Hantar data agen yang baru dicipta kembali ke frontend
+        res.status(201).json(data);
 
-        const prices = {
-            '6-bulan': { normal: 60, promo: 50 },
-            '12-bulan': { normal: 100, promo: 80 }
-        };
-
-        if (prices[subscription_plan]) {
-            amount = isPromoUser ? prices[subscription_plan].promo : prices[subscription_plan].normal;
-        } else {
-            return res.status(400).json({ error: 'Pelan langganan tidak sah.' });
-        }
-
-        // 3. Daftar pengguna baru di Supabase Auth (guna klien biasa)
-        const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
-        if (authError) throw authError;
-
-        // 4. Cipta profil pengguna dengan maklumat langganan (guna klien admin)
-        if (authData.user) {
-            const subscriptionMonths = subscription_plan === '6-bulan' ? 6 : 12;
-            const subscriptionEndDate = new Date();
-            subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + subscriptionMonths);
-
-            const { error: profileError } = await supabaseAdmin.from('users').insert([{
-                user_id: authData.user.id,
-                email: authData.user.email,
-                subscription_plan: subscription_plan,
-                subscription_price: amount,
-                subscription_end_date: subscriptionEndDate.toISOString().split('T')[0], 
-                is_promo_user: isPromoUser,
-                payment_status: 'rejected', // Status awal untuk pengguna baru, memaksa mereka ke halaman bayaran.
-                role: 'user' // Tetapkan peranan default sebagai 'user'
-            }]).select();
-
-            if (profileError) {
-                console.error('DIAGNOSTIC: Ralat Supabase semasa mencipta profil:', profileError);
-                try {
-                    await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-                } catch (deleteError) {
-                    console.error('DIAGNOSTIC: Ralat semasa memadam pengguna Auth selepas profil gagal:', deleteError);
-                }
-                return res.status(500).json({ 
-                    error: 'Gagal mencipta profil pengguna.',
-                    details: profileError.message,
-                    code: profileError.code
-                });
-            }
-        }
-
-        // 5. Pendaftaran Selesai - Log masuk pengguna secara automatik
-        const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({ email, password });
-        if (sessionError) {
-            // Walaupun pendaftaran berjaya, log masuk gagal. Maklumkan pengguna untuk log masuk secara manual.
-            console.error('DIAGNOSTIC: Gagal log masuk automatik selepas daftar:', sessionError);
-            return res.status(200).json({ 
-                message: "Pendaftaran berjaya! Sila log masuk secara manual.",
-                user: authData.user,
-                session: null,
-                profile: null
-            });
-        }
-
-        // Dapatkan profil yang baru dicipta untuk dihantar kembali
-        const { data: profile, error: finalProfileError } = await supabaseAdmin
-            .from('users')
-            .select('*, role')
-            .eq('user_id', authData.user.id)
-            .single();
-
-        if (finalProfileError) {
-            // Ini tidak sepatutnya berlaku, tetapi sebagai langkah keselamatan
-            return res.status(500).json({ error: 'Gagal mendapatkan profil pengguna selepas dicipta.' });
-        }
-
-        res.status(200).json({ 
-            message: "Pendaftaran berjaya!",
-            user: sessionData.user,
-            session: sessionData.session,
-            profile: profile
-        });
-
-    } catch (error) {
-        res.status(error.status || 400).json({ error: error.message });
+    } catch (err) {
+        console.error('Ralat pada server:', err.message);
+        res.status(500).json({ error: 'Ralat dalaman pada server.' });
     }
 });
 
-// Endpoint Log Masuk (Awam)
-app.post('/api/signin', async (req, res) => {
-    try {
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ 
-            email: req.body.email, 
-            password: req.body.password 
-        });
-        if (authError) throw authError;
-
-        // Dapatkan profil termasuk 'role'
-        const { data: profile, error: profileError } = await supabase
-            .from('users')
-            .select('*, role') // Pastikan 'role' dipilih
-            .eq('user_id', authData.user.id)
-            .single();
-
-        if (profileError) {
-            console.error('Ralat mendapatkan profil pengguna:', profileError.message);
-        }
-
-        res.status(200).json({ user: authData.user, session: authData.session, profile: profile });
-
-    } catch (error) {
-        res.status(error.status || 400).json({ error: error.message });
-    }
-});
-
-// Endpoint untuk Pengesahan Pembayaran Manual (Dilindungi)
-app.post('/api/submit-payment', requireAuth, async (req, res) => {
-    try {
-        const { reference_no, payment_date, payment_time, amount } = req.body;
-        const user = req.user;
-
-        // 1. Pengesahan Input
-        if (!reference_no || !payment_date || !payment_time || !amount) {
-            return res.status(400).json({ error: 'Semua medan diperlukan: rujukan, tarikh, masa, dan jumlah.' });
-        }
-
-        // 2. Masukkan butiran bayaran ke dalam jadual 'payments'
-        const { error: paymentError } = await supabaseAdmin
-            .from('payments')
-            .insert([{
-                user_id: user.id,
-                reference_no: reference_no,
-                payment_date: payment_date,
-                payment_time: payment_time,
-                amount: amount,
-                status: 'pending' // Status awal untuk rekod bayaran ini
-            }]);
-
-        if (paymentError) {
-            console.error("Ralat memasukkan data ke jadual payments:", paymentError);
-            throw new Error('Gagal menyimpan butiran pembayaran.');
-        }
-
-        // 3. Kemas kini status pengguna di jadual 'users'
-        const { error: userError } = await supabaseAdmin
-            .from('users')
-            .update({ payment_status: 'pending' })
-            .eq('user_id', user.id);
-
-        if (userError) {
-            console.error("Ralat mengemas kini status pengguna:", userError);
-            // Secara teknikal, butiran bayaran telah disimpan.
-            // Ini adalah ralat sekunder, tetapi penting untuk aliran UI.
-            // Kita boleh teruskan tetapi log ralat ini.
-        }
-
-        res.status(200).json({ message: 'Terima kasih. Bukti pembayaran anda telah dihantar dan akan disemak.' });
-
-    } catch (error) {
-        res.status(error.status || 500).json({ error: error.message });
-    }
-});
-
-
-// Callback Pembayaran (LAMA - Dilumpuhkan)
-/*
-app.post('/api/payment-callback', async (req, res) => {
-    const { refno, status, reason, billcode, amount } = req.body;
-    console.log('Callback diterima dari ToyyibPay:', req.body);
-
-    if (status === '1') { // Pembayaran berjaya
-        try {
-            const { data: profile, error } = await supabaseAdmin
-                .from('users')
-                .update({ payment_status: 'paid' })
-                .eq('toyyibpay_bill_code', billcode)
-                .select();
-
-            if (error) {
-                console.error('Ralat mengemaskini status pembayaran:', error.message);
-                return res.status(500).send('Internal Server Error');
-            }
-            if (profile && profile.length > 0) {
-                console.log(`Status pembayaran untuk BillCode ${billcode} dikemaskini.`);
-            } else {
-                console.warn(`Tiada pengguna ditemui dengan BillCode ${billcode}.`);
-            }
-        } catch (e) {
-            console.error('Ralat server semasa memproses callback:', e.message);
-            return res.status(500).send('Internal Server Error');
-        }
-    }
-    res.status(200).send('OK');
-});
-*/
-
-
-
-
-
-
-
-
-
-
-
-// Endpoint untuk dapatkan profil pengguna semasa
-app.get('/api/profile', requireAuth, async (req, res) => {
-    const { data: profile, error } = await supabaseAdmin
-        .from('users')
-        .select('*, role')
-        .eq('user_id', req.user.id)
-        .single();
-
-    if (error || !profile) {
-        return res.status(404).json({ error: 'Profil pengguna tidak ditemui.' });
-    }
-
-    res.status(200).json(profile);
-});
-
-// 6. API ADMIN (Perlu log masuk sebagai admin)
-
-app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
-    // Endpoint ini kini mengambil data dari jadual 'payments' yang berstatus 'pending'
-    // dan menggabungkannya dengan maklumat pengguna yang berkaitan.
-    const { data, error } = await supabaseAdmin
-        .from('payments')
-        .select(`
-            *,
-            users (
-                id,
-                email,
-                subscription_plan,
-                subscription_price
-            )
-        `)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: true });
-
-    if (error) {
-        console.error("Ralat mengambil data bayaran tertunda:", error);
-        return res.status(500).json({ error: 'Gagal mengambil data bayaran tertunda.' });
-    }
-    
-    res.status(200).json(data);
-});
-
-app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
-    const { data, error } = await supabaseAdmin.from('users').insert([req.body]).select();
-    if (error) return res.status(500).json({ error: error.message });
-    res.status(201).json(data[0]);
-});
-
-app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
-    const { data, error } = await supabaseAdmin.from('users').delete().match({ id: req.params.id });
-    if (error) return res.status(500).json({ error: error.message });
-    res.status(200).json({ message: 'User dipadam' });
-});
-
-// Endpoint untuk Admin meluluskan pembayaran
-app.post('/api/users/:id/approve', requireAuth, requireAdmin, async (req, res) => {
-    const { id } = req.params; // Ini adalah 'id' (integer) dari jadual 'users'
-
-    try {
-        // Langkah 1: Dapatkan 'user_id' (UUID) dari jadual 'users'.
-        const { data: userData, error: userError } = await supabaseAdmin
-            .from('users')
-            .select('user_id')
-            .eq('id', id)
-            .single();
-
-        if (userError || !userData) throw new Error('Pengguna tidak ditemui.');
-        
-        const user_uuid = userData.user_id;
-
-        // Langkah 2: Kemas kini status dalam jadual 'payments' kepada 'verified'.
-        const { error: paymentError } = await supabaseAdmin
-            .from('payments')
-            .update({ status: 'verified', verified_at: new Date().toISOString() })
-            .eq('user_id', user_uuid)
-            .eq('status', 'pending');
-
-        if (paymentError) {
-            console.error('Ralat mengemas kini jadual payments:', paymentError);
-            throw new Error('Gagal mengemas kini rekod pembayaran.');
-        }
-
-        // Langkah 3: Kemas kini 'payment_status' dalam jadual 'users' kepada 'paid'.
-        const { data: updatedUserData, error: finalUserError } = await supabaseAdmin
-            .from('users')
-            .update({ payment_status: 'paid' })
-            .eq('id', id)
-            .select();
-
-        if (finalUserError) throw new Error('Gagal mengemas kini status pengguna.');
-
-        res.status(200).json(updatedUserData[0]);
-
-    } catch (error) {
-        console.error('Ralat semasa proses meluluskan pembayaran:', error);
-        return res.status(500).json({ error: error.message || 'Gagal meluluskan pembayaran pelanggan.' });
-    }
-});
-
-// Endpoint untuk Admin menolak pembayaran
-app.post('/api/users/:id/reject', requireAuth, requireAdmin, async (req, res) => {
-    const { id } = req.params; // Ini adalah 'id' (integer) dari jadual 'users'
-
-    try {
-        // Langkah 1: Dapatkan 'user_id' (UUID) dari jadual 'users'.
-        const { data: userData, error: userError } = await supabaseAdmin
-            .from('users')
-            .select('user_id')
-            .eq('id', id)
-            .single();
-
-        if (userError || !userData) throw new Error('Pengguna tidak ditemui.');
-
-        const user_uuid = userData.user_id;
-
-        // Langkah 2: Kemas kini status dalam jadual 'payments' kepada 'rejected'.
-        const { error: paymentError } = await supabaseAdmin
-            .from('payments')
-            .update({ status: 'rejected' })
-            .eq('user_id', user_uuid)
-            .eq('status', 'pending');
-
-        if (paymentError) {
-            console.error('Ralat mengemas kini jadual payments semasa menolak:', paymentError);
-            throw new Error('Gagal mengemas kini rekod pembayaran.');
-        }
-
-        // Langkah 3: Kemas kini 'payment_status' dalam jadual 'users' kepada 'rejected'.
-        const { data: updatedUserData, error: finalUserError } = await supabaseAdmin
-            .from('users')
-            .update({ payment_status: 'rejected' })
-            .eq('id', id)
-            .select();
-
-        if (finalUserError) throw new Error('Gagal mengemas kini status pengguna.');
-        
-        res.status(200).json(updatedUserData[0]);
-
-    } catch (error) {
-        console.error('Ralat semasa proses menolak pembayaran:', error);
-        return res.status(500).json({ error: error.message || 'Gagal menolak pembayaran pelanggan.' });
-    }
-});
-
-// 7. MULAKAN SERVER
 app.listen(port, () => {
-    console.log(`Server sedia untuk digunakan di port ${port}.`);
+    console.log(`Server affiliate sedang berjalan di http://localhost:${port}`);
 });
-
-// Export aplikasi untuk Vercel
-module.exports = app;
