@@ -1,0 +1,3 @@
+Expected: A POST request to /api/signin should execute the serverless function and return a JSON response. Vercel logs should show the function execution.
+
+Current: The request receives an HTML page, causing a frontend JavaScript error (`Unexpected token 'T'`). The Vercel function logs are completely empty, proving the function is never invoked. This occurs on the live production URL.
