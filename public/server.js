@@ -10,10 +10,9 @@ app.use(cors()); // Benarkan semua permintaan Cross-Origin
 app.use(express.json()); // Benarkan server menerima data dalam format JSON
 
 // --- Konfigurasi Supabase ---
-// Gantikan dengan URL dan Kunci 'service_role' projek Supabase anda
-// Penting: Gunakan kunci 'service_role' di backend untuk kebenaran penuh (admin). JANGAN dedahkan kunci ini di frontend.
-const supabaseUrl = 'URL_PROJEK_SUPABASE_ANDA';
-const supabaseKey = 'KUNCI_SERVICE_ROLE_SUPABASE_ANDA';
+// Menggunakan environment variables untuk keselamatan, yang akan disediakan oleh Vercel.
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 console.log("Server sedang cuba dihidupkan...");
