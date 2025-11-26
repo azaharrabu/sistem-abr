@@ -2,7 +2,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.75.0",
     "axios": "^1.12.2",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "cors": "^2.8.5"
   },
   "name": "reference",
   "version": "1.0.0",
