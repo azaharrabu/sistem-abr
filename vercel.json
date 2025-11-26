@@ -15,7 +15,7 @@
       "handle": "filesystem"
     },
     {
-      "src": "/(.*)",
+      "src": "/((?!api/).*)",
       "dest": "/public/$1"
     }
   ]
