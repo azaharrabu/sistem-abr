@@ -23,9 +23,9 @@ const openInteractiveButton = document.getElementById('open-interactive-button')
 const pendingPaymentsTableBody = document.getElementById('pending-payments-table-body');
 const logoutButtons = document.querySelectorAll('#logout-button-payment, #logout-button-pending, #logout-button-main, #logout-button-admin');
 const userInfoDisplays = document.querySelectorAll('#payment-user-info, #pending-user-info, #main-user-info, #admin-user-info');
-// Rujukan elemen affiliate
-const registerAffiliateButton = document.getElementById('register-affiliate-button');
-const affiliateDashboard = document.getElementById('affiliate-dashboard');
+const registerAffiliateButton = document.getElementById('btn-register-affiliate');
+const affiliateRegisterView = document.getElementById('affiliate-register-view');
+const affiliateDashboardView = document.getElementById('affiliate-dashboard-view');
 const affiliateCodeSpan = document.getElementById('affiliate-code');
 const affiliateLeaderboardLink = document.getElementById('affiliate-leaderboard-link');
 
@@ -201,8 +201,8 @@ const showUi = (user, profile, token) => {
     mainContentSection.style.display = 'none';
     adminPanelSection.style.display = 'none';
     // Sembunyikan elemen affiliate secara lalai
-    registerAffiliateButton.style.display = 'none';
-    affiliateDashboard.style.display = 'none';
+    affiliateRegisterView.style.display = 'none';
+    affiliateDashboardView.style.display = 'none';
 
     userInfoDisplays.forEach(display => {
         if (user && user.email) {
@@ -221,15 +221,19 @@ const showUi = (user, profile, token) => {
             case 'paid':
                 mainContentSection.style.display = 'block';
                 // Logik untuk paparan affiliate
-                if (profile.affiliate_code) {
+                if (profile.is_affiliate) {
                     // Jika pengguna adalah affiliate, papar dashboard
-                    affiliateCodeSpan.textContent = profile.affiliate_code;
-                    affiliateDashboard.style.display = 'block';
-                    registerAffiliateButton.style.display = 'none';
+                    affiliateRegisterView.style.display = 'none';
+                    affiliateDashboardView.style.display = 'block';
+                    // Populate data affiliate
+                    const affiliateLinkInput = document.getElementById('affiliate-link');
+                    if(affiliateLinkInput) {
+                        affiliateLinkInput.value = `${window.location.origin}?ref=${profile.affiliate_code}`;
+                    }
                 } else {
                     // Jika pengguna BUKAN affiliate, papar butang daftar
-                    registerAffiliateButton.style.display = 'block';
-                    affiliateDashboard.style.display = 'none';
+                    affiliateRegisterView.style.display = 'block';
+                    affiliateDashboardView.style.display = 'none';
                 }
                 break;
             case 'pending':
@@ -463,6 +467,19 @@ function initializeEventListeners() {
             e.preventDefault();
             // Anda boleh tukar URL ini kepada halaman sebenar nanti
             window.open('/affiliate-leaderboard.html', '_blank'); 
+        });
+    }
+
+    const viewDashboardButton = document.getElementById('btn-view-dashboard');
+    if(viewDashboardButton) {
+        viewDashboardButton.addEventListener('click', () => {
+            const leaderboardLink = document.querySelector('a[href="#affiliate-leaderboard"]');
+            if (leaderboardLink) {
+                leaderboardLink.click();
+            } else {
+                // Fallback if the link isn't found
+                window.location.hash = '#affiliate-leaderboard';
+            }
         });
     }
 }

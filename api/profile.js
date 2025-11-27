@@ -47,7 +47,8 @@ module.exports = async (req, res) => {
         throw affiliateError;
     }
     
-    // 4. Gabungkan kod affiliate ke dalam objek profil jika wujud
+    // 4. Gabungkan kod affiliate dan status ke dalam objek profil
+    profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
       profile.affiliate_code = affiliateInfo.affiliate_code;
     }
