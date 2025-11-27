@@ -21,6 +21,7 @@ const getUserIdFromToken = (authHeader) => {
 module.exports = async (req, res) => {
     try {
         const userId = getUserIdFromToken(req.headers.authorization);
+        console.log('>>>> [AFFILIATE-DASHBOARD] Fetching data for userId:', userId);
 
         // 1. Dapatkan maklumat affiliate
         const { data: affiliate, error: affiliateError } = await supabase
