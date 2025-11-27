@@ -2760,51 +2760,51 @@ vi.	Tangga keenam =  2750 mm
 
         // Fungsi untuk menyemak status pengguna menggunakan /api/profile
         async function checkUserAndShowAffiliateUI() {
+            alert('DEBUG 1: Memulakan semakan sesi pengguna...');
             const { data: { session } } = await supabase.auth.getSession();
+
             if (!session) {
+                alert('DEBUG 2: Sesi tidak ditemui. Bahagian affiliate akan disembunyikan.');
                 if(registerView) registerView.style.display = 'none';
                 if(dashboardView) dashboardView.style.display = 'none';
                 return;
             }
+            
+            alert('DEBUG 3: Sesi ditemui. Memanggil API /api/profile...');
 
             try {
-                // Panggil /api/profile yang kini mengandungi semua data yang diperlukan
                 const response = await fetch('/api/profile', {
                     headers: { 'Authorization': `Bearer ${session.access_token}` }
                 });
+                
+                alert(`DEBUG 4: Respons diterima dari /api/profile. Status: ${response.status}`);
 
                 if (!response.ok) {
-                    // Cuba dapatkan mesej ralat dari JSON jika ada
-                    try {
-                        const errData = await response.json();
-                         throw new Error(errData.error || `Ralat server: ${response.status}`);
-                    } catch (e) {
-                         throw new Error(`Ralat server: ${response.status}`);
-                    }
+                    const errorText = await response.text();
+                    throw new Error(`Gagal mendapatkan profil. Respons: ${errorText}`);
                 }
                 
                 const profile = await response.json();
-
+                alert(`DEBUG 5: Profil diterima. Status Affiliate: ${profile.is_affiliate}. Jumlah Jualan: ${profile.totalSalesAmount}`);
+                
                 const today = new Date();
                 const endDate = new Date(profile.subscription_end_date);
                 const isSubscriptionActive = profile.payment_status === 'paid' && endDate > today;
 
                 if (isSubscriptionActive) {
                     if (profile.is_affiliate) {
-                        // Jika affiliate, terus paparkan dashboard dengan data dari profil
                         showDashboard(profile);
                     } else {
-                        // Jika layak tetapi belum mendaftar, paparkan butang pendaftaran
                         if(dashboardView) dashboardView.style.display = 'none';
                         if(registerView) registerView.style.display = 'block';
                     }
                 } else {
-                    // Jika tidak layak, sembunyikan kedua-dua bahagian
                     if(registerView) registerView.style.display = 'none';
                     if(dashboardView) dashboardView.style.display = 'none';
                 }
 
             } catch (err) {
+                alert(`DEBUG 6: Ralat berlaku dalam proses. Mesej: ${err.message}`);
                 console.error("Profile/Dashboard API error:", err.message);
                 if(dashboardView) {
                     dashboardView.innerHTML = `<p style="color: red;">Gagal memuatkan data anda: ${err.message}</p>`;
