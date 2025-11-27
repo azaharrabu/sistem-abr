@@ -836,7 +836,7 @@
                                 <p id="affiliate-sales-value" style="font-size: 1.5em; font-weight: bold; margin: 5px 0;">RM 0.00</p>
                             </div>
                             <div class="dashboard-item">
-                                <label>Anggaran Komisyen:</label>
+                                <label>Komisyen:</label>
                                 <p id="affiliate-commission" style="font-size: 1.5em; font-weight: bold; margin: 5px 0;">RM 0.00</p>
                             </div>
                             <button id="btn-view-dashboard" class="btn-affiliate" style="margin-top: 1em;">Buka Papan Pemuka Affiliate</button>
@@ -2744,93 +2744,78 @@ vi.	Tangga keenam =  2750 mm
         const affiliateLinkInput = document.getElementById('affiliate-link');
 
         // Fungsi untuk memaparkan papan pemuka affiliate
-        function showDashboard(affiliateData) {
+        function showDashboard(profile) {
             if (!dashboardView || !registerView || !affiliateLinkInput) return;
 
             // Jana pautan affiliate yang dinamik berdasarkan domain semasa
-            affiliateLinkInput.value = `${window.location.origin}${window.location.pathname}?ref=${affiliateData.affiliate_code}`;
+            affiliateLinkInput.value = `${window.location.origin}${window.location.pathname}?ref=${profile.affiliate_code}`;
             
-            // Tetapkan nilai-nilai lain (pada masa hadapan, data ini akan datang dari backend)
-            document.getElementById('affiliate-sales-value').textContent = `RM ${parseFloat(affiliateData.total_sales_value || 0).toFixed(2)}`;
-            document.getElementById('affiliate-commission').textContent = `RM ${parseFloat(affiliateData.total_commission_earned || 0).toFixed(2)}`;
+            // Paparkan data jualan dan komisen terus dari objek profil
+            document.getElementById('affiliate-sales-value').textContent = `RM ${profile.totalSalesAmount || '0.00'}`;
+            document.getElementById('affiliate-commission').textContent = `RM ${profile.totalCommission || '0.00'}`;
             
             registerView.style.display = 'none';
             dashboardView.style.display = 'block';
         }
 
-        // Fungsi untuk menyemak status langganan dan affiliate pengguna
-        async function checkUserStatus() {
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError || !session) {
+        // Fungsi untuk menyemak status pengguna menggunakan /api/profile
+        async function checkUserAndShowAffiliateUI() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
                 if(registerView) registerView.style.display = 'none';
                 if(dashboardView) dashboardView.style.display = 'none';
                 return;
             }
-            const userId = session.user.id;
-            const token = session.access_token;
 
-            // Semak status langganan
-            const { data: userProfile, error: profileError } = await supabase
-                .from('users')
-                .select('subscription_plan, subscription_end_date, payment_status')
-                .eq('user_id', userId)
-                .single();
+            try {
+                // Panggil /api/profile yang kini mengandungi semua data yang diperlukan
+                const response = await fetch('/api/profile', {
+                    headers: { 'Authorization': `Bearer ${session.access_token}` }
+                });
 
-            if (profileError || !userProfile) {
-                if(registerView) registerView.style.display = 'none';
-                if(dashboardView) dashboardView.style.display = 'none';
-                return;
-            }
-            
-            const today = new Date();
-            const endDate = new Date(userProfile.subscription_end_date);
-            const isSubscriptionActive = userProfile.payment_status === 'paid' && endDate > today;
-            const isEligiblePlan = ['6 bulan', '12 bulan'].includes(userProfile.subscription_plan);
-
-            if (isSubscriptionActive && isEligiblePlan) {
-                // Pengguna layak, sekarang semak jika mereka sudah menjadi affiliate
-                const { data: affiliate, error: affiliateError } = await supabase
-                    .from('affiliates')
-                    .select('id') // Hanya perlu semak kewujudan
-                    .eq('user_id', userId)
-                    .single();
-
-                if (affiliate) {
-                    // Jika affiliate, panggil API untuk data dashboard
+                if (!response.ok) {
+                    // Cuba dapatkan mesej ralat dari JSON jika ada
                     try {
-                        const response = await fetch('/api/affiliate-dashboard', {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                        if (!response.ok) {
-                            const errData = await response.json();
-                            throw new Error(errData.error || 'Gagal memuatkan data dashboard.');
-                        }
-                        
-                        const dashboardData = await response.json();
-                        showDashboard(dashboardData);
+                        const errData = await response.json();
+                         throw new Error(errData.error || `Ralat server: ${response.status}`);
+                    } catch (e) {
+                         throw new Error(`Ralat server: ${response.status}`);
+                    }
+                }
+                
+                const profile = await response.json();
 
-                    } catch (err) {
-                        console.error("Dashboard API error:", err.message);
-                        if(dashboardView) {
-                            dashboardView.innerHTML = `<p style="color: red;">Gagal memuatkan data dashboard anda. Sila muat semula laman. (${err.message})</p>`;
-                            dashboardView.style.display = 'block';
-                        }
-                        if(registerView) registerView.style.display = 'none';
+                const today = new Date();
+                const endDate = new Date(profile.subscription_end_date);
+                const isSubscriptionActive = profile.payment_status === 'paid' && endDate > today;
+
+                if (isSubscriptionActive) {
+                    if (profile.is_affiliate) {
+                        // Jika affiliate, terus paparkan dashboard dengan data dari profil
+                        showDashboard(profile);
+                    } else {
+                        // Jika layak tetapi belum mendaftar, paparkan butang pendaftaran
+                        if(dashboardView) dashboardView.style.display = 'none';
+                        if(registerView) registerView.style.display = 'block';
                     }
                 } else {
-                    // Jika layak tetapi belum mendaftar, paparkan butang pendaftaran
+                    // Jika tidak layak, sembunyikan kedua-dua bahagian
+                    if(registerView) registerView.style.display = 'none';
                     if(dashboardView) dashboardView.style.display = 'none';
-                    if(registerView) registerView.style.display = 'block';
                 }
-            } else {
-                // Jika tidak layak, sembunyikan kedua-dua bahagian
+
+            } catch (err) {
+                console.error("Profile/Dashboard API error:", err.message);
+                if(dashboardView) {
+                    dashboardView.innerHTML = `<p style="color: red;">Gagal memuatkan data anda: ${err.message}</p>`;
+                    dashboardView.style.display = 'block';
+                }
                 if(registerView) registerView.style.display = 'none';
-                if(dashboardView) dashboardView.style.display = 'none';
             }
         }
 
         // Jalankan semakan status apabila halaman dimuatkan
-        checkUserStatus();
+        checkUserAndShowAffiliateUI();
 
         // Tambah event listener untuk butang pendaftaran
         if (btnRegister) {

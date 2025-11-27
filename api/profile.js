@@ -35,22 +35,38 @@ module.exports = async (req, res) => {
       throw profileError || new Error('User profile not found.');
     }
 
-    // 3. Dapatkan maklumat affiliate secara berasingan
+    // 3. Dapatkan maklumat affiliate secara berasingan dan kira statistik jika ada
     const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
       .select('affiliate_code')
       .eq('user_id', user.id)
       .single();
 
-    // Abaikan jika ralat affiliate adalah kerana tiada rekod (bukan semua orang affiliate)
+    // Abaikan jika ralat affiliate adalah kerana tiada rekod
     if (affiliateError && affiliateError.code !== 'PGRST116') {
         throw affiliateError;
     }
     
-    // 4. Gabungkan kod affiliate dan status ke dalam objek profil
+    // 4. Gabungkan data dan kira jualan
     profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
       profile.affiliate_code = affiliateInfo.affiliate_code;
+
+      // Terus kira statistik jualan di sini
+      const { data: sales } = await supabase
+        .from('affiliate_sales')
+        .select('amount')
+        .eq('affiliate_code', affiliateInfo.affiliate_code)
+        .eq('payment_status', 'paid');
+      
+      const salesData = sales || [];
+      const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.amount) || 0), 0);
+      const commissionRate = 10; // Kadar tetap 10%
+      const totalCommission = totalSalesAmount * (commissionRate / 100);
+
+      // Tambah statistik pada profil untuk dihantar ke frontend
+      profile.totalSalesAmount = totalSalesAmount.toFixed(2);
+      profile.totalCommission = totalCommission.toFixed(2);
     }
 
     // 5. Hantar data profil yang telah digabungkan
