@@ -23,12 +23,59 @@ const openInteractiveButton = document.getElementById('open-interactive-button')
 const pendingPaymentsTableBody = document.getElementById('pending-payments-table-body');
 const logoutButtons = document.querySelectorAll('#logout-button-payment, #logout-button-pending, #logout-button-main, #logout-button-admin');
 const userInfoDisplays = document.querySelectorAll('#payment-user-info, #pending-user-info, #main-user-info, #admin-user-info');
+// Rujukan elemen affiliate
+const registerAffiliateButton = document.getElementById('register-affiliate-button');
+const affiliateDashboard = document.getElementById('affiliate-dashboard');
+const affiliateCodeSpan = document.getElementById('affiliate-code');
+const affiliateLeaderboardLink = document.getElementById('affiliate-leaderboard-link');
 
 // Fungsi untuk mendapatkan token sesi semasa (digunakan sebagai fallback)
 const getSessionToken = async () => {
     const { data: { session } } = await _supabase.auth.getSession();
     return session ? session.access_token : null;
 };
+
+// Fungsi baru untuk mengendalikan pendaftaran affiliate
+async function handleRegisterAffiliate() {
+    const token = currentSessionToken;
+    if (!token) {
+        alert('Sesi anda telah tamat. Sila log masuk semula.');
+        return;
+    }
+
+    if (!confirm('Anda pasti mahu mendaftar sebagai agen affiliate?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/register-affiliate', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Gagal mendaftar sebagai affiliate.');
+        }
+
+        alert('Tahniah! Anda kini seorang affiliate. Laman akan dimuat semula.');
+
+        // Kemas kini profil pengguna di local storage dan muat semula UI
+        let customerProfile = JSON.parse(localStorage.getItem('customerProfile'));
+        if (customerProfile) {
+            // Gabungkan data baru (termasuk affiliate_code) ke dalam profil sedia ada
+            customerProfile = { ...customerProfile, ...data.profile };
+            localStorage.setItem('customerProfile', JSON.stringify(customerProfile));
+        }
+        
+        // Muat semula UI untuk memaparkan dashboard affiliate
+        const { data: { user } } = await _supabase.auth.getUser();
+        showUi(user, customerProfile, token);
+
+    } catch (error) {
+        alert(`Ralat: ${error.message}`);
+    }
+}
 
 // Fungsi untuk mengambil dan memaparkan permintaan pembayaran tertunda
 async function fetchPendingPayments(token) {
@@ -160,6 +207,9 @@ const showUi = (user, profile, token) => {
     pendingApprovalSection.style.display = 'none';
     mainContentSection.style.display = 'none';
     adminPanelSection.style.display = 'none';
+    // Sembunyikan elemen affiliate secara lalai
+    registerAffiliateButton.style.display = 'none';
+    affiliateDashboard.style.display = 'none';
 
     userInfoDisplays.forEach(display => {
         if (user && user.email) {
@@ -177,6 +227,17 @@ const showUi = (user, profile, token) => {
         switch (profile.payment_status) {
             case 'paid':
                 mainContentSection.style.display = 'block';
+                // Logik untuk paparan affiliate
+                if (profile.affiliate_code) {
+                    // Jika pengguna adalah affiliate, papar dashboard
+                    affiliateCodeSpan.textContent = profile.affiliate_code;
+                    affiliateDashboard.style.display = 'block';
+                    registerAffiliateButton.style.display = 'none';
+                } else {
+                    // Jika pengguna BUKAN affiliate, papar butang daftar
+                    registerAffiliateButton.style.display = 'block';
+                    affiliateDashboard.style.display = 'none';
+                }
                 break;
             case 'pending':
                 pendingApprovalSection.style.display = 'block';
@@ -400,7 +461,17 @@ function initializeEventListeners() {
     if (openInteractiveButton) {
         openInteractiveButton.addEventListener('click', handleOpenInteractiveSystem);
     }
-    // ... (kekal sama)
+    // Tambah event listener untuk butang affiliate
+    if (registerAffiliateButton) {
+        registerAffiliateButton.addEventListener('click', handleRegisterAffiliate);
+    }
+    if (affiliateLeaderboardLink) {
+        affiliateLeaderboardLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Anda boleh tukar URL ini kepada halaman sebenar nanti
+            window.open('/affiliate-leaderboard.html', '_blank'); 
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

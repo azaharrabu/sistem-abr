@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papan Pendahulu Affiliate</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="leaderboard-style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Papan Pendahulu Affiliate</h2>
+        </div>
+        <p>Lihat kedudukan terkini agen affiliate kami. Terima kasih atas usaha anda!</p>
+        <div id="leaderboard-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pangkat</th>
+                        <th>Nama Agen</th>
+                        <th>Jumlah Jualan</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-table-body">
+                    <!-- Data akan dimasukkan di sini oleh JavaScript -->
+                </tbody>
+            </table>
+            <div id="loading-message">Memuatkan data...</div>
+        </div>
+        <div class="nav-links">
+            <a href="/">Kembali ke Laman Utama</a>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="leaderboard.js"></script>
+</body>
+</html>
