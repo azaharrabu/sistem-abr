@@ -17,40 +17,46 @@ module.exports = async (req, res) => {
   try {
     // 1. Sahkan token pengguna dari header
     const user = await verifyToken(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Authentication failed: Invalid token.' });
+    }
 
-    // 2. Dapatkan profil dari jadual 'users' menggunakan user_id yang disahkan
+    // 2. Dapatkan profil utama dari jadual 'users'
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
       .eq('user_id', user.id)
       .single();
 
-    if (profileError) {
-      if (profileError.code === 'PGRST116') { // Kod ralat Supabase jika tiada baris ditemui
+    if (profileError || !profile) {
+      if (profileError && profileError.code === 'PGRST116') { // Tiada baris ditemui
         return res.status(404).json({ error: 'User profile not found.' });
       }
-      throw profileError;
+      throw profileError || new Error('User profile not found.');
     }
 
-    // 3. Semak status affiliate: Dapatkan data affiliate jika wujud
-    const { data: affiliateData, error: affiliateError } = await supabase
+    // 3. Dapatkan maklumat affiliate secara berasingan
+    const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
       .select('affiliate_code')
       .eq('user_id', user.id)
       .single();
 
-    // Jika tiada ralat dan data affiliate ditemui, tambahkan pada profil
-    if (!affiliateError && affiliateData) {
-      profile.affiliate_code = affiliateData.affiliate_code;
+    // Abaikan jika ralat affiliate adalah kerana tiada rekod (bukan semua orang affiliate)
+    if (affiliateError && affiliateError.code !== 'PGRST116') {
+        throw affiliateError;
+    }
+    
+    // 4. Gabungkan kod affiliate ke dalam objek profil jika wujud
+    if (affiliateInfo) {
+      profile.affiliate_code = affiliateInfo.affiliate_code;
     }
 
-    // 4. Hantar data profil (yang kini mungkin mengandungi affiliate_code)
+    // 5. Hantar data profil yang telah digabungkan
     return res.status(200).json(profile);
 
   } catch (err) {
-    // Tangani ralat dari verifyToken atau pangkalan data
     console.error('Profile API Error:', err.message);
-    // Hantar ralat pengesahan atau ralat server
     const statusCode = err.message.includes('Authentication failed') ? 401 : 500;
     return res.status(statusCode).json({ error: err.message });
   }
