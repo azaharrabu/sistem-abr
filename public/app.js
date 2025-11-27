@@ -77,9 +77,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         try {
-            const response = await fetch(`/api/users/${customerId}/approve`, {
+            const response = await fetch(`/api/approve-payment`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ customerId })
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Gagal meluluskan pembayaran.');
@@ -97,9 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         try {
-            const response = await fetch(`/api/users/${customerId}/reject`, {
+            const response = await fetch(`/api/reject-payment`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ customerId })
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Gagal menolak pembayaran.');
