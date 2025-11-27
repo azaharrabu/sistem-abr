@@ -13,21 +13,19 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // Kaedah yang lebih baik dan cekap berbanding query yang asal.
-
         // 1. Dapatkan semua jualan affiliate yang telah dibayar.
         const { data: sales, error: salesError } = await supabase
             .from('affiliate_sales')
-            .select('affiliate_code, amount')
+            .select('affiliate_id, amount') // Guna lajur 'affiliate_id'
             .eq('payment_status', 'paid');
 
         if (salesError) throw salesError;
 
-        // 2. Agregat jumlah jualan untuk setiap kod affiliate.
-        const salesByCode = sales.reduce((acc, sale) => {
-            const code = sale.affiliate_code;
+        // 2. Agregat jumlah jualan untuk setiap affiliate_id
+        const salesById = sales.reduce((acc, sale) => {
+            const id = sale.affiliate_id;
             const amount = parseFloat(sale.amount) || 0;
-            acc[code] = (acc[code] || 0) + amount;
+            acc[id] = (acc[id] || 0) + amount;
             return acc;
         }, {});
 
@@ -35,7 +33,7 @@ module.exports = async (req, res) => {
         const { data: affiliates, error: affiliatesError } = await supabase
             .from('affiliates')
             .select(`
-                affiliate_code,
+                id,
                 user_id,
                 users (
                     email
@@ -49,7 +47,7 @@ module.exports = async (req, res) => {
             const userEmail = affiliate.users ? affiliate.users.email : 'Pengguna Tidak Dikenali';
             return {
                 name: userEmail,
-                total_sales: salesByCode[affiliate.affiliate_code] || 0
+                total_sales: salesById[affiliate.id] || 0 // Padankan dengan affiliate.id
             };
         });
 
@@ -60,7 +58,6 @@ module.exports = async (req, res) => {
             .map((entry, index) => ({
                 rank: index + 1,
                 name: entry.name,
-                // Pastikan jumlah jualan dalam format dua titik perpuluhan
                 total_sales: parseFloat(entry.total_sales.toFixed(2)) 
             }));
 

@@ -35,10 +35,10 @@ module.exports = async (req, res) => {
       throw profileError || new Error('User profile not found.');
     }
 
-    // 3. Dapatkan maklumat affiliate (termasuk kadar komisyen) dan kira statistik jika ada
+    // 3. Dapatkan maklumat affiliate (termasuk ID dan kadar komisyen)
     const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
-      .select('affiliate_code, commission_rate')
+      .select('id, affiliate_code, commission_rate') // Dapatkan juga 'id'
       .eq('user_id', user.id)
       .single();
 
@@ -46,26 +46,26 @@ module.exports = async (req, res) => {
         throw affiliateError;
     }
     
-    // 4. Gabungkan data dan kira jualan
+    // 4. Gabungkan data dan kira jualan jika pengguna adalah affiliate
     profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
       profile.affiliate_code = affiliateInfo.affiliate_code;
       
-      // Kira statistik jualan
+      // Kira statistik jualan menggunakan 'affiliate_id'
       const { data: sales, error: salesError } = await supabase
         .from('affiliate_sales')
         .select('amount')
-        .eq('affiliate_code', affiliateInfo.affiliate_code)
+        .eq('affiliate_id', affiliateInfo.id) // Guna 'affiliate_id' yang betul
         .eq('payment_status', 'paid');
       
       if (salesError) {
+          // Jangan hentikan proses jika hanya query jualan gagal, cuma log ralat
           console.error('Sales query error:', salesError.message);
       }
       
       const salesData = sales || [];
       const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.amount) || 0), 0);
       
-      // Gunakan kadar komisyen dari database, bukan hardcoded
       const commissionRate = parseFloat(affiliateInfo.commission_rate) || 0;
       const totalCommission = totalSalesAmount * (commissionRate / 100);
 
