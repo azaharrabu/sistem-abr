@@ -30,10 +30,20 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // 1. Daftar pengguna baru di Supabase Auth
+    // 1. Daftar pengguna baru di Supabase Auth.
+    // Maklumat tambahan dihantar melalui options.data untuk digunakan oleh Database Trigger.
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+            subscription_plan: subscription_plan,
+            subscription_price: subscriptionPrices[subscription_plan],
+            is_promo_user: true,
+            referred_by: referred_by || null,
+            payment_status: 'rejected'
+        }
+      }
     });
 
     if (signUpError) {
@@ -44,32 +54,9 @@ module.exports = async (req, res) => {
         return res.status(500).json({ error: "Signup succeeded but no user data returned."})
     }
 
-    // 2. Cipta profil pengguna dalam jadual 'public.users'
-    const price = subscriptionPrices[subscription_plan];
-
-    const { error: insertError } = await supabase
-      .from('users')
-      .insert({
-        user_id: authData.user.id,
-        email: authData.user.email,
-        subscription_plan: subscription_plan,
-        subscription_price: price,
-        is_promo_user: true, // Anggap semua pendaftaran awal adalah promo
-        referred_by: referred_by || null, // Simpan kod affiliate jika ada
-        payment_status: 'rejected' // Status awal sebelum pembayaran
-      });
-
-    if (insertError) {
-      // Ini adalah kes di mana Auth berjaya tetapi sisipan profil gagal.
-      // Ini boleh berlaku jika pengguna sudah wujud dalam 'users' tetapi tidak dalam 'auth.users' (jarang berlaku).
-      // Untuk keselamatan, kita perlu memadam pengguna yang baru dicipta dari Auth untuk mengelakkan akaun "yatim".
-      console.error('Failed to insert user profile after auth signup:', insertError.message);
-      await supabase.auth.admin.deleteUser(authData.user.id);
-      return res.status(500).json({ error: `Failed to create user profile: ${insertError.message}` });
-    }
-
-    // 3. Hantar respons berjaya. Frontend akan memberitahu pengguna untuk menyemak emel.
+    // 2. Pendaftaran Auth berjaya. Trigger pangkalan data akan menguruskan penciptaan profil.
     return res.status(201).json({ message: 'Signup successful. Please check your email for verification.' });
+
 
   } catch (err) {
     console.error('Server Error:', err.message);
