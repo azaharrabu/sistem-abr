@@ -45,18 +45,22 @@ module.exports = async (req, res) => {
             throw new Error('Failed to fetch sales data.');
         }
 
-        const totalSalesAmount = sales.reduce((sum, sale) => sum + sale.amount, 0);
-        const totalSalesCount = sales.length;
+        // Handle case where there are no sales, so 'sales' might be null
+        const salesData = sales || [];
 
-        // 3. Kira jumlah komisyen
-        const totalCommission = totalSalesAmount * (affiliate.commission_rate / 100);
+        const totalSalesAmount = salesData.reduce((sum, sale) => sum + sale.amount, 0);
+        const totalSalesCount = salesData.length;
+
+        // 3. Kira jumlah komisyen (handle null commission_rate)
+        const commissionRate = affiliate.commission_rate || 0;
+        const totalCommission = totalSalesAmount * (commissionRate / 100);
 
         // 4. Hantar data dashboard
         res.status(200).json({
             totalSalesAmount: totalSalesAmount.toFixed(2),
             totalCommission: totalCommission.toFixed(2),
             totalSalesCount: totalSalesCount,
-            commissionRate: affiliate.commission_rate
+            commissionRate: commissionRate
         });
 
     } catch (error) {
