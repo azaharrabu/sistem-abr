@@ -58,19 +58,12 @@ async function handleRegisterAffiliate() {
             throw new Error(data.error || 'Gagal mendaftar sebagai affiliate.');
         }
 
-        alert('Tahniah! Anda kini seorang affiliate. Laman akan dimuat semula.');
+        alert('Tahniah! Anda kini seorang affiliate. Antaramuka akan dikemaskini.');
 
-        // Kemas kini profil pengguna di local storage dan muat semula UI
-        let customerProfile = JSON.parse(localStorage.getItem('customerProfile'));
-        if (customerProfile) {
-            // Gabungkan data baru (termasuk affiliate_code) ke dalam profil sedia ada
-            customerProfile = { ...customerProfile, ...data.profile };
-            localStorage.setItem('customerProfile', JSON.stringify(customerProfile));
-        }
-        
-        // Muat semula UI untuk memaparkan dashboard affiliate
-        const { data: { user } } = await _supabase.auth.getUser();
-        showUi(user, customerProfile, token);
+        // Padam cache profil lama dan panggil semula fungsi semak sesi
+        // untuk mendapatkan profil terkini (termasuk data affiliate) dari server.
+        localStorage.removeItem('customerProfile');
+        await checkUserSession();
 
     } catch (error) {
         alert(`Ralat: ${error.message}`);

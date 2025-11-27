@@ -32,7 +32,19 @@ module.exports = async (req, res) => {
       throw profileError;
     }
 
-    // 3. Hantar data profil
+    // 3. Semak status affiliate: Dapatkan data affiliate jika wujud
+    const { data: affiliateData, error: affiliateError } = await supabase
+      .from('affiliates')
+      .select('affiliate_code')
+      .eq('user_id', user.id)
+      .single();
+
+    // Jika tiada ralat dan data affiliate ditemui, tambahkan pada profil
+    if (!affiliateError && affiliateData) {
+      profile.affiliate_code = affiliateData.affiliate_code;
+    }
+
+    // 4. Hantar data profil (yang kini mungkin mengandungi affiliate_code)
     return res.status(200).json(profile);
 
   } catch (err) {
