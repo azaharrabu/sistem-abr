@@ -1,27 +1,16 @@
 const { createClient } = require('@supabase/supabase-js');
-const { decode } = require('jsonwebtoken');
+const { verifyToken } = require('../_utils/auth'); // Use the project's standard auth utility
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Helper untuk mengesahkan token dan mendapatkan ID pengguna
-const getUserIdFromToken = (authHeader) => {
-    if (!authHeader) {
-        throw new Error('Authorization header is missing');
-    }
-    const token = authHeader.split(' ')[1];
-    const decodedToken = decode(token);
-    if (!decodedToken || !decodedToken.sub) {
-        throw new Error('Invalid token');
-    }
-    return decodedToken.sub; // `sub` biasanya adalah user ID
-};
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
 
 module.exports = async (req, res) => {
     try {
-        const userId = getUserIdFromToken(req.headers.authorization);
-        console.log('>>>> [AFFILIATE-DASHBOARD] Fetching data for userId:', userId);
+        // Use the verified user object from the project's standard auth utility
+        const user = await verifyToken(req);
+        const userId = user.id;
 
         // 1. Dapatkan maklumat affiliate
         const { data: affiliate, error: affiliateError } = await supabase
@@ -31,6 +20,8 @@ module.exports = async (req, res) => {
             .single();
 
         if (affiliateError || !affiliate) {
+            // This can happen if a user is an affiliate but their record is faulty.
+            console.warn(`Affiliate profile not found for verified userId: ${userId}`);
             return res.status(404).json({ error: 'Affiliate profile not found.' });
         }
 
@@ -39,14 +30,14 @@ module.exports = async (req, res) => {
             .from('affiliate_sales')
             .select('amount', { count: 'exact' })
             .eq('affiliate_code', affiliate.affiliate_code)
-            .eq('payment_status', 'paid'); // Hanya kira jualan yang sudah disahkan 'paid'
+            .eq('payment_status', 'paid');
 
         if (salesError) {
             console.error('Error fetching affiliate sales:', salesError);
             throw new Error('Failed to fetch sales data.');
         }
 
-        // Defensively handle sales data
+        // Defensively handle sales data being null or not an array
         const salesData = sales || [];
 
         const totalSalesAmount = salesData.reduce((sum, sale) => {
@@ -69,7 +60,12 @@ module.exports = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Affiliate Dashboard Error:', error);
-        res.status(500).json({ error: error.message });
+        console.error('Affiliate Dashboard Error:', error.message);
+        // If verifyToken fails, it will throw an error with a specific message
+        if (error.message.includes('Authentication failed')) {
+            return res.status(401).json({ error: error.message });
+        }
+        // For other errors, return a generic 500
+        res.status(500).json({ error: 'An internal server error occurred.' });
     }
 };
