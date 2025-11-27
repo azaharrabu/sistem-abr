@@ -35,14 +35,13 @@ module.exports = async (req, res) => {
       throw profileError || new Error('User profile not found.');
     }
 
-    // 3. Dapatkan maklumat affiliate secara berasingan dan kira statistik jika ada
+    // 3. Dapatkan maklumat affiliate (termasuk kadar komisyen) dan kira statistik jika ada
     const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
-      .select('affiliate_code')
+      .select('affiliate_code, commission_rate')
       .eq('user_id', user.id)
       .single();
 
-    // Abaikan jika ralat affiliate adalah kerana tiada rekod
     if (affiliateError && affiliateError.code !== 'PGRST116') {
         throw affiliateError;
     }
@@ -51,27 +50,24 @@ module.exports = async (req, res) => {
     profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
       profile.affiliate_code = affiliateInfo.affiliate_code;
-      console.log(`>>>> [PROFILE DEBUG] Affiliate found with code: ${profile.affiliate_code}`);
-
-      // Terus kira statistik jualan di sini
+      
+      // Kira statistik jualan
       const { data: sales, error: salesError } = await supabase
         .from('affiliate_sales')
         .select('amount')
         .eq('affiliate_code', affiliateInfo.affiliate_code)
         .eq('payment_status', 'paid');
       
-      // Log untuk tujuan penyahpepijatan
-      console.log('>>>> [PROFILE DEBUG] Raw sales data from DB:', JSON.stringify(sales));
       if (salesError) {
-          console.error('>>>> [PROFILE DEBUG] Sales query error:', salesError.message);
+          console.error('Sales query error:', salesError.message);
       }
       
       const salesData = sales || [];
       const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.amount) || 0), 0);
-      const commissionRate = 10; // Kadar tetap 10%
+      
+      // Gunakan kadar komisyen dari database, bukan hardcoded
+      const commissionRate = parseFloat(affiliateInfo.commission_rate) || 0;
       const totalCommission = totalSalesAmount * (commissionRate / 100);
-
-      console.log(`>>>> [PROFILE DEBUG] Calculated Total Sales: ${totalSalesAmount}`);
 
       // Tambah statistik pada profil untuk dihantar ke frontend
       profile.totalSalesAmount = totalSalesAmount.toFixed(2);

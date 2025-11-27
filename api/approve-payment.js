@@ -45,34 +45,40 @@ module.exports = async (req, res) => {
     }
 
     // 2. Cari bayaran 'pending', kemas kini kepada 'approved', dan dapatkan jumlahnya.
-    const { data: approvedPayment, error: paymentError } = await supabase
+    // .single() dibuang untuk mengelakkan ralat jika wujud beberapa bayaran 'pending'
+    const { data: approvedPayments, error: paymentError } = await supabase
         .from('payments')
         .update({ status: 'approved' })
         .eq('user_id', customerId)
-        .eq('status', 'pending') // Pastikan hanya bayaran pending yang dikemas kini
-        .select('amount')
-        .single();
+        .eq('status', 'pending')
+        .select('amount');
 
-    if (paymentError || !approvedPayment) {
+    if (paymentError) {
+        throw new Error(`Error updating payment: ${paymentError.message}`);
+    }
+
+    if (!approvedPayments || approvedPayments.length === 0) {
         console.warn(`Could not find a 'pending' payment record to approve for user ${customerId}. Affiliate sale cannot be recorded.`);
         return res.status(200).json({ message: 'Payment status for user updated, but no pending payment record was found to approve.' });
     }
+    
+    const paymentForSale = approvedPayments[0];
 
     // 3. Jika pengguna dirujuk & jumlah bayaran > 0, cipta rekod jualan menggunakan jumlah dari rekod bayaran
-    if (updatedUser.referred_by && approvedPayment.amount > 0) {
+    if (updatedUser.referred_by && paymentForSale.amount > 0) {
         const { error: saleInsertError } = await supabase
             .from('affiliate_sales')
             .insert({
                 affiliate_code: updatedUser.referred_by,
                 customer_id: customerId,
-                amount: approvedPayment.amount, // Gunakan jumlah yang betul dari jadual payments
+                amount: paymentForSale.amount, // Gunakan jumlah yang betul
                 payment_status: 'paid'
             });
         
         if (saleInsertError) {
             console.error(`CRITICAL: Failed to insert affiliate sale record for code ${updatedUser.referred_by}`, saleInsertError.message);
         } else {
-            console.log(`Successfully recorded affiliate sale for code ${updatedUser.referred_by} with amount ${approvedPayment.amount}`);
+            console.log(`Successfully recorded affiliate sale for code ${updatedUser.referred_by} with amount ${paymentForSale.amount}`);
         }
     }
 
