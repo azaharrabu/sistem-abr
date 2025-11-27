@@ -37,33 +37,44 @@ module.exports = async (req, res) => {
         .from('users')
         .update({ payment_status: 'paid' })
         .eq('user_id', customerId)
-        .select('referred_by, subscription_price')
+        .select('referred_by')
         .single();
 
     if (updateUserError || !updatedUser) {
         throw new Error(`Failed to update user status: ${updateUserError?.message || 'User not found'}`);
     }
 
-    // 2. Jika pengguna dirujuk oleh affiliate, cipta rekod jualan
-    if (updatedUser.referred_by) {
+    // 2. Cari bayaran 'pending', kemas kini kepada 'approved', dan dapatkan jumlahnya.
+    const { data: approvedPayment, error: paymentError } = await supabase
+        .from('payments')
+        .update({ status: 'approved' })
+        .eq('user_id', customerId)
+        .eq('status', 'pending') // Pastikan hanya bayaran pending yang dikemas kini
+        .select('amount')
+        .single();
+
+    if (paymentError || !approvedPayment) {
+        console.warn(`Could not find a 'pending' payment record to approve for user ${customerId}. Affiliate sale cannot be recorded.`);
+        return res.status(200).json({ message: 'Payment status for user updated, but no pending payment record was found to approve.' });
+    }
+
+    // 3. Jika pengguna dirujuk & jumlah bayaran > 0, cipta rekod jualan menggunakan jumlah dari rekod bayaran
+    if (updatedUser.referred_by && approvedPayment.amount > 0) {
         const { error: saleInsertError } = await supabase
             .from('affiliate_sales')
             .insert({
                 affiliate_code: updatedUser.referred_by,
                 customer_id: customerId,
-                amount: updatedUser.subscription_price,
+                amount: approvedPayment.amount, // Gunakan jumlah yang betul dari jadual payments
                 payment_status: 'paid'
             });
         
         if (saleInsertError) {
             console.error(`CRITICAL: Failed to insert affiliate sale record for code ${updatedUser.referred_by}`, saleInsertError.message);
         } else {
-            console.log(`Successfully recorded affiliate sale for code ${updatedUser.referred_by}`);
+            console.log(`Successfully recorded affiliate sale for code ${updatedUser.referred_by} with amount ${approvedPayment.amount}`);
         }
     }
-
-    // 3. Kemas kini status dalam jadual 'payments'
-    await supabase.from('payments').update({ status: 'approved' }).eq('user_id', customerId);
 
     return res.status(200).json({ message: 'Payment approved successfully.' });
 
