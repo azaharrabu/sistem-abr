@@ -126,13 +126,27 @@
             </div>
 
             <!-- Bahagian untuk Paparan Affiliate -->
-            <div id="affiliate-dashboard-view" style="display: none; margin-top: 25px; padding: 20px; background-color: #e9f5ff; border: 1px solid #b3d7ff; border-radius: 8px;">
-                <h4>Dashboard Affiliate Anda</h4>
-                <p>Tahniah! Anda kini adalah agen affiliate ABR. Gunakan kod unik di bawah untuk mula merujuk.</p>
-                <p><strong>Kod Rujukan Anda:</strong> <span id="affiliate-code" style="font-weight: bold; background-color: #d1ecff; padding: 3px 8px; border-radius: 4px;"></span></p>
-                <div class="nav-links">
-                    <a href="affiliate-leaderboard.html" target="_blank" id="affiliate-leaderboard-link">Lihat Papan Pendahulu & Prestasi Anda</a>
+            <div id="affiliate-dashboard-view" style="display: none; margin-top: 25px; padding: 20px; background-color: #e9f5ff; border: 1px solid #b3d7ff; border-radius: 8px; text-align: left;">
+                <h3 style="margin-top:0; color: #343a40;">Papan Pemuka Affiliate Anda</h3>
+                <div class="dashboard-item">
+                    <label for="affiliate-link">Pautan Affiliate Unik Anda (untuk dikongsi):</label>
+                    <input type="text" id="affiliate-link" readonly style="cursor: copy; width: 100%; box-sizing: border-box;">
                 </div>
+                <div class="dashboard-item">
+                    <p><strong>Kod Rujukan Anda:</strong> <span id="affiliate-code" style="font-weight: bold; background-color: #d1ecff; padding: 3px 8px; border-radius: 4px;"></span></p>
+                </div>
+                <div class="dashboard-item">
+                    <label>Jumlah Jualan:</label>
+                    <p id="affiliate-sales-value" style="font-size: 1.5em; font-weight: bold; margin: 5px 0;">Memuatkan...</p>
+                </div>
+                <div class="dashboard-item">
+                    <label>Anggaran Komisyen:</label>
+                    <p id="affiliate-commission" style="font-size: 1.5em; font-weight: bold; margin: 5px 0;">Memuatkan...</p>
+                </div>
+                 <div class="nav-links" style="text-align: left; padding: 10px 0;">
+                    <a href="affiliate-leaderboard.html" target="_blank" id="affiliate-leaderboard-link">Lihat Papan Pendahulu & Prestasi Terperinci</a>
+                </div>
+                <small style="color: #6c757d; display: block; margin-top: 1em;">Statistik akan dikemas kini secara berkala.</small>
             </div>
         </div>
 

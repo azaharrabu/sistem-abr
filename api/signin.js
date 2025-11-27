@@ -77,7 +77,29 @@ module.exports = async (req, res) => {
     }
     
     console.log(`Profile for ${email} fetched successfully. Role: ${profile.role}`);
-    // 3. Hantar respons yang berjaya bersama session dan profile
+
+    // 3. Semak status affiliate pengguna
+    const { data: affiliateInfo, error: affiliateError } = await supabase
+      .from('affiliates')
+      .select('affiliate_code')
+      .eq('user_id', authData.user.id)
+      .single();
+
+    // Ralat di sini tidak sepatutnya menghentikan proses, kerana tidak semua pengguna adalah affiliate
+    if (affiliateError && affiliateError.code !== 'PGRST116') {
+      console.warn(`Error checking affiliate status for ${email}:`, affiliateError.message);
+    }
+    
+    // 4. Gabungkan maklumat affiliate ke dalam profil
+    profile.is_affiliate = !!affiliateInfo;
+    if (affiliateInfo) {
+      profile.affiliate_code = affiliateInfo.affiliate_code;
+      console.log(`User ${email} is an affiliate with code: ${affiliateInfo.affiliate_code}`);
+    } else {
+      console.log(`User ${email} is not an affiliate.`);
+    }
+
+    // 5. Hantar respons yang berjaya bersama session dan profile yang telah digabungkan
     return res.status(200).json({
       session: authData.session,
       user: authData.user,

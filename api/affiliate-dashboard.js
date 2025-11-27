@@ -1,72 +1,66 @@
-// api/affiliate-dashboard.js
 const { createClient } = require('@supabase/supabase-js');
-const { verifyToken } = require('../_utils/auth'); // Andaikan kita ada fungsi helper untuk pengesahan token
+const { decode } = require('jsonwebtoken');
 
-// Inisialisasi Supabase client menggunakan environment variables
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Helper untuk mengesahkan token dan mendapatkan ID pengguna
+const getUserIdFromToken = (authHeader) => {
+    if (!authHeader) {
+        throw new Error('Authorization header is missing');
+    }
+    const token = authHeader.split(' ')[1];
+    const decodedToken = decode(token);
+    if (!decodedToken || !decodedToken.sub) {
+        throw new Error('Invalid token');
+    }
+    return decodedToken.sub; // `sub` biasanya adalah user ID
+};
 
 module.exports = async (req, res) => {
-    // Hanya benarkan permintaan GET
-    if (req.method !== 'GET') {
-        res.setHeader('Allow', 'GET');
-        return res.status(405).json({ error: 'Method Not Allowed' });
-    }
-
     try {
-        // 1. Sahkan token JWT pengguna
-        const user = await verifyToken(req);
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication failed.' });
-        }
+        const userId = getUserIdFromToken(req.headers.authorization);
 
-        // 2. Dapatkan ID affiliate dari jadual 'affiliates' menggunakan user_id
+        // 1. Dapatkan maklumat affiliate
         const { data: affiliate, error: affiliateError } = await supabase
             .from('affiliates')
-            .select('id, affiliate_code')
-            .eq('user_id', user.id)
+            .select('affiliate_code, commission_rate')
+            .eq('user_id', userId)
             .single();
 
         if (affiliateError || !affiliate) {
-            return res.status(404).json({ error: 'Affiliate profile not found for this user.' });
+            return res.status(404).json({ error: 'Affiliate profile not found.' });
         }
 
-        // 3. Kira jumlah jualan dan komisyen dari jadual 'sales'
-        const { data: salesData, error: salesError } = await supabase
-            .from('sales')
-            .select('sale_amount, commission_amount')
-            .eq('affiliate_id', affiliate.id);
+        // 2. Kira jumlah jualan yang berjaya
+        const { data: sales, error: salesError } = await supabase
+            .from('affiliate_sales')
+            .select('amount', { count: 'exact' })
+            .eq('affiliate_code', affiliate.affiliate_code)
+            .eq('payment_status', 'paid'); // Hanya kira jualan yang sudah disahkan 'paid'
 
         if (salesError) {
-            throw salesError;
+            console.error('Error fetching affiliate sales:', salesError);
+            throw new Error('Failed to fetch sales data.');
         }
 
-        // 4. Lakukan pengiraan jumlah
-        const total_sales_value = salesData.reduce((sum, sale) => sum + sale.sale_amount, 0);
-        const total_commission_earned = salesData.reduce((sum, sale) => sum + sale.commission_amount, 0);
+        const totalSalesAmount = sales.reduce((sum, sale) => sum + sale.amount, 0);
+        const totalSalesCount = sales.length;
 
-        // 5. Bina objek data untuk dihantar kembali ke frontend
-        const dashboardData = {
-            affiliate_code: affiliate.affiliate_code,
-            total_sales_value: total_sales_value,
-            total_commission_earned: total_commission_earned,
-            // Anda boleh tambah data lain di sini pada masa hadapan, contohnya:
-            // total_clicks: 0,
-            // conversion_rate: 0,
-            // recent_sales: salesData.slice(0, 5) // 5 jualan terbaharu
-        };
+        // 3. Kira jumlah komisyen
+        const totalCommission = totalSalesAmount * (affiliate.commission_rate / 100);
 
-        // 6. Hantar data kembali sebagai respons JSON
-        return res.status(200).json(dashboardData);
+        // 4. Hantar data dashboard
+        res.status(200).json({
+            totalSalesAmount: totalSalesAmount.toFixed(2),
+            totalCommission: totalCommission.toFixed(2),
+            totalSalesCount: totalSalesCount,
+            commissionRate: affiliate.commission_rate
+        });
 
     } catch (error) {
-        console.error('API Error:', error.message);
-        // Jika ralat adalah kerana token tidak sah dari verifyToken
-        if (error.message.includes('Authentication')) {
-             return res.status(401).json({ error: error.message });
-        }
-        return res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Affiliate Dashboard Error:', error);
+        res.status(500).json({ error: error.message });
     }
 };

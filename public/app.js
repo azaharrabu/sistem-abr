@@ -163,6 +163,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function fetchAffiliateDashboard(token) {
+        const salesValueEl = document.getElementById('affiliate-sales-value');
+        const commissionEl = document.getElementById('affiliate-commission');
+
+        try {
+            const response = await fetch('/api/affiliate-dashboard', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                throw new Error('Gagal memuatkan data affiliate.');
+            }
+            const data = await response.json();
+            if (salesValueEl) salesValueEl.textContent = `RM ${data.totalSalesAmount}`;
+            if (commissionEl) commissionEl.textContent = `RM ${data.totalCommission}`;
+
+        } catch (error) {
+            console.error('Fetch dashboard error:', error);
+            if (salesValueEl) salesValueEl.textContent = 'Ralat';
+            if (commissionEl) commissionEl.textContent = 'Ralat';
+        }
+    }
+
     // Fungsi untuk memaparkan UI berdasarkan status & peranan pengguna
     const showUi = (user, profile, token) => {
         currentSessionToken = token;
@@ -194,6 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (affiliateLinkInput) {
                             affiliateLinkInput.value = `${window.location.origin}?ref=${profile.affiliate_code}`;
                         }
+                        // Panggil fungsi untuk memuatkan data dashboard
+                        fetchAffiliateDashboard(token);
                     } else {
                         if (affiliateRegisterView) affiliateRegisterView.style.display = 'block';
                         if (affiliateDashboardView) affiliateDashboardView.style.display = 'none';
@@ -237,7 +261,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!customerProfile || customerProfile.user_id !== session.user.id) {
                 const token = session.access_token;
                 const response = await fetch('/api/profile', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    cache: 'no-cache' // Elakkan caching profil
                 });
                 if (response.ok) {
                     customerProfile = await response.json();
