@@ -81,7 +81,7 @@ module.exports = async (req, res) => {
     // 3. Semak status affiliate pengguna
     const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
-      .select('affiliate_code')
+      .select('affiliate_code, commission_rate')
       .eq('user_id', authData.user.id)
       .single();
 
@@ -90,11 +90,28 @@ module.exports = async (req, res) => {
       console.warn(`Error checking affiliate status for ${email}:`, affiliateError.message);
     }
     
-    // 4. Gabungkan maklumat affiliate ke dalam profil
+    // 4. Gabungkan maklumat affiliate dan kira jualan jika dia seorang affiliate
     profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
       profile.affiliate_code = affiliateInfo.affiliate_code;
       console.log(`User ${email} is an affiliate with code: ${affiliateInfo.affiliate_code}`);
+
+      // Terus kira statistik jualan di sini
+      const { data: sales } = await supabase
+        .from('affiliate_sales')
+        .select('amount')
+        .eq('affiliate_code', affiliateInfo.affiliate_code)
+        .eq('payment_status', 'paid');
+      
+      const salesData = sales || [];
+      const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.amount) || 0), 0);
+      const commissionRate = parseFloat(affiliateInfo.commission_rate) || 0;
+      const totalCommission = totalSalesAmount * (commissionRate / 100);
+
+      // Tambah statistik pada profil untuk dihantar ke frontend
+      profile.totalSalesAmount = totalSalesAmount.toFixed(2);
+      profile.totalCommission = totalCommission.toFixed(2);
+
     } else {
       console.log(`User ${email} is not an affiliate.`);
     }

@@ -163,27 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function fetchAffiliateDashboard(token) {
-        const salesValueEl = document.getElementById('affiliate-sales-value');
-        const commissionEl = document.getElementById('affiliate-commission');
-
-        try {
-            const response = await fetch('/api/affiliate-dashboard', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) {
-                throw new Error('Gagal memuatkan data affiliate.');
-            }
-            const data = await response.json();
-            if (salesValueEl) salesValueEl.textContent = `RM ${data.totalSalesAmount}`;
-            if (commissionEl) commissionEl.textContent = `RM ${data.totalCommission}`;
-
-        } catch (error) {
-            console.error('Fetch dashboard error:', error);
-            if (salesValueEl) salesValueEl.textContent = 'Ralat';
-            if (commissionEl) commissionEl.textContent = 'Ralat';
-        }
-    }
+    // Fungsi fetchAffiliateDashboard telah dibuang kerana tidak lagi diperlukan.
 
     // Fungsi untuk memaparkan UI berdasarkan status & peranan pengguna
     const showUi = (user, profile, token) => {
@@ -216,8 +196,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (affiliateLinkInput) {
                             affiliateLinkInput.value = `${window.location.origin}?ref=${profile.affiliate_code}`;
                         }
-                        // Panggil fungsi untuk memuatkan data dashboard
-                        fetchAffiliateDashboard(token);
+                        
+                        // Data kini dibaca terus dari profil, tidak perlu fetch berasingan.
+                        const salesValueEl = document.getElementById('affiliate-sales-value');
+                        const commissionEl = document.getElementById('affiliate-commission');
+
+                        if (salesValueEl) {
+                            salesValueEl.textContent = `RM ${profile.totalSalesAmount || '0.00'}`;
+                        }
+                        if (commissionEl) {
+                            commissionEl.textContent = `RM ${profile.totalCommission || '0.00'}`;
+                        }
+
                     } else {
                         if (affiliateRegisterView) affiliateRegisterView.style.display = 'block';
                         if (affiliateDashboardView) affiliateDashboardView.style.display = 'none';
