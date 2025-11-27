@@ -1,6 +1,6 @@
 // api/reject-payment.js
 const { createClient } = require('@supabase/supabase-js');
-const { verifyToken } = require('../_utils/auth');
+const { verifyToken } = require('./_utils/auth');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
