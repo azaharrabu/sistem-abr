@@ -51,18 +51,27 @@ module.exports = async (req, res) => {
     profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
       profile.affiliate_code = affiliateInfo.affiliate_code;
+      console.log(`>>>> [PROFILE DEBUG] Affiliate found with code: ${profile.affiliate_code}`);
 
       // Terus kira statistik jualan di sini
-      const { data: sales } = await supabase
+      const { data: sales, error: salesError } = await supabase
         .from('affiliate_sales')
         .select('amount')
         .eq('affiliate_code', affiliateInfo.affiliate_code)
         .eq('payment_status', 'paid');
       
+      // Log untuk tujuan penyahpepijatan
+      console.log('>>>> [PROFILE DEBUG] Raw sales data from DB:', JSON.stringify(sales));
+      if (salesError) {
+          console.error('>>>> [PROFILE DEBUG] Sales query error:', salesError.message);
+      }
+      
       const salesData = sales || [];
       const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.amount) || 0), 0);
       const commissionRate = 10; // Kadar tetap 10%
       const totalCommission = totalSalesAmount * (commissionRate / 100);
+
+      console.log(`>>>> [PROFILE DEBUG] Calculated Total Sales: ${totalSalesAmount}`);
 
       // Tambah statistik pada profil untuk dihantar ke frontend
       profile.totalSalesAmount = totalSalesAmount.toFixed(2);
