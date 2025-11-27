@@ -1,5 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-const { verifyToken } = require('../_utils/auth'); // Use the project's standard auth utility
+const { verifyToken } = require('./_utils/auth'); // Use the project's standard auth utility
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
