@@ -155,14 +155,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     const approveButton = document.createElement('button');
                     approveButton.textContent = 'Luluskan';
                     approveButton.className = 'approve-button';
-                    approveButton.addEventListener('click', (event) => handleApprovePayment(event, user.id, token));
+                    approveButton.addEventListener('click', (event) => handleApprovePayment(event, user.user_id, token));
                     approveCell.appendChild(approveButton);
 
                     const rejectCell = row.insertCell();
                     const rejectButton = document.createElement('button');
                     rejectButton.textContent = 'Tolak';
                     rejectButton.className = 'reject-button';
-                    rejectButton.addEventListener('click', (event) => handleRejectPayment(event, user.id, token));
+                    rejectButton.addEventListener('click', (event) => handleRejectPayment(event, user.user_id, token));
                     rejectCell.appendChild(rejectButton);
                 });
             }

@@ -46,7 +46,7 @@ module.exports = async (req, res) => {
       .select(`
         *,
         users (
-          id,
+          user_id,
           email,
           subscription_plan
         )
