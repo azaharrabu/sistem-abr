@@ -119,14 +119,20 @@
             <h3>Dashboard</h3>
             <p>Langganan anda aktif. Klik butang di bawah untuk mengakses sistem.</p>
             <button id="open-interactive-button">Buka Sistem Rujukan Interaktif</button>
-            <button id="register-affiliate-button" style="display: none; margin-top: 15px;">Daftar sebagai Agen Affiliate</button>
+
+            <!-- Bahagian untuk Pendaftaran Affiliate -->
+            <div id="affiliate-register-view" style="display: none; margin-top: 15px;">
+                <button id="btn-register-affiliate">Daftar sebagai Agen Affiliate</button>
+            </div>
 
             <!-- Bahagian untuk Paparan Affiliate -->
-            <div id="affiliate-dashboard" style="display: none; margin-top: 25px; padding: 20px; background-color: #e9f5ff; border: 1px solid #b3d7ff; border-radius: 8px;">
+            <div id="affiliate-dashboard-view" style="display: none; margin-top: 25px; padding: 20px; background-color: #e9f5ff; border: 1px solid #b3d7ff; border-radius: 8px;">
                 <h4>Dashboard Affiliate Anda</h4>
                 <p>Tahniah! Anda kini adalah agen affiliate ABR. Gunakan kod unik di bawah untuk mula merujuk.</p>
                 <p><strong>Kod Rujukan Anda:</strong> <span id="affiliate-code" style="font-weight: bold; background-color: #d1ecff; padding: 3px 8px; border-radius: 4px;"></span></p>
-                <p>Anda boleh melihat prestasi anda di <a href="#" id="affiliate-leaderboard-link">Papan Pendahulu Affiliate</a>.</p>
+                <div class="nav-links">
+                    <a href="affiliate-leaderboard.html" target="_blank">Lihat Papan Pendahulu & Prestasi Anda</a>
+                </div>
             </div>
         </div>
 
