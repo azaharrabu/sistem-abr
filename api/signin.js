@@ -81,13 +81,13 @@ module.exports = async (req, res) => {
     // 3. Semak status affiliate pengguna
     const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
-      .select('affiliate_code, commission_rate')
+      .select('affiliate_code') // Corrected: Only select existing columns
       .eq('user_id', authData.user.id)
       .single();
 
-    // Ralat di sini tidak sepatutnya menghentikan proses, kerana tidak semua pengguna adalah affiliate
+    // Handle case where query might fail, but don't block login
     if (affiliateError && affiliateError.code !== 'PGRST116') {
-      console.warn(`Error checking affiliate status for ${email}:`, affiliateError.message);
+      console.warn(`Warning checking affiliate status for ${email}:`, affiliateError.message);
     }
     
     // 4. Gabungkan maklumat affiliate dan kira jualan jika dia seorang affiliate
@@ -105,7 +105,7 @@ module.exports = async (req, res) => {
       
       const salesData = sales || [];
       const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.amount) || 0), 0);
-      const commissionRate = parseFloat(affiliateInfo.commission_rate) || 0;
+      const commissionRate = 10; // Corrected: Use fixed rate of 10%
       const totalCommission = totalSalesAmount * (commissionRate / 100);
 
       // Tambah statistik pada profil untuk dihantar ke frontend
