@@ -51,22 +51,20 @@ module.exports = async (req, res) => {
     if (affiliateInfo) {
       profile.affiliate_code = affiliateInfo.affiliate_code;
       
-      // Kira statistik jualan menggunakan 'affiliate_id' dan 'sale_amount'
+      // Kira statistik jualan dari jadual 'sales' yang betul
       const { data: sales, error: salesError } = await supabase
-        .from('affiliate_sales')
-        .select('sale_amount') // Guna 'sale_amount'
-        .eq('affiliate_id', affiliateInfo.id)
-        .eq('payment_status', 'paid');
+        .from('sales') // Guna nama jadual 'sales' yang betul
+        .select('sale_amount, commission_amount') // Dapatkan juga komisyen yang telah dikira oleh DB
+        .eq('affiliate_id', affiliateInfo.id);
       
       if (salesError) {
           console.error('Sales query error:', salesError.message);
       }
       
       const salesData = sales || [];
-      const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.sale_amount) || 0), 0); // Guna 'sale.sale_amount'
-      
-      const commissionRate = parseFloat(affiliateInfo.commission_rate) || 0;
-      const totalCommission = totalSalesAmount * (commissionRate / 100);
+      // Jumlahkan terus dari data yang betul
+      const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.sale_amount) || 0), 0);
+      const totalCommission = salesData.reduce((sum, sale) => sum + (parseFloat(sale.commission_amount) || 0), 0);
 
       // Tambah statistik pada profil untuk dihantar ke frontend
       profile.totalSalesAmount = totalSalesAmount.toFixed(2);
