@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
         } else {
             // Masukkan rekod jualan ke dalam jadual 'sales' yang betul
             const { error: saleInsertError } = await supabase
-                .from('sales') // Guna nama jadual 'sales' yang betul
+                .from('affiliate_sales') // BETULKAN: Guna nama jadual 'affiliate_sales'
                 .insert({
                     affiliate_id: affiliate.id,
                     purchaser_user_id: customerId,

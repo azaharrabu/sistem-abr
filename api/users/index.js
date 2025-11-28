@@ -39,31 +39,49 @@ module.exports = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: You do not have admin privileges.' });
     }
 
-    // 3. Dapatkan semua bayaran yang berstatus 'pending' beserta maklumat pengguna
-    // Rujuk dokumentasi Supabase untuk 'foreign table relationship': table(column1, column2)
-    const { data: pendingPayments, error: fetchError } = await supabase
+    // 3. Dapatkan semua bayaran yang berstatus 'pending'
+    const { data: pendingPayments, error: paymentsError } = await supabase
       .from('payments')
-      .select(`
-        *,
-        users (
-          user_id,
-          email,
-          subscription_plan
-        )
-      `)
+      .select('*')
       .eq('status', 'pending')
       .order('created_at', { ascending: true });
 
-    if (fetchError) {
-      console.error('Fetch Pending Payments Error:', fetchError.message);
-      return res.status(500).json({ error: 'Failed to fetch pending payments.' });
+    if (paymentsError) {
+      throw new Error(`Failed to fetch pending payments: ${paymentsError.message}`);
     }
 
-    // 4. Hantar data
-    return res.status(200).json(pendingPayments);
+    if (!pendingPayments || pendingPayments.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    // 4. Dapatkan user_id yang unik dari semua bayaran tertunda
+    const userIds = [...new Set(pendingPayments.map(p => p.user_id))];
+
+    // 5. Dapatkan semua profil pengguna yang sepadan dalam satu panggilan
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('user_id, email, subscription_plan')
+      .in('user_id', userIds);
+
+    if (usersError) {
+      throw new Error(`Failed to fetch user profiles: ${usersError.message}`);
+    }
+
+    // 6. Gabungkan data bayaran dengan data pengguna (dalam memori)
+    // Ini menggantikan 'JOIN' automatik yang gagal sebelum ini.
+    const usersMap = new Map(users.map(u => [u.user_id, u]));
+    const combinedData = pendingPayments.map(payment => {
+      return {
+        ...payment,
+        users: usersMap.get(payment.user_id) || null
+      };
+    });
+
+    // 7. Hantar data yang telah digabungkan
+    return res.status(200).json(combinedData);
 
   } catch (err) {
-    console.error('Get Users API Error:', err.message);
+    console.error('Fetch Pending Payments Error:', err.message);
     const statusCode = err.message.includes('Authentication failed') ? 401 : 500;
     return res.status(statusCode).json({ error: err.message });
   }
