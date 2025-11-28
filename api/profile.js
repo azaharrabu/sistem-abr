@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
       
       // Kira statistik jualan dari jadual 'sales' yang betul
       const { data: sales, error: salesError } = await supabase
-        .from('sales') // Guna nama jadual 'sales' yang betul
+        .from('affiliate_sales') // BETULKAN: Guna nama jadual 'affiliate_sales'
         .select('sale_amount, commission_amount') // Dapatkan juga komisyen yang telah dikira oleh DB
         .eq('affiliate_id', affiliateInfo.id);
       
