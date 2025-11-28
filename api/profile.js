@@ -51,20 +51,19 @@ module.exports = async (req, res) => {
     if (affiliateInfo) {
       profile.affiliate_code = affiliateInfo.affiliate_code;
       
-      // Kira statistik jualan menggunakan 'affiliate_id'
+      // Kira statistik jualan menggunakan 'affiliate_id' dan 'sale_amount'
       const { data: sales, error: salesError } = await supabase
         .from('affiliate_sales')
-        .select('amount')
-        .eq('affiliate_id', affiliateInfo.id) // Guna 'affiliate_id' yang betul
+        .select('sale_amount') // Guna 'sale_amount'
+        .eq('affiliate_id', affiliateInfo.id)
         .eq('payment_status', 'paid');
       
       if (salesError) {
-          // Jangan hentikan proses jika hanya query jualan gagal, cuma log ralat
           console.error('Sales query error:', salesError.message);
       }
       
       const salesData = sales || [];
-      const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.amount) || 0), 0);
+      const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.sale_amount) || 0), 0); // Guna 'sale.sale_amount'
       
       const commissionRate = parseFloat(affiliateInfo.commission_rate) || 0;
       const totalCommission = totalSalesAmount * (commissionRate / 100);

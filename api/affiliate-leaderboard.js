@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
         // 1. Dapatkan semua jualan affiliate yang telah dibayar.
         const { data: sales, error: salesError } = await supabase
             .from('affiliate_sales')
-            .select('affiliate_id, amount') // Guna lajur 'affiliate_id'
+            .select('affiliate_id, sale_amount') // Guna lajur 'sale_amount'
             .eq('payment_status', 'paid');
 
         if (salesError) throw salesError;
@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
         // 2. Agregat jumlah jualan untuk setiap affiliate_id
         const salesById = sales.reduce((acc, sale) => {
             const id = sale.affiliate_id;
-            const amount = parseFloat(sale.amount) || 0;
+            const amount = parseFloat(sale.sale_amount) || 0; // Guna 'sale.sale_amount'
             acc[id] = (acc[id] || 0) + amount;
             return acc;
         }, {});

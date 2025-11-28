@@ -75,13 +75,13 @@ module.exports = async (req, res) => {
         if (affiliateError || !affiliate) {
             console.error(`CRITICAL: Could not find affiliate with code: ${updatedUser.referred_by}. Sale not recorded.`);
         } else {
-            // Masukkan rekod jualan dengan affiliate_id yang betul
+            // Masukkan rekod jualan dengan lajur dan ID yang betul
             const { error: saleInsertError } = await supabase
                 .from('affiliate_sales')
                 .insert({
-                    affiliate_id: affiliate.id, // Guna lajur 'affiliate_id' yang betul
+                    affiliate_id: affiliate.id,
                     customer_id: customerId,
-                    amount: paymentForSale.amount,
+                    sale_amount: paymentForSale.amount, // Guna 'sale_amount'
                     payment_status: 'paid'
                 });
             
