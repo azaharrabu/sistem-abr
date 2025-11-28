@@ -15,6 +15,19 @@ const getSessionToken = async () => {
 // Balut semua logik aplikasi dalam DOMContentLoaded untuk memastikan semua elemen wujud.
 document.addEventListener('DOMContentLoaded', () => {
     
+    // --> MULA BLOK BARU: Tangkap kod affiliate dari URL dan simpan dalam kuki
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+        // Tetapkan kuki untuk bertahan selama 7 hari
+        const d = new Date();
+        d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
+        let expires = "expires=" + d.toUTCString();
+        document.cookie = "affiliate_ref_code=" + refCode + ";" + expires + ";path=/";
+        console.log(`Kod affiliate '${refCode}' dari URL telah disimpan dalam kuki.`);
+    }
+    // <-- TAMAT BLOK BARU
+
     // Rujukan kepada elemen DOM
     const authSection = document.getElementById('auth-section');
     const loginForm = document.getElementById('login-form');
@@ -175,6 +188,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fungsi untuk memaparkan UI berdasarkan status & peranan pengguna
     const showUi = (user, profile, token) => {
+        console.log("--- showUi dipanggil ---");
+        console.log("User object:", user);
+        console.log("Profile object:", profile);
+
         currentSessionToken = token;
         
         const elements = [authSection, paymentSection, pendingApprovalSection, mainContentSection, adminPanelSection, affiliateRegisterView, affiliateDashboardView];
@@ -189,14 +206,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (profile && profile.role === 'admin') {
+            console.log("UI Path: Admin");
             if (adminPanelSection) adminPanelSection.style.display = 'block';
             fetchPendingPayments(token);
+        } else if (profile && profile.role === 'affiliate') {
+            console.log("UI Path: Affiliate");
+            if (mainContentSection) mainContentSection.style.display = 'block';
+            if (affiliateDashboardView) affiliateDashboardView.style.display = 'block';
+            if (affiliateRegisterView) affiliateRegisterView.style.display = 'none';
+            if (affiliateCodeSpan) affiliateCodeSpan.textContent = profile.affiliate_code;
+            const affiliateLinkInput = document.getElementById('affiliate-link');
+            if (affiliateLinkInput) {
+                affiliateLinkInput.value = `${window.location.origin}?ref=${profile.affiliate_code}`;
+            }
+            
+            // Data kini dibaca terus dari profil, tidak perlu fetch berasingan.
+            const salesValueEl = document.getElementById('affiliate-sales-value');
+            const commissionEl = document.getElementById('affiliate-commission');
+
+            if (salesValueEl) {
+                salesValueEl.textContent = `RM ${profile.totalSalesAmount || '0.00'}`;
+            }
+            if (commissionEl) {
+                commissionEl.textContent = `RM ${profile.totalCommission || '0.00'}`;
+            }
         } 
         else if (profile && profile.role === 'user') {
+            console.log(`UI Path: User (Payment Status: ${profile.payment_status})`);
             switch (profile.payment_status) {
                 case 'paid':
                     if (mainContentSection) mainContentSection.style.display = 'block';
                     if (profile.is_affiliate) {
+                        console.log("UI Sub-Path: User is an affiliate.");
                         if (affiliateDashboardView) affiliateDashboardView.style.display = 'block';
                         if (affiliateRegisterView) affiliateRegisterView.style.display = 'none';
                         if (affiliateCodeSpan) affiliateCodeSpan.textContent = profile.affiliate_code;
@@ -217,23 +258,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
 
                     } else {
+                        console.log("UI Sub-Path: User is NOT an affiliate.");
                         if (affiliateRegisterView) affiliateRegisterView.style.display = 'block';
                         if (affiliateDashboardView) affiliateDashboardView.style.display = 'none';
                     }
                     break;
                 case 'pending':
+                    console.log("UI Sub-Path: Payment pending.");
                     if (pendingApprovalSection) pendingApprovalSection.style.display = 'block';
                     break;
                 case 'rejected':
                 default:
+                    console.log("UI Sub-Path: Payment rejected or default.");
                     if (paymentSection) paymentSection.style.display = 'block'; 
                     break;
             }
         } 
         else {
-            console.warn("showUi dipanggil tanpa profil yang sah. Kembali ke Auth.");
+            console.warn("showUi called with invalid profile. Reverting to Auth view.");
             showAuth();
         }
+        console.log("--- showUi selesai ---");
     };
 
     // Fungsi untuk memaparkan borang log masuk/daftar

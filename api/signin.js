@@ -81,11 +81,11 @@ module.exports = async (req, res) => {
     // 3. Semak status affiliate pengguna
     const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
-      .select('affiliate_code') // Corrected: Only select existing columns
+      .select('affiliate_code') // Hanya pilih lajur yang wujud
       .eq('user_id', authData.user.id)
       .single();
 
-    // Handle case where query might fail, but don't block login
+    // Abaikan ralat jika tiada baris ditemui (PGRST116), ini bermakna pengguna bukan affiliate
     if (affiliateError && affiliateError.code !== 'PGRST116') {
       console.warn(`Warning checking affiliate status for ${email}:`, affiliateError.message);
     }
@@ -105,12 +105,16 @@ module.exports = async (req, res) => {
       
       const salesData = sales || [];
       const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.amount) || 0), 0);
-      const commissionRate = 10; // Corrected: Use fixed rate of 10%
+      
+      // Gunakan kadar komisen tetap 10% seperti yang dipersetujui
+      const commissionRate = 10; 
       const totalCommission = totalSalesAmount * (commissionRate / 100);
 
       // Tambah statistik pada profil untuk dihantar ke frontend
       profile.totalSalesAmount = totalSalesAmount.toFixed(2);
       profile.totalCommission = totalCommission.toFixed(2);
+      // PENTING: Pastikan peranan ditetapkan kepada 'affiliate' untuk routing UI yang betul
+      profile.role = 'affiliate'; 
 
     } else {
       console.log(`User ${email} is not an affiliate.`);
