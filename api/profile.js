@@ -45,36 +45,37 @@ module.exports = async (req, res) => {
     }
     console.log(`Profile fetched for ${profile.email}. Role: ${profile.role}`);
 
-    // 4. Check for affiliate details separately
+    // 3. Dapatkan maklumat affiliate (termasuk ID dan kadar komisyen)
     const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
-      .select('affiliate_code') // Only select the code, as commission is fixed
+      .select('id, affiliate_code, commission_rate') // Dapatkan juga 'id'
       .eq('user_id', user.id)
       .single();
 
-    // Ignore 'PGRST116' error, as it just means the user isn't an affiliate
     if (affiliateError && affiliateError.code !== 'PGRST116') {
         console.error(`Error fetching affiliate details for user ${user.id}:`, affiliateError.message);
         // Do not throw; proceed without affiliate data
     }
     
-    // 5. Combine data and calculate sales if user is an affiliate
+    // 4. Gabungkan data dan kira jualan jika pengguna adalah affiliate
     profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
       profile.affiliate_code = affiliateInfo.affiliate_code;
-      console.log(`User ${profile.email} is an affiliate. Code: ${profile.affiliate_code}. Calculating sales...`);
-
-      // Calculate sales statistics directly here
-      const { data: sales } = await supabase
-        .from('affiliate_sales')
-        .select('amount')
-        .eq('affiliate_code', affiliateInfo.affiliate_code)
-        .eq('payment_status', 'paid');
+      
+      // Kira statistik jualan dari jadual 'sales' yang betul
+      const { data: sales, error: salesError } = await supabase
+        .from('sales') // Guna nama jadual 'sales' yang betul
+        .select('sale_amount, commission_amount') // Dapatkan juga komisyen yang telah dikira oleh DB
+        .eq('affiliate_id', affiliateInfo.id);
+      
+      if (salesError) {
+          console.error('Sales query error:', salesError.message);
+      }
       
       const salesData = sales || [];
-      const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.amount) || 0), 0);
-      const commissionRate = 10; // Use a fixed rate of 10% for consistency
-      const totalCommission = totalSalesAmount * (commissionRate / 100);
+      // Jumlahkan terus dari data yang betul
+      const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.sale_amount) || 0), 0);
+      const totalCommission = salesData.reduce((sum, sale) => sum + (parseFloat(sale.commission_amount) || 0), 0);
 
       // Attach stats to the profile to be sent to the frontend
       profile.totalSalesAmount = totalSalesAmount.toFixed(2);

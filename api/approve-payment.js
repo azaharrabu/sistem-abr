@@ -37,33 +37,62 @@ module.exports = async (req, res) => {
         .from('users')
         .update({ payment_status: 'paid' })
         .eq('user_id', customerId)
-        .select('referred_by, subscription_price')
+        .select('referred_by')
         .single();
 
     if (updateUserError || !updatedUser) {
         throw new Error(`Failed to update user status: ${updateUserError?.message || 'User not found'}`);
     }
 
-    // 2. Jika pengguna dirujuk oleh affiliate, cipta rekod jualan
-    if (updatedUser.referred_by) {
-        const { error: saleInsertError } = await supabase
-            .from('affiliate_sales')
-            .insert({
-                affiliate_code: updatedUser.referred_by,
-                customer_id: customerId,
-                amount: updatedUser.subscription_price,
-                payment_status: 'paid'
-            });
-        
-        if (saleInsertError) {
-            console.error(`CRITICAL: Failed to insert affiliate sale record for code ${updatedUser.referred_by}`, saleInsertError.message);
-        } else {
-            console.log(`Successfully recorded affiliate sale for code ${updatedUser.referred_by}`);
-        }
+    // 2. Cari bayaran 'pending' dan kemas kini kepada 'approved'
+    const { data: approvedPayments, error: paymentError } = await supabase
+        .from('payments')
+        .update({ status: 'approved' })
+        .eq('user_id', customerId)
+        .eq('status', 'pending')
+        .select('amount');
+
+    if (paymentError) {
+        throw new Error(`Error updating payment: ${paymentError.message}`);
     }
 
-    // 3. Kemas kini status dalam jadual 'payments'
-    await supabase.from('payments').update({ status: 'approved' }).eq('user_id', customerId);
+    if (!approvedPayments || approvedPayments.length === 0) {
+        console.warn(`Could not find a 'pending' payment record for user ${customerId}.`);
+        return res.status(200).json({ message: 'Payment status for user updated, but no pending payment record was found to approve.' });
+    }
+    
+    const paymentForSale = approvedPayments[0];
+
+    // 3. Jika pengguna dirujuk, cipta rekod jualan menggunakan affiliate_id
+    if (updatedUser.referred_by && paymentForSale.amount > 0) {
+        // Cari ID affiliate berdasarkan kod rujukan
+        const { data: affiliate, error: affiliateError } = await supabase
+            .from('affiliates')
+            .select('id')
+            .eq('affiliate_code', updatedUser.referred_by)
+            .single();
+
+        if (affiliateError || !affiliate) {
+            console.error(`CRITICAL: Could not find affiliate with code: ${updatedUser.referred_by}. Sale not recorded.`);
+        } else {
+            // Masukkan rekod jualan ke dalam jadual 'sales' yang betul
+            const { error: saleInsertError } = await supabase
+                .from('sales') // Guna nama jadual 'sales' yang betul
+                .insert({
+                    affiliate_id: affiliate.id,
+                    purchaser_user_id: customerId,
+                    sale_amount: paymentForSale.amount
+                    // 'commission_amount' akan dikira secara automatik oleh pangkalan data
+                    // 'payment_status' tidak wujud dalam jadual 'sales'
+                });
+            
+            if (saleInsertError) {
+                console.error(`CRITICAL: Failed to insert sale record for affiliate ID ${affiliate.id}`, saleInsertError.message);
+            } else {
+                console.log(`Successfully recorded sale for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount}`);
+            }
+        }
+    }
 
     return res.status(200).json({ message: 'Payment approved successfully.' });
 

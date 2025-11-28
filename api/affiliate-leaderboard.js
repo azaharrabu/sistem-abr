@@ -1,7 +1,6 @@
 // api/affiliate-leaderboard.js
 const { createClient } = require('@supabase/supabase-js');
 
-// Inisialisasi Supabase client menggunakan environment variables
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
@@ -14,61 +13,60 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // Ini adalah query yang lebih kompleks untuk mendapatkan data leaderboard.
-        // Kita perlu menggunakan rpc() untuk memanggil fungsi pangkalan data,
-        // kerana JOIN antara jadual tidak disokong secara terus oleh RLS dengan mudah.
-        // Kita akan cipta fungsi 'get_leaderboard' di Supabase.
-        
-        // Untuk sekarang, kita akan guna query yang lebih mudah.
-        // AMARAN: Ini mungkin perlahan jika anda mempunyai banyak jualan.
-        // Penyelesaian yang lebih baik adalah dengan mencipta fungsi Postgres (rpc).
+        // 1. Dapatkan semua jualan dari jadual 'sales' yang betul.
+        const { data: sales, error: salesError } = await supabase
+            .from('sales') // Guna nama jadual 'sales'
+            .select('affiliate_id, sale_amount'); // Guna lajur 'sale_amount'
 
-        // 1. Dapatkan semua affiliate
+        if (salesError) throw salesError;
+
+        // 2. Agregat jumlah jualan untuk setiap affiliate_id
+        const salesById = sales.reduce((acc, sale) => {
+            const id = sale.affiliate_id;
+            const amount = parseFloat(sale.sale_amount) || 0;
+            acc[id] = (acc[id] || 0) + amount;
+            return acc;
+        }, {});
+
+        // 3. Dapatkan semua affiliate
         const { data: affiliates, error: affiliatesError } = await supabase
             .from('affiliates')
             .select('id, user_id');
         
         if (affiliatesError) throw affiliatesError;
 
-        // 2. Dapatkan semua jualan
-        const { data: sales, error: salesError } = await supabase
-            .from('sales')
-            .select('affiliate_id, sale_amount');
-
-        if (salesError) throw salesError;
-        
-        // 3. Dapatkan semua profil pengguna untuk mendapatkan emel
+        // Dapatkan emel pengguna yang sepadan
+        const userIds = affiliates.map(a => a.user_id);
         const { data: users, error: usersError } = await supabase
             .from('users')
-            .select('user_id, email');
-        
+            .select('user_id, email')
+            .in('user_id', userIds);
+
         if (usersError) throw usersError;
 
-        // 4. Proses data di backend
-        const affiliateSales = {};
+        // Cipta pemetaan (map) dari user_id ke emel untuk carian pantas
+        const emailMap = users.reduce((acc, user) => {
+            acc[user.user_id] = user.email;
+            return acc;
+        }, {});
 
-        sales.forEach(sale => {
-            if (!affiliateSales[sale.affiliate_id]) {
-                affiliateSales[sale.affiliate_id] = 0;
-            }
-            affiliateSales[sale.affiliate_id] += sale.sale_amount;
-        });
-
+        // 4. Bina data papan pendahulu (leaderboard)
         const leaderboard = affiliates.map(affiliate => {
-            const userProfile = users.find(u => u.user_id === affiliate.user_id);
+            const userEmail = emailMap[affiliate.user_id] || 'Pengguna Tidak Dikenali';
             return {
-                name: userProfile ? userProfile.email : 'Pengguna Tidak Dikenali', // Guna emel sebagai nama
-                total_sales: affiliateSales[affiliate.id] || 0
+                name: userEmail,
+                total_sales: salesById[affiliate.id] || 0 // Padankan dengan affiliate.id
             };
         });
 
-        // 5. Susun dan hadkan kepada 10 teratas
+        // 5. Susun mengikut jumlah jualan dan hadkan kepada 10 teratas
         const sortedLeaderboard = leaderboard
             .sort((a, b) => b.total_sales - a.total_sales)
             .slice(0, 10)
             .map((entry, index) => ({
                 rank: index + 1,
-                ...entry
+                name: entry.name,
+                total_sales: parseFloat(entry.total_sales.toFixed(2)) 
             }));
 
         // 6. Hantar data sebagai respons
