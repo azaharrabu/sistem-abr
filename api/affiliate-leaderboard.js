@@ -28,22 +28,31 @@ module.exports = async (req, res) => {
             return acc;
         }, {});
 
-        // 3. Dapatkan semua affiliate dan join dengan maklumat pengguna untuk mendapatkan emel.
+        // 3. Dapatkan semua affiliate
         const { data: affiliates, error: affiliatesError } = await supabase
             .from('affiliates')
-            .select(`
-                id,
-                user_id,
-                users (
-                    email
-                )
-            `);
+            .select('id, user_id');
         
         if (affiliatesError) throw affiliatesError;
 
+        // Dapatkan emel pengguna yang sepadan
+        const userIds = affiliates.map(a => a.user_id);
+        const { data: users, error: usersError } = await supabase
+            .from('users')
+            .select('user_id, email')
+            .in('user_id', userIds);
+
+        if (usersError) throw usersError;
+
+        // Cipta pemetaan (map) dari user_id ke emel untuk carian pantas
+        const emailMap = users.reduce((acc, user) => {
+            acc[user.user_id] = user.email;
+            return acc;
+        }, {});
+
         // 4. Bina data papan pendahulu (leaderboard)
         const leaderboard = affiliates.map(affiliate => {
-            const userEmail = affiliate.users ? affiliate.users.email : 'Pengguna Tidak Dikenali';
+            const userEmail = emailMap[affiliate.user_id] || 'Pengguna Tidak Dikenali';
             return {
                 name: userEmail,
                 total_sales: salesById[affiliate.id] || 0 // Padankan dengan affiliate.id
