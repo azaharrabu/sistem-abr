@@ -9,10 +9,13 @@ const supabase = createClient(
 module.exports = async (req, res) => {
     try {
         // Use the verified user object from the project's standard auth utility
+        console.log('DEBUG: Verifying user and getting ID...');
         const user = await verifyToken(req);
         const userId = user.id;
+        console.log('DEBUG: User verified. UserID:', userId);
 
         // 1. Dapatkan maklumat affiliate (termasuk ID)
+        console.log('DEBUG: Fetching affiliate info for userId:', userId);
         const { data: affiliate, error: affiliateError } = await supabase
             .from('affiliates')
             .select('id, commission_rate') // Ambil ID untuk query jualan
@@ -20,12 +23,13 @@ module.exports = async (req, res) => {
             .single();
 
         if (affiliateError || !affiliate) {
-            // This can happen if a user is an affiliate but their record is faulty.
             console.warn(`Affiliate profile not found for verified userId: ${userId}`);
             return res.status(404).json({ error: 'Affiliate profile not found.' });
         }
+        console.log('DEBUG: Affiliate info found:', affiliate);
 
         // 2. Dapatkan semua jualan yang berkaitan dari jadual 'sales'
+        console.log('DEBUG: Fetching sales for affiliate_id:', affiliate.id);
         const { data: sales, error: salesError, count: salesCount } = await supabase
             .from('sales')
             .select('sale_amount, commission_amount', { count: 'exact' })
@@ -35,19 +39,21 @@ module.exports = async (req, res) => {
             console.error('Error fetching affiliate sales:', salesError);
             throw new Error('Failed to fetch sales data.');
         }
+        console.log('DEBUG: Sales data from DB:', { sales, salesCount });
 
         const salesData = sales || [];
 
         // 3. Jumlahkan jualan dan komisyen dari data yang diterima
-        // Pangkalan data telah mengira komisyen untuk setiap jualan
         const totalSalesAmount = salesData.reduce((sum, record) => sum + (record.sale_amount || 0), 0);
         const totalCommission = salesData.reduce((sum, record) => sum + (record.commission_amount || 0), 0);
         const totalSalesCount = salesCount || 0;
+        console.log('DEBUG: Calculated totals:', { totalSalesAmount, totalCommission, totalSalesCount });
 
         // 4. Hantar data dashboard
         const commissionRate = parseFloat(affiliate.commission_rate);
         const validCommissionRate = isNaN(commissionRate) ? 0 : commissionRate;
 
+        console.log('DEBUG: Sending final JSON response.');
         res.status(200).json({
             totalSalesAmount: totalSalesAmount.toFixed(2),
             totalCommission: totalCommission.toFixed(2),
