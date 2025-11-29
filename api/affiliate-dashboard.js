@@ -12,10 +12,10 @@ module.exports = async (req, res) => {
         const user = await verifyToken(req);
         const userId = user.id;
 
-        // 1. Dapatkan maklumat affiliate
+        // 1. Dapatkan maklumat affiliate (termasuk ID)
         const { data: affiliate, error: affiliateError } = await supabase
             .from('affiliates')
-            .select('affiliate_code, commission_rate')
+            .select('id, commission_rate') // Ambil ID untuk query jualan
             .eq('user_id', userId)
             .single();
 
@@ -25,33 +25,29 @@ module.exports = async (req, res) => {
             return res.status(404).json({ error: 'Affiliate profile not found.' });
         }
 
-        // 2. Kira jumlah jualan yang berjaya
-        const { data: sales, error: salesError } = await supabase
-            .from('affiliate_sales')
-            .select('amount', { count: 'exact' })
-            .eq('affiliate_code', affiliate.affiliate_code)
-            .eq('payment_status', 'paid');
+        // 2. Dapatkan semua jualan yang berkaitan dari jadual 'sales'
+        const { data: sales, error: salesError, count: salesCount } = await supabase
+            .from('sales')
+            .select('sale_amount, commission_amount', { count: 'exact' })
+            .eq('affiliate_id', affiliate.id); // Padankan menggunakan affiliate_id
 
         if (salesError) {
             console.error('Error fetching affiliate sales:', salesError);
             throw new Error('Failed to fetch sales data.');
         }
 
-        // Defensively handle sales data being null or not an array
         const salesData = sales || [];
 
-        const totalSalesAmount = salesData.reduce((sum, sale) => {
-            const amount = parseFloat(sale.amount);
-            return sum + (isNaN(amount) ? 0 : amount);
-        }, 0);
-        const totalSalesCount = salesData.length;
-
-        // 3. Defensively calculate commission
-        const commissionRate = parseFloat(affiliate.commission_rate);
-        const validCommissionRate = isNaN(commissionRate) ? 0 : commissionRate;
-        const totalCommission = totalSalesAmount * (validCommissionRate / 100);
+        // 3. Jumlahkan jualan dan komisyen dari data yang diterima
+        // Pangkalan data telah mengira komisyen untuk setiap jualan
+        const totalSalesAmount = salesData.reduce((sum, record) => sum + (record.sale_amount || 0), 0);
+        const totalCommission = salesData.reduce((sum, record) => sum + (record.commission_amount || 0), 0);
+        const totalSalesCount = salesCount || 0;
 
         // 4. Hantar data dashboard
+        const commissionRate = parseFloat(affiliate.commission_rate);
+        const validCommissionRate = isNaN(commissionRate) ? 0 : commissionRate;
+
         res.status(200).json({
             totalSalesAmount: totalSalesAmount.toFixed(2),
             totalCommission: totalCommission.toFixed(2),
