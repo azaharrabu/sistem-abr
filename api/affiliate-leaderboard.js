@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
     try {
         // 1. Dapatkan semua jualan dari jadual 'sales' yang betul.
         const { data: sales, error: salesError } = await supabase
-            .from('sales') // Guna nama jadual 'sales'
+            .from('affiliate_sales') // BETULKAN: Guna nama jadual 'affiliate_sales'
             .select('affiliate_id, sale_amount'); // Guna lajur 'sale_amount'
 
         if (salesError) throw salesError;
