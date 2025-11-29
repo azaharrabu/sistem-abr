@@ -427,6 +427,63 @@
             width: calc(100% - var(--sidebar-width));
             overflow-y: auto;
         }
+
+        /* Specific formatting for the Strategi Pengungsian section */
+        #strategi-pengungsian p, 
+        #strategi-pengungsian li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the PKK section */
+        #pkk p, 
+        #pkk li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Kumpulan Maksud section */
+        #kumpulan-maksud p, 
+        #kumpulan-maksud li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Kumpulan Maksud section */
+        #kumpulan-maksud p, 
+        #kumpulan-maksud li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Kawalan Api section */
+        #kawalan-api p, 
+        #kawalan-api li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Jalan Keluar Keselamatan section */
+        #jalan-keluar-keselamatan p, 
+        #jalan-keluar-keselamatan li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Perlindungan Aktif section */
+        #perlindungan-aktif p, 
+        #perlindungan-aktif li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Definisi UBBL section */
+        #definisi-ubbl p, 
+        #definisi-ubbl li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
         .content-section {
             display: none;
             background-color: #fff;
@@ -641,7 +698,7 @@
         <li><a href="#struktur-ubbl" class="nav-link">Struktur UBBL</a></li>
         <li><a href="#definisi-ubbl" class="nav-link">Definisi UBBL 133</a></li>
         <li><a href="#kumpulan-maksud" class="nav-link">Kumpulan Maksud Bangunan</a></li>
-        <li><a href="#ms1183" class="nav-link">MS 1183: Occupancy Characteristics</a></li>
+
         <li><a href="#akses-bomba" class="nav-link">Akses Perkakas Bomba</a></li>
         <li><a href="#ruang-akses-bomba" class="nav-link">Ruang Akses Menentang Kebakaran</a></li>
         <li><a href="#pengukuran" class="nav-link">Kaedah Pengukuran Bangunan</a></li>
@@ -942,6 +999,8 @@
         <p>Ringkasnya, istilah-istilah ini menggambarkan satu urutan laluan bermula dari bilik perlindungan (refuge area) atau mana-mana kawasan lain, melalui pintu rintangan api, masuk ke koridor terlindung, dan akhirnya menuruni tangga keselamatan untuk mencapai jalan keluar keselamatan terakhir dari bangunan. Sistem ini sangat penting untuk memastikan semua orang dapat keluar dengan selamat dan teratur semasa kecemasan.</p>
 
         <img src="images/sistem.jpg" alt="Contoh Sistem Jalan Keluar" style="width:100%; max-width:800px; display:block; margin: 2em auto 1em; border-radius: 4px;" />
+        <img src="images/pengungsian1.jpg" alt="Peringatan tentang laluan keluar kecemasan" style="max-width: 100%; height: auto; display: block; margin: 1em auto; border-radius: 4px;">
+        <p style="text-align: center; font-style: italic;">A & B – Pintu keluar Tingkat<br>C – Pintu keluar<br>Koridor – Jalan keluar<br>Tangga – Jalan keluar</p>
         <h3>Peringatan Penting: Pintu Pusing, Lif, dan Eskalator BUKAN Jalan Keluar Kecemasan.</h3>
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 1em 0;">
             <img src="images/lif.jpg" alt="Lif" style="width:100%; max-width:250px; border-radius: 4px;" />
@@ -1926,6 +1985,20 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
     </div>
         <div id="definisi-ubbl" class="content-section">
         <h2>UUK 133: Tafsiran dan Definisi Keperluan Kebakaran</h2>
+        <p>UUK 133, yang terletak dalam Bahagian VII - Kehendak Kebakaran (Part VII - Fire Requirements), akan menggariskan definisi-definisi penting yang digunakan sepanjang bahagian ini. Antara definisi yang lazim ditemui dalam konteks keselamatan kebakaran dalam UBBL termasuk:</p>
+        <ol>
+            <li><b>"Rintangan Api" (Fire Resistance)</b> - Ini adalah salah satu definisi paling asas. Ia merujuk kepada keupayaan elemen struktur atau bahan binaan (contohnya, dinding, lantai, pintu) untuk menahan api dan penyebaran asap untuk tempoh masa tertentu di bawah ujian standard. Tempoh rintangan api biasanya dinyatakan dalam jam (contohnya, 1 jam, 2 jam, 4 jam).</li>
+            <li><b>"Dinding Petak" (Compartment Wall)</b> - Dinding yang dibina untuk membentuk petak api, dengan tujuan menghalang penyebaran api dari satu bahagian bangunan ke bahagian lain. Dinding ini mesti mempunyai rintangan api yang ditetapkan.</li>
+            <li><b>"Lantai Petak" (Compartment Floor)</b> - Sama seperti dinding petak, tetapi merujuk kepada lantai yang direka untuk mencegah api merebak dari satu tingkat ke tingkat lain.</li>
+            <li><b>"Laluan Keluar Kecemasan" (Means of Escape/Escape Route)</b> - Definisi terperinci mengenai laluan yang selamat dan jelas yang disediakan untuk penghuni keluar dari bangunan semasa kebakaran. Ini termasuk lorong, tangga, dan pintu keluar.</li>
+            <li><b>"Pintu Api" (Fire Door)</b> - Pintu yang direka khusus untuk menahan api dan asap daripada merebak melalui bukaan, dan ia biasanya mempunyai mekanisme penutup sendiri (self-closing).</li>
+            <li><b>"Ruang Perlindungan" (Area of Refuge)</b> - Kawasan selamat sementara dalam bangunan yang direka untuk melindungi penghuni yang mungkin tidak dapat menyelamatkan diri dengan segera, seperti yang kurang upaya.</li>
+            <li><b>"Sistem Pencegah Kebakaran Aktif" (Active Fire Protection System)</b> - Ini akan merangkumi definisi bagi sistem-sistem yang memerlukan tindakan untuk berfungsi apabila berlaku kebakaran, seperti Sistem Semburan Air Automatik, Sistem Gegelung Hos dan Penggera Kebakaran.</li>
+            <li><b>Pengesan Asap/Haba (Smoke/Heat Detector)</b> - Peranti yang mengesan asap atau haba dan mengaktifkan penggera.</li>
+            <li><b>"Sistem Pencegah Kebakaran Pasif" (Passive Fire Protection System)</b> - Ini akan merangkumi definisi bagi elemen struktur atau bahan yang direka untuk menghalang penyebaran api secara semula jadi, tanpa memerlukan sebarang tindakan. Contohnya adalah dinding dan lantai petak, salutan intumescent, dan pintu api.</li>
+            <li><b>"Akses Perkakas Bomba" (Fire Appliance Access)</b> - Laluan yang mencukupi untuk jentera dan kenderaan bomba tiba dan beroperasi dengan berkesan di sekeliling bangunan.</li>
+        </ol>
+        <p>Sebelum proses merekabentuk sesuatu bangunan dibuat, tafsiran dan definasi mengenai keperluan kebakaran perlu difahami terlebih dahulu. Semua tafsiran dan definasi ini perlu dirujuk di bawah Undang-undang Kecil 133 seperti berikut:-</p>
         <p>Definisi-definisi ini merangkumi pelbagai aspek pembinaan dan keselamatan kebakaran:</p>
 
         <h3>Peralatan dan Sistem</h3>
@@ -1996,26 +2069,44 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
             <li><b>"Sempadan berkenaan"</b> - Berkenaan dengan sisi atau dinding luar bangunan/petak, ia bermaksud bahagian sempadan premis atau sempadan andaian seperti ditetapkan dalam undang-undang kecil 146 yang berhampiran dengan sisi atau dinding itu.</li>
             <li><b>"Tingginya bangunan"</b> - Maksud yang diberi dalam undang-undang kecil 135.</li>
         </ul>
+
+        <h3>Pihak Berkuasa</h3>
+        <ul>
+            <li><b>"K.P.B.P."</b> - Ketua Pengarah Bomba dan Penyelamat, Malaysia, atau Pihak Berkuasa Bomba yang berkenaan.</li>
+            <li><b>"Ketua Pengarah"</b> - Ketua Pengarah Bomba dan dan Penyelamat.</li>
+            <li><b>"Pihak Berkuasa Bomba"</b> - Pegawai yang mengetuai Jabatan Bomba dan Penyelamat yang berkenaan atau mana-mana pegawai yang diberi kuasa secara bertulis olehnya.</li>
+        </ul>
     </div>
         <div id="kumpulan-maksud" class="content-section">
         <h2>Kumpulan Maksud Bangunan</h2>
-        <p>Pengelasan atau kategori bangunan adalah langkah pertama dan paling kritikal dalam proses reka bentuk apa jua jenis bangunan. Ini kerana jenis penggunaan bangunan akan secara langsung mempengaruhi tahap risiko kebakaran, keperluan reka bentuk keselamatan kebakaran, dan sistem pepasangan keselamatan kebakaran yang perlu dipasang.</p>
+        <p>Pengelasan atau kategori bangunan adalah langkah pertama dan paling kritikal dalam proses reka bentuk apa jua jenis bangunan. Ini kerana jenis penggunaan bangunan akan secara langsung mempengaruhi tahap risiko kebakaran, keperluan reka bentuk keselamatan kebakaran, dan sistem pepasangan keselamatan kebakaran yang perlu dipasang. Kesilapan dalam mengklasifikasikan bangunan boleh membawa kepada reka bentuk yang tidak memenuhi piawaian keselamatan, seterusnya membahayakan nyawa dan harta benda.</p>
 
         <h3>Dasar Pengelasan (Menurut UUKBS 1984)</h3>
         <p>Undang-Undang Kecil 134 adalah peruntukan spesifik dalam UUKBS 1984 yang menggariskan keperluan untuk pengelasan bangunan. Ia menyatakan dengan jelas bahawa untuk tujuan menetapkan kumpulan maksud sesuatu bangunan, setiap bangunan atau petak (unit dalam bangunan) hendaklah dianggap mengikut penggunaannya atau penggunaan yang dicadangkan.</p>
-        <p>Jadual Kelima Undang-Undang Kecil Bangunan Seragam 1984 adalah rujukan utama yang menyediakan senarai kategori atau kumpulan maksud yang berbeza bagi bangunan.</p>
+        <p>Jadual Kelima Undang-Undang Kecil Bangunan Seragam 1984 adalah rujukan utama yang menyediakan senarai kategori atau kumpulan maksud yang berbeza bagi bangunan. Setiap kategori ini akan mempunyai keperluan keselamatan kebakaran yang berbeza berdasarkan tahap risiko kebakaran yang berkaitan dengan penggunaannya.</p>
 
         <h3>Prinsip-Prinsip Penentuan Kumpulan Maksud Bangunan</h3>
         <ol>
-            <li><b>Penggunaan Semasa atau Dicadangkan:</b> Pengelasan dibuat berdasarkan bagaimana bangunan itu sedang atau akan digunakan.</li>
-            <li><b>Petak Berasingan untuk Maksud Berlainan:</b> Jika sebuah bangunan dibahagikan kepada beberapa petak yang digunakan untuk maksud yang berlainan, maka kumpulan maksud bagi setiap petak itu hendaklah ditentukan secara berasingan.</li>
-            <li><b>Maksud Utama Penggunaan:</b> Jika sesebuah bangunan mempunyai fungsi pelbagai tetapi salah satu fungsi adalah dominan (contoh: sebuah hotel yang mempunyai beberapa kedai kecil di lobi), maka bangunan tersebut akan diklasifikasikan mengikut maksud utama iaitu hotel.</li>
-        </ol>
-        <p>Pengelasan yang tepat adalah fundamental untuk memastikan pematuhan undang-undang, merekabentuk sistem keselamatan yang efektif, melindungi nyawa dan harta benda, dan memudahkan proses kelulusan pelan bangunan.</p>
+            <li><b>Penggunaan Semasa atau Dicadangkan:</b> Pengelasan dibuat berdasarkan bagaimana bangunan itu sedang atau akan digunakan. Ini bermakna fungsi utama bangunan tersebut adalah penentu. Contohnya, sebuah bangunan pejabat akan diklasifikasikan berbeza dengan hospital atau kilang.</li>
+                        <li><b>Petak Berasingan untuk Maksud Berlainan:</b> Jika sebuah bangunan dibahagikan kepada beberapa petak (contohnya, tingkat atau unit berasingan) yang digunakan atau dicadang hendak digunakan untuk maksud yang berlainan (contoh: tingkat bawah runcit, tingkat atas pejabat), maka kumpulan maksud bagi setiap petak itu hendaklah ditentukan secara berasingan.
+            <br><br>Ini adalah penting kerana setiap petak mungkin mempunyai risiko dan keperluan keselamatan kebakaran yang unik. Contohnya, sebuah kompleks membeli-belah yang mempunyai kedai, pawagam, dan restoran akan mempunyai keperluan yang berbeza untuk setiap zon ini.</li>
+                        <li><b>Maksud Utama Penggunaan:</b> Terdapat klausa pengecualian atau panduan penting, "Dengan syarat bahawa jika keseluruhan atau sebahagian daripada sesuatu bangunan atau petak, mengikut yang mana berkenaan, diguna atau dicadang hendak digunakan untuk lebih daripada satu maksud, hanya maksud utama penggunaan bangunan atau petak itu akan diambil kira apabila menentukan dalam kumpulan maksud mana ia digolongkan."
+<br><br>
+Ini bermakna jika sesebuah bangunan mempunyai fungsi pelbagai tetapi salah satu fungsi adalah dominan (contoh: sebuah hotel yang mempunyai beberapa kedai kecil di lobi), maka bangunan tersebut akan diklasifikasikan mengikut maksud utama iaitu hotel. Penentuan "maksud utama" ini mungkin memerlukan pertimbangan profesional, terutamanya jika tiada satu maksud yang jelas-jelas dominan. Faktor-faktor seperti peratusan keluasan lantai yang digunakan, jumlah penghuni, atau masa operasi mungkin diambil kira.</li>
+                    </ol>
+
+        <p>Pengelasan yang tepat adalah fundamental untuk:</p>
+        <ul>
+            <li>Memastikan Pematuhan Undang-undang memenuhi keperluan UUKBS 1984 dan peraturan keselamatan kebakaran yang berkaitan.</li>
+            <li>Merekabentuk sistem keselamatan kebakaran yang efektif dengan memilih dan memasang sistem (aktif dan pasif) yang sesuai dengan tahap risiko bangunan.</li>
+            <li>Melindungi nyawa dan harta benda dalam mengurangkan risiko kematian, kecederaan, dan kemusnahan harta benda sekiranya berlaku kebakaran.</li>
+            <li>Memudahkan proses kelulusan pelan bangunan oleh pihak berkuasa seperti Jabatan Bomba dan Penyelamat Malaysia.</li>
+        </ul>
+        <p>Kesimpulannya, pengelasan bangunan bukan sekadar formaliti, tetapi merupakan asas kepada keseluruhan strategi keselamatan kebakaran sesuatu pembangunan. Ia memastikan bahawa setiap bangunan direka bentuk dan dibina dengan mengambil kira ciri-ciri penggunaan spesifiknya untuk menghadapi ancaman kebakaran secara berkesan.</p>
 
         <h3>Jadual Kelima: Kumpulan Maksud</h3>
         <p>Menurut Jadual kelima, Undang-undang Kecil Bangunan Seragam 1984, kumpulan maksud sesuatu bangunan adalah seperti berikut:-</p>
-        <img src="images/jenis-kumpulan-maksud.jpg" alt="Carta Jenis Kumpulan Maksud" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+        <img src="images/jenis-kumpulan-maksud.jpg" alt="Carta Jenis Kumpulan Maksud" style="width:100%; max-width:800px;">
         <table>
             <thead>
                 <tr>
@@ -2067,11 +2158,12 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
                 </tr>
             </tbody>
         </table>
-    </div>
-        <div id="ms1183" class="content-section">
+        
+        <hr style="margin: 3em 0;">
+
         <h2>MS 1183:2015: Occupancy characteristics</h2>
         <p>Jika kita merujuk kepada MS 1183:2015, pengelasan bangunan ini boleh dipecahkan kepada beberapa kriteria risiko kebakaran. Daripada kriteria inilah sesuatu kumpulan maksud ini dikategorikan. Semakin tinggi risiko sesuatu bangunan itu, semakin tinggi keperluan sistem pepasangan keselamatan kebakaran yang perlu diadakan.</p>
-        <img src="images/ms-1183.jpg" alt="Carta MS 1183:2015 Occupancy Characteristics" style="width:100%; max-width:800px; display:block; margin: 1em auto; border-radius: 4px;">
+        <img src="images/ms-1183.jpg" alt="Carta MS 1183:2015 Occupancy Characteristics">
         <p>Berdasarkan carta MS 1183:2015: Occupancy Characteristics, rajah ini adalah alat bantu visual yang sangat penting dalam reka bentuk keselamatan kebakaran. Ia mengklasifikasikan pelbagai jenis penghunian (occupancy) bangunan berdasarkan dua ciri utama yang mempengaruhi risiko dan keperluan keselamatan kebakaran, iaitu:</p>
         <ol>
             <li><b>Familiarity (Familiar vs. Unfamiliar)</b> - Sejauh mana penghuni biasa dengan susun atur bangunan.</li>
@@ -2129,7 +2221,7 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
             </li>
         </ul>
     </div>
-    <div id="akses-bomba" class="content-section">
+        <div id="akses-bomba" class="content-section">
         <h2>Akses Bomba</h2>
         
         <p>Secara umumnya akses bomba terbahagi kepada dua jenis iaitu Akses Perkakas Bomba dan Lobi Akses Menentang Kebakaran. Kedua-dua Akses Perkakas Bomba dan Lobi Akses Menentang Kebakaran adalah dua peringkat akses berbeza yang penting untuk operasi bomba, tetapi ia terletak di lokasi yang berbeza dan mempunyai fungsi yang berasingan. Kedua-dua jenis akses ini memenuhi keperluan operasi bomba yang berbeza, iaitu:</p>
@@ -2302,44 +2394,51 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
     </div>
         <div id="pengukuran" class="content-section">
         <h2>Kaedah Pengukuran Bangunan</h2>
-        <p>Dalam konteks keselamatan kebakaran dan reka bentuk bangunan, keluasan dan ketinggian adalah dua parameter utama yang menentukan tahap risiko dan keperluan sistem keselamatan kebakaran. Parameter ini digunakan untuk menentukan jenis sistem pasif (contohnya, kadar ketahanan api struktur) dan sistem aktif (contohnya, bilangan dan jenis sistem pemercik, penggera kebakaran) yang perlu dipasang.</p>
+        <p style="text-align: justify; margin-bottom: 2em;">Dalam konteks keselamatan kebakaran dan reka bentuk bangunan, keluasan dan ketinggian adalah dua parameter utama yang menentukan tahap risiko dan keperluan sistem keselamatan kebakaran. Parameter ini digunakan untuk menentukan jenis sistem pasif (contohnya, kadar ketahanan api struktur) dan sistem aktif (contohnya, bilangan dan jenis sistem pemercik, penggera kebakaran) yang perlu dipasang.</p>
 
         <h3>1. Pengukuran Ketinggian Bangunan</h3>
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 1em 0;">
-            <img src="images/ukur-1.jpg" alt="Ilustrasi Pengukuran Ketinggian Bangunan 1" style="width:100%; max-width:350px; border-radius: 4px;">
-            <img src="images/ukur-2.jpg" alt="Ilustrasi Pengukuran Ketinggian Bangunan 2" style="width:100%; max-width:350px; border-radius: 4px;">
+            <img src="images/ukur-1.jpg" alt="Ilustrasi Pengukuran Ketinggian Bangunan 1" style="width:100%; max-width:350px;">
+            <img src="images/ukur-2.jpg" alt="Ilustrasi Pengukuran Ketinggian Bangunan 2" style="width:100%; max-width:350px;">
         </div>
-        <p>Bila kita bercakap mengenai ketinggian bangunan untuk tujuan keselamatan kebakaran (UUK 135 dan UUK 215), ia diukur dengan cara yang sangat spesifik.</p>
-        <ul>
+        <p style="text-align: justify; margin-bottom: 2em;">Bila kita bercakap mengenai ketinggian bangunan untuk tujuan keselamatan kebakaran (UUK 135 dan UUK 215), ia diukur dengan cara yang sangat spesifik.</p>
+        <ul style="margin-bottom: 2em;">
             <li><b>Titik Permulaan Ukuran (Dari Bawah):</b> Ketinggian ni diambil dari paras tanah paling rendah yang bersentuhan terus dengan dinding luar bangunan tu. Sekiranya bangunan mempunyai dua paras jalan yang berbeza, permulaan ketinggian akan diambil berdasarkan paras ketinggian diantara dua paras ini.</li>
+            <br>
             <li><b>Titik Akhir Ukuran (Sampai Atas):</b> Ukuran ni diambil sampai ke salah satu daripada dua paras ni, mana-mana yang lebih tinggi:
                 <ul>
                     <li>⮚	Separuh dari ketinggian bumbung menegak - Kalau bumbung tu jenis condong atau curam (macam bumbung rumah biasa), kita ambil ketinggian sampai ke titik tengah bumbung tu.</li>
+                    <br>
                     <li>⮚	Bahagian paling tinggi dinding parapet (kalau ada) - Parapet ni dinding pendek yang naik sikit kat atas paras bumbung. Kalau bangunan ada parapet, ketinggian diukur sampai ke puncak parapet tu.</li>
                 </ul>
             </li>
         </ul>
         <h4>Kenapa ketinggian ini penting sangat?</h4>
-        <ul>
+        <ul style="margin-bottom: 2em;">
             <li><b>Akses Bomba:</b> Bangunan yang tinggi melangit, bomba kena guna tangga hidraulik yang lebih canggih dan tinggi.</li>
+            <br>
             <li><b>Sistem Perlindungan Aktif:</b> Bangunan tinggi selalunya wajib ada sistem pemercik air automatik (sprinkler), paip air bomba yang sentiasa bertekanan (wet riser), sistem pengurusan asap, dan lif khas untuk bomba.</li>
+            <br>
             <li><b>Sistem Perlindungan Pasif:</b> Lagi tinggi bangunan, lagi tinggi lah tahap ketahanan api yang diperlukan untuk struktur-struktur penting macam dinding, lantai, tiang, dan rasuk. Ini untuk pastikan bangunan tu kekal teguh masa kebakaran.</li>
+            <br>
             <li><b>Strategi Evakuasi:</b> Bangunan tinggi perlukan pelan kecemasan yang lebih rumit, termasuklah kena ada ruang berlindung (refuge areas) atau zon selamat pada tingkat-tingkat tertentu.</li>
         </ul>
 
-        <img src="images/ketinggian-bangunan.jpg" alt="Ilustrasi Pengukuran Ketinggian Bangunan" style="width:100%; max-width:800px; display:block; margin: 2em auto 1em; border-radius: 4px;">
+        <img src="images/ketinggian-bangunan.jpg" alt="Ilustrasi Pengukuran Ketinggian Bangunan" style="width:100%; max-width:800px; margin: 2em auto 1em;">
         <h3>2. Pengukuran Keluasan Bangunan</h3>
-        <p>Ukuran keluasan ini penting untuk tahu saiz bahagian-bahagian bangunan yang berbeza, berapa ramai orang boleh muat, dan juga berapa banyak bahan bakar (beban api) yang mungkin ada dalam kawasan tu. Ada tiga jenis ukuran keluasan iaitu:</p>
-        <ul>
+        <p style="text-align: justify; margin-bottom: 2em;">Ukuran keluasan ini penting untuk tahu saiz bahagian-bahagian bangunan yang berbeza, berapa ramai orang boleh muat, dan juga berapa banyak bahan bakar (beban api) yang mungkin ada dalam kawasan tu. Ada tiga jenis ukuran keluasan iaitu:</p>
+        <ul style="margin-bottom: 2em;">
             <li><b>a) Keluasan Tingkat Bangunan atau Petak:</b><br>
                 <b>Cara Kiraan:</b> Kita kira keluasan bahagian dalam tingkat tu, iaitu ruang yang dikelilingi oleh permukaan dalam dinding yang dah siap (tak termasuk tebal dinding tu sendiri).<br>
                 <b>Kalau Tak Ada Dinding (Macam Ruang Terbuka):</b> Kalau ada bahagian yang tak ada dinding (contohnya, ruang mezzanine atau ruang terbuka), keluasan diambil dari tepi lantai yang paling luar sekali kat bahagian tu. Ini penting untuk pastikan semua ruang yang boleh kita guna atau duduk tu diambil kira.<br>
                 Ukuran ni digunakan untuk tentukan saiz pemetakan, berapa banyak jalan keluar yang diperlukan, dan berapa ramai orang yang selamat untuk ada di setiap tingkat.
             </li>
+            <br>
             <li><b>b) Keluasan Bilik atau Garaj:</b><br>
                 <b>Cara Kiraan:</b> Kaedah kiraannya sama macam keluasan tingkat, tapi ni untuk ruang yang lebih kecil dan tertutup macam bilik tidur atau garaj. Kita kira dari permukaan dalam dinding yang membentuk bilik/garaj tu.<br>
                 Ini penting untuk mengetahui keperluan pengudaraan dalam bilik tu, saiz tingkap (kalau perlu untuk keluar), dan mana nak letak alat pengesan asap.
             </li>
+            <br>
             <li><b>c) Keluasan Bahagian Bumbung:</b><br>
                 <b>Cara Kiraan:</b> Untuk bumbung, kita kira keluasan permukaan sebenar bumbung tu, ikut kecerunan dia. Bukan kira luas tanah yang bumbung tu cover. Kiranya, kalau bumbung tu curam, kita ukur ikut cerun tu (keluasan sebenar permukaan bumbung).<br>
                 Ukuran ni penting untuk tentukan jenis bahan bumbung yang perlu digunakan. Ia juga penting untuk kira berapa banyak haba yang akan terbebas dari bumbung kalau ada kebakaran, atau berapa banyak api yang boleh terpercik dari bangunan sebelah.
@@ -2347,22 +2446,25 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
         </ul>
 
         <h3>3. Pengukuran Kapasiti Isipadu Bangunan atau Petak</h3>
-        <p>Kapasiti isipadu ini merujuk kepada jumlah ruang udara atau ruang kosong dalam sesebuah bangunan atau bahagian tertentu.</p>
+        <p style="text-align: justify; margin-bottom: 2em;">Kapasiti isipadu ini merujuk kepada jumlah ruang udara atau ruang kosong dalam sesebuah bangunan atau bahagian tertentu.</p>
         <h4>a) Cara kiraan isipadu:</h4>
-        <p>
+        <p style="text-align: justify; margin-bottom: 2em;">
             <b>Melintang</b> - Dari permukaan dalam dinding yang melingkungi ruang tu. Kalau tak ada dinding, kita ambil dari satah (garisan bayangan) yang naik tegak dari tepi lantai yang paling luar.<br>
             <b>Menegak (Dari Bawah)</b> - Dari permukaan atas lantai paling bawah dalam ruang tu.<br>
             <b>Menegak (Ke Atas):</b>
         </p>
-        <ul style="list-style-type: '▪ '; padding-left: 20px;">
+        <ul style="list-style-type: '▪ '; padding-left: 20px; margin-bottom: 2em;">
             <li>Kalau bangunan atau petak tu bersambung terus sampai bumbung, kita kira sampai permukaan bawah bumbung.</li>
+            <br>
             <li>Kalau petak lain (yang ada siling), kita kira sampai permukaan bawah siling tingkat paling atas dalam petak tu.</li>
         </ul>
-        <p>Kiraan isipadu ni akan masukkan sekali ruang yang ada dinding lain seperti lubang, saluran, atau apa-apa struktur lain dalam ruang yang diukur tu. Maknanya, isipadu ni adalah ruang kasar yang diduduki, termasuk semua yang ada di dalamnya.</p>
+        <p style="text-align: justify; margin-bottom: 2em;">Kiraan isipadu ni akan masukkan sekali ruang yang ada dinding lain seperti lubang, saluran, atau apa-apa struktur lain dalam ruang yang diukur tu. Maknanya, isipadu ni adalah ruang kasar yang diduduki, termasuk semua yang ada di dalamnya.</p>
         <h4>b) Kenapa isipadu penting?</h4>
-        <ul>
+        <ul style="margin-bottom: 2em;">
             <li><b>Sistem Pengurusan Asap:</b> Ukuran isipadu ni sangat kritikal untuk reka bentuk sistem pengurusan asap. Ia akan tentukan berapa banyak udara yang perlu ditukar untuk buang asap.</li>
+            <br>
             <li><b>Sistem Pemasangan Tetap Gas:</b> Untuk sistem pemadam api yang menggunakan gas (Sistem CO2 atau Sistem FM-200), isipadu bilik adalah ukuran utama untuk kira berapa banyak gas pemadam yang diperlukan.</li>
+            <br>
             <li><b>Pengiraan Beban Kebakaran:</b> Isipadu juga boleh mempengaruhi cara kita kira beban kebakaran (berapa banyak bahan bakar ada) dan jumlah haba yang akan dilepaskan masa kebakaran.</li>
         </ul>
     </div>
@@ -2477,7 +2579,9 @@ Secara ringkas, kawalan kemerebakan api luaran adalah usaha multi disiplin yang 
         </ul>
 
         <h4>Pengasingan Kawasan Risiko Kebakaran (UUK 139)</h4>
-        <p>Kawasan-kawasan tertentu di dalam sesebuah bangunan yang mempunyai risiko kebakaran yang tinggi perlu diasingkan sepenuhnya daripada kawasan lain. Contoh Kawasan Risiko Kebakaran Tinggi:</p>
+        <p>Undang-Undang Kecil 139 ini menetapkan bahawa kawasan-kawasan tertentu di dalam sesebuah bangunan yang mempunyai risiko kebakaran yang tinggi perlu diasingkan sepenuhnya daripada kawasan lain yang digunakan untuk tujuan biasa (kawasan pendudukan). Pengasingan ini mesti dilakukan dengan membina penahan kebakaran (fire-resisting construction) daripada elemen struktur yang mempunyai tempoh ketahanan api tertentu.</p>
+        <p>Tempoh ketahanan api ini ditentukan berdasarkan darjah bahaya kebakaran di kawasan tersebut. Ini bermakna, jika kawasan itu sangat berisiko, bahan binaan yang digunakan untuk mengasingkannya perlu lebih kuat dan tahan lebih lama terhadap api.</p>
+        <p>Contoh Kawasan Risiko Kebakaran Tinggi yang Disenaraikan di Bawah UUK 139:</p>
         <ul style="list-style-type: lower-alpha; padding-left: 20px;">
             <li><b>Bilik dandang dan kawasan storan bahan api yang berkaitan</b> - Bilik yang mengandungi dandang (boiler) dan bahan api adalah sangat berisiko tinggi.</li>
             <li><b>Dobi</b> - Dobi boleh menjadi kawasan risiko kerana penggunaan mesin pengering, bahan kimia, dan habuk serat yang mudah terbakar.</li>

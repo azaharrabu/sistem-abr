@@ -1,3 +1,10 @@
-Expected: A POST request to /api/signin should execute the serverless function and return a JSON response. Vercel logs should show the function execution.
+**Jangkaan:**
 
-Current: The request receives an HTML page, causing a frontend JavaScript error (`Unexpected token 'T'`). The Vercel function logs are completely empty, proving the function is never invoked. This occurs on the live production URL.
+*   Satu permintaan POST ke `/api/signin` sepatutnya melaksanakan fungsi *serverless* dan mengembalikan respons dalam format JSON.
+*   Log Vercel sepatutnya menunjukkan pelaksanaan fungsi tersebut.
+
+**Keadaan Semasa:**
+
+*   Permintaan tersebut menerima halaman HTML, yang menyebabkan ralat JavaScript di bahagian hadapan (`Unexpected token 'T'`).
+*   Log fungsi Vercel kosong sepenuhnya, membuktikan bahawa fungsi tersebut tidak pernah dipanggil.
+*   Isu ini berlaku pada URL produksi secara langsung.
