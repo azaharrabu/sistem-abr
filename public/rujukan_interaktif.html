@@ -167,6 +167,10 @@
         .jadual-keenam-container .disclaimer strong {
             color: #664d03;
         }
+        .jadual-keenam-container p {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
         /* Styles for Kalkulator 10 Langkah */
         .kalkulator-10-langkah-container {
             max-width: 800px; 
@@ -484,6 +488,69 @@
             margin-bottom: 1.2em;
         }
 
+        /* Specific formatting for the Pengawasan Kebakaran section */
+        #pengawasan p, 
+        #pengawasan li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Fakta UBBL section */
+        #fakta-ubbl p, 
+        #fakta-ubbl li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Struktur UBBL section */
+        #struktur-ubbl p, 
+        #struktur-ubbl li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Akses Bomba section */
+        #akses-bomba p, 
+        #akses-bomba li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Ruang Akses Bomba section */
+        #ruang-akses-bomba p, 
+        #ruang-akses-bomba li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Pemetakan section */
+        #pemetakan p, 
+        #pemetakan li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Contoh Kira section */
+        #contoh-kira p, 
+        #contoh-kira li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Had Jalan Mati section */
+        #had-jalan-mati p, 
+        #had-jalan-mati li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
+        /* Specific formatting for the Jarak Perjalanan section */
+        #jarak-perjalanan p, 
+        #jarak-perjalanan li {
+            text-align: justify;
+            margin-bottom: 1.2em;
+        }
+
         .content-section {
             display: none;
             background-color: #fff;
@@ -702,6 +769,8 @@
         <li><a href="#akses-bomba" class="nav-link">Akses Perkakas Bomba</a></li>
         <li><a href="#ruang-akses-bomba" class="nav-link">Ruang Akses Menentang Kebakaran</a></li>
         <li><a href="#pengukuran" class="nav-link">Kaedah Pengukuran Bangunan</a></li>
+        <li><a href="#had-jalan-mati" class="nav-link">Had Jalan Mati</a></li>
+        <li><a href="#jarak-perjalanan" class="nav-link">Jarak Perjalanan</a></li>
         <li><a href="#pemetakan" class="nav-link">Pemetakan (Compartmentation)</a></li>
         <li><a href="#contoh-kira" class="nav-link">Contoh Pengiraan</a></li>
         <li><a href="#kalkulator-beban-pendudukan" class="nav-link">Kalkulator Beban Pendudukan</a></li>
@@ -2394,7 +2463,7 @@ Ini bermakna jika sesebuah bangunan mempunyai fungsi pelbagai tetapi salah satu 
     </div>
         <div id="pengukuran" class="content-section">
         <h2>Kaedah Pengukuran Bangunan</h2>
-        <p style="text-align: justify; margin-bottom: 1.2em;">Dalam konteks keselamatan kebakaran dan reka bentuk bangunan, keluasan dan ketinggian adalah dua parameter utama yang menentukan tahap risiko dan keperluan sistem keselamatan kebakaran. Parameter ini digunakan untuk menentukan jenis sistem pasif (contohnya, kadar ketahanan api struktur) dan sistem aktif (contohnya, bilangan dan jenis sistem pemercik, penggera kebakaran) yang perlu dipasang.</p>
+        <p style="text-align: justify; margin-bottom: 1.2em;">Dalam konteks keselamatan kebakaran dan reka bentuk bangunan, keluasan dan ketinggian adalah dua parameter utama yang menentukan tahap risiko dan keperluan sistem sistem keselamatan kebakaran. Parameter ini digunakan untuk menentukan jenis sistem pasif (contohnya, kadar ketahanan api struktur) dan sistem aktif (contohnya, bilangan dan jenis sistem pemercik, penggera kebakaran) yang perlu dipasang.</p>
 
         <h3>1. Pengukuran Ketinggian Bangunan</h3>
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 1em 0;">
@@ -2467,6 +2536,49 @@ Ini bermakna jika sesebuah bangunan mempunyai fungsi pelbagai tetapi salah satu 
             
             <li style="margin-bottom: 1.2em;"><b>Pengiraan Beban Kebakaran:</b> Isipadu juga boleh mempengaruhi cara kita kira beban kebakaran (berapa banyak bahan bakar ada) dan jumlah haba yang akan dilepaskan masa kebakaran.</li>
         </ul>
+    </div>
+
+    <div id="had-jalan-mati" class="content-section">
+        <h2>Had Jalan Mati (Dead End Limit)</h2>
+                <p>
+                    Had Jalan Mati merujuk kepada jarak maksimum yang dibenarkan dalam koridor atau laluan di mana penghuni hanya mempunyai satu arah sahaja untuk melarikan diri. Sekiranya penghuni berada di hujung jalan mati dan kebakaran berlaku di pintu masuk laluan tersebut, mereka akan terperangkap. Oleh itu, Undang-Undang Kecil Bangunan Seragam (UBBL) 1984 menetapkan had yang ketat untuk jarak ini bagi memastikan keselamatan.
+                </p>
+                <p>
+                    Jalan mati (dead end) ertinya sesuatu kawasan yang pelepasan diri daripadanya hanya boleh dilakukan melalui satu arah sahaja dan dalam sesuatu pelan terbuka termasuklah mana-mana tempat yang jalan terus darinya kepada pintu keluar lain mencakupi suatu sudut yang kurang dari 45 darjah. Penyelesaian bagi masalah jalan mati ialah dengan mengadakan pilihan jalan keluar lain. Tetapi perlu diingat tidak semestinya ada dua pintu masalah jalan mati ini akan selesai. Jika tersilap meletakkan pintu keluar, masalah jalan mati tidak akan selesai. Rajah-rajah berikut menunjukkan beberapa contoh jalan mati.
+                </p>
+                <img src="images/dead-end.jpg" alt="Ilustrasi Konsep Jalan Mati">
+        <img src="images/dead-end-2.jpg" alt="Contoh Jalan Mati 2">
+        <img src="images/dead-end-3.jpg" alt="Contoh Jalan Mati 3">
+        <img src="images/dead-end-4.jpg" alt="Contoh Jalan Mati 4">
+        <img src="images/dead-end-5.jpg" alt="Contoh Jalan Mati 5">
+        <p>
+            Adalah penting untuk ambil perhatian bahawa reka bentuk yang ideal sentiasa mengutamakan laluan keluar dari dua arah. Jalan mati perlu dielakkan seboleh mungkin dalam perancangan bangunan. Jika tidak dapat dielakkan, ia mesti mematuhi had jarak yang ditetapkan dengan ketat untuk memastikan tiada sesiapa yang terperangkap semasa kecemasan.
+        </p>
+    </div>
+
+    <div id="jarak-perjalanan" class="content-section">
+        <h2>Jarak Perjalanan (Travel Distance)</h2>
+        <p>
+            Jarak perjalanan pula ertinya jarak yang perlu dilalui daripada mana-mana tempat di sesuatu tingkat bangunan sama ada :
+        </p>
+        <ol style="list-style-type: lower-alpha;">
+            <li>Ke pintu penahan api dalam kepungan tangga; atau</li>
+            <li>Jika tidak ada pintu tersebut, ke anak tangga pertama tangga itu</li>
+        </ol>
+        <p>
+            Cara untuk mengukur jarak perjalanan ialah kita berada di tengah-tengah antara pilihan jalan keluar. Had jarak perjalanan perlu dirujuk di dalam jadual ketujuh. Kaedah yang boleh dicadangkan untuk menentukan lokasi jalan alternatif yang mematuhi jarak perjalanan adalah seperti di bawah. Cuma, kita perlu pastikan jarak a dan b tidak melebihi jarak perjalanan yang dibenarkan.
+        </p>
+        <img src="images/jarak-perjalanan.jpg" alt="Ilustrasi Konsep Jarak Perjalanan">
+        <p>Jarak perjalanan ini perlu diukur mengikut laluan yang boleh dilalui. Sudut pilihan bagi jalan keluar ini mestilah melebihi 45 darjah di antara dua pintu tangga ini. Sekiranya kedudukan diantara dua pintu tangga kurang daripada 45 darjah, maka kedudukan ini masih lagi di bawah kategori jalan mati. Jarak perjalanan masih belum wujud lagi.</p>
+        <p>Had limit jarak perjalanan boleh dirujuk di jadual ketujuh. Had ini berbeza jika bangunan itu mempunyai sistem sprinkler atau tidak. Kebiasaannya jika sesebuah bangunan itu mempunyai sistem sprinkler, had jarak perjalanan akan lebih jauh sedikit berbanding bangunan yang tidak mempunyai sprinkler.</p>
+        <img src="images/jadual-jarak-perjalanan.jpg" alt="Jadual Jarak Perjalanan">
+        <p>Jarak perjalanan biasanya diukur mengikut laluan. Jika terdapat halangan, kita hendaklah mengelak setiap halangan itu. Pastikan jarak yang dilalui itu tidak melebihi had yang dibenarkan.</p>
+        <img src="images/jarak-perjalanan-2.jpg" alt="Contoh Dua Arah Laluan Keluar">
+        <img src="images/jarak-perjalanan-3.jpg" alt="Contoh Satu Arah Laluan Keluar">
+        <h3>Jarak Tepat</h3>
+        <p>Jarak tepat ialah jarak terdekat sekali daripada mana-mana tempat dalam kawasan lantai diukur dalam kepungan luar bangunan itu kepada tempat keluar yang berkenaan tanpa mengira dinding, dinding sekat atau pepasangan selain daripada dinding kepungan atau dinding sekat bagi tangga terlindung.</p>
+        <p>Konsep mengukur jarak tepat adalah sama seperti mengukur jarak perjalanan. Cuma untuk jarak tepat, had yang dibenarkan hanya 2/3 daripada had jarak perjalanan. Sebagai contoh, jika jarak perjalanan bagi pejabat yang yang mempunyai sistem penyembur air automatik ialah 60 meter, maka jarak tepat bagi pejabat ini ialah 40 meter.</p>
+        <img src="images/jarak-tepat.jpg" alt="Ilustrasi Jarak Tepat">
     </div>
         <div id="pemetakan" class="content-section">
         <h2>Pemetakan (Compartmentation) - Bahagian 1</h2>
