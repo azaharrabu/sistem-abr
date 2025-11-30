@@ -357,11 +357,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Ralat tidak diketahui');
             if (endpoint === '/api/signin') {
-                if (!data.session || !data.profile) {
+                if (!data.session) {
                     throw new Error("Respons log masuk tidak lengkap dari server.");
                 }
                 await _supabase.auth.setSession(data.session);
-                showUi(data.user, data.profile, data.session.access_token);
+                await checkUserSession(); // Panggil fungsi yang mendapatkan profil penuh & betul
             } else { 
                 alert('Pendaftaran berjaya! Sila semak emel anda untuk pengesahan, kemudian log masuk.');
                 if(signupContainer) signupContainer.style.display = 'none';

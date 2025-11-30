@@ -57,74 +57,12 @@ module.exports = async (req, res) => {
         return res.status(401).json({ error: 'Login failed, no session returned.'});
     }
 
-    console.log(`User ${email} signed in successfully. Fetching profile...`);
-    // 2. Dapatkan profil pengguna dari jadual 'users'
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('user_id', authData.user.id)
-      .single();
+    console.log(`User ${email} signed in successfully. Session data will be returned.`);
 
-    if (profileError) {
-        console.warn(`Could not fetch user profile for ${email}:`, profileError.message);
-        // Teruskan walaupun profil tiada, hantar null
-        return res.status(200).json({ 
-            session: authData.session, 
-            user: authData.user, 
-            profile: null,
-            message: 'Login successful, but profile could not be fetched.'
-        });
-    }
-    
-    console.log(`Profile for ${email} fetched successfully. Role: ${profile.role}`);
-
-    // 3. Semak status affiliate pengguna
-    const { data: affiliateInfo, error: affiliateError } = await supabase
-      .from('affiliates')
-      .select('affiliate_code') // Hanya pilih lajur yang wujud
-      .eq('user_id', authData.user.id)
-      .single();
-
-    // Abaikan ralat jika tiada baris ditemui (PGRST116), ini bermakna pengguna bukan affiliate
-    if (affiliateError && affiliateError.code !== 'PGRST116') {
-      console.warn(`Warning checking affiliate status for ${email}:`, affiliateError.message);
-    }
-    
-    // 4. Gabungkan maklumat affiliate dan kira jualan jika dia seorang affiliate
-    profile.is_affiliate = !!affiliateInfo;
-    if (affiliateInfo) {
-      profile.affiliate_code = affiliateInfo.affiliate_code;
-      console.log(`User ${email} is an affiliate with code: ${affiliateInfo.affiliate_code}`);
-
-      // Terus kira statistik jualan di sini
-      const { data: sales } = await supabase
-        .from('affiliate_sales')
-        .select('amount')
-        .eq('affiliate_code', affiliateInfo.affiliate_code)
-        .eq('payment_status', 'paid');
-      
-      const salesData = sales || [];
-      const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.amount) || 0), 0);
-      
-      // Gunakan kadar komisen tetap 10% seperti yang dipersetujui
-      const commissionRate = 10; 
-      const totalCommission = totalSalesAmount * (commissionRate / 100);
-
-      // Tambah statistik pada profil untuk dihantar ke frontend
-      profile.totalSalesAmount = totalSalesAmount.toFixed(2);
-      profile.totalCommission = totalCommission.toFixed(2);
-      // PENTING: Pastikan peranan ditetapkan kepada 'affiliate' untuk routing UI yang betul
-      profile.role = 'affiliate'; 
-
-    } else {
-      console.log(`User ${email} is not an affiliate.`);
-    }
-
-    // 5. Hantar respons yang berjaya bersama session dan profile yang telah digabungkan
+    // Hanya kembalikan sesi. Frontend akan mengendalikan pengambilan profil.
     return res.status(200).json({
       session: authData.session,
-      user: authData.user,
-      profile: profile
+      user: authData.user
     });
 
   } catch (err) {
