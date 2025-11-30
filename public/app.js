@@ -299,24 +299,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const { data: { session } } = await _supabase.auth.getSession();
         
         if (session) {
-            let customerProfile = JSON.parse(localStorage.getItem('customerProfile'));
-
-            if (!customerProfile || customerProfile.user_id !== session.user.id) {
-                const token = session.access_token;
-                const response = await fetch('/api/profile', {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    cache: 'no-cache' // Elakkan caching profil
-                });
-                if (response.ok) {
-                    customerProfile = await response.json();
-                    localStorage.setItem('customerProfile', JSON.stringify(customerProfile));
-                } else {
-                    console.error("Gagal mendapatkan profil, log keluar...");
-                    await handleSignOut();
-                    return;
-                }
+            const token = session.access_token;
+            const response = await fetch('/api/profile', {
+                headers: { 'Authorization': `Bearer ${token}` },
+                cache: 'no-cache' // Elakkan caching profil
+            });
+            if (response.ok) {
+                const customerProfile = await response.json();
+                localStorage.setItem('customerProfile', JSON.stringify(customerProfile));
+                showUi(session.user, customerProfile, token);
+            } else {
+                console.error("Gagal mendapatkan profil, log keluar...");
+                await handleSignOut();
+                return;
             }
-            showUi(session.user, customerProfile, session.access_token);
         } else {
             showAuth();
         }

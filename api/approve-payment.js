@@ -65,31 +65,33 @@ module.exports = async (req, res) => {
 
     // 3. Jika pengguna dirujuk, cipta rekod jualan menggunakan affiliate_id
     if (updatedUser.referred_by && paymentForSale.amount > 0) {
-        // Cari ID affiliate berdasarkan kod rujukan
+        // Cari ID affiliate dan kadar komisen berdasarkan kod rujukan
         const { data: affiliate, error: affiliateError } = await supabase
             .from('affiliates')
-            .select('id')
+            .select('id, commission_rate')
             .eq('affiliate_code', updatedUser.referred_by)
             .single();
 
         if (affiliateError || !affiliate) {
             console.error(`CRITICAL: Could not find affiliate with code: ${updatedUser.referred_by}. Sale not recorded.`);
         } else {
-            // Masukkan rekod jualan ke dalam jadual 'sales' yang betul
+            // Kira jumlah komisen
+            const commissionAmount = paymentForSale.amount * (affiliate.commission_rate / 100);
+
+            // Masukkan rekod jualan ke dalam jadual 'sales'
             const { error: saleInsertError } = await supabase
-                .from('sales') // BETULKAN: Guna nama jadual 'sales'
+                .from('sales')
                 .insert({
                     affiliate_id: affiliate.id,
                     purchaser_user_id: customerId,
-                    sale_amount: paymentForSale.amount
-                    // 'commission_amount' akan dikira secara automatik oleh pangkalan data
-                    // 'payment_status' tidak wujud dalam jadual 'sales'
+                    sale_amount: paymentForSale.amount,
+                    commission_amount: commissionAmount // Masukkan komisen yang telah dikira
                 });
             
             if (saleInsertError) {
                 console.error(`CRITICAL: Failed to insert sale record for affiliate ID ${affiliate.id}`, saleInsertError.message);
             } else {
-                console.log(`Successfully recorded sale for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount}`);
+                console.log(`Successfully recorded sale for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount} and commission ${commissionAmount}`);
             }
         }
     }
