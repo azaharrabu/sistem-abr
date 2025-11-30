@@ -76,23 +76,20 @@ module.exports = async (req, res) => {
         if (affiliateError || !affiliate) {
             console.error(`CRITICAL: Could not find affiliate with code: ${updatedUser.referred_by}. Sale not recorded.`);
         } else {
-            // Kira jumlah komisen
-            const commissionAmount = paymentForSale.amount * (affiliate.commission_rate / 100);
-
             // Masukkan rekod jualan ke dalam jadual 'sales'
             const { error: saleInsertError } = await supabase
                 .from('sales')
                 .insert({
                     affiliate_id: affiliate.id,
                     purchaser_user_id: customerId,
-                    sale_amount: paymentForSale.amount,
-                    commission_amount: commissionAmount // Masukkan komisen yang telah dikira
+                    sale_amount: paymentForSale.amount
+                    // 'commission_amount' akan dikira secara automatik oleh pangkalan data
                 });
             
             if (saleInsertError) {
                 console.error(`CRITICAL: Failed to insert sale record for affiliate ID ${affiliate.id}`, saleInsertError.message);
             } else {
-                console.log(`Successfully recorded sale for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount} and commission ${commissionAmount}`);
+                console.log(`Successfully recorded sale for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount}`);
             }
         }
     }
