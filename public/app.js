@@ -365,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error("Respons log masuk tidak lengkap dari server.");
                 }
                 await _supabase.auth.setSession(data.session);
-                localStorage.setItem('customerProfile', JSON.stringify(data.profile));
                 showUi(data.user, data.profile, data.session.access_token);
             } else { 
                 alert('Pendaftaran berjaya! Sila semak emel anda untuk pengesahan, kemudian log masuk.');

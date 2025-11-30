@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
 
         if (affiliateError || !affiliate) {
             console.warn(`Affiliate profile not found for verified userId: ${userId}`);
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
             return res.status(404).json({ error: 'Affiliate profile not found.' });
         }
         console.log('DEBUG: Affiliate info found:', affiliate);
@@ -54,6 +55,7 @@ module.exports = async (req, res) => {
         const validCommissionRate = isNaN(commissionRate) ? 0 : commissionRate;
 
         console.log('DEBUG: Sending final JSON response.');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.status(200).json({
             totalSalesAmount: totalSalesAmount.toFixed(2),
             totalCommission: totalCommission.toFixed(2),
