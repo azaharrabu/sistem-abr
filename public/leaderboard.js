@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 row.insertCell().textContent = index + 1; // Pangkat
                 row.insertCell().textContent = affiliate.name || 'Nama Tidak Ditetapkan'; // Nama Agen
-                row.insertCell().textContent = affiliate.sales_count; // Jumlah Jualan
+                row.insertCell().textContent = `RM ${affiliate.total_sales.toFixed(2)}`; // Jumlah Jualan
             });
 
         } catch (error) {
