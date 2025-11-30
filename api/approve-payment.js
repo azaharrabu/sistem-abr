@@ -28,6 +28,7 @@ module.exports = async (req, res) => {
     }
 
     const { customerId } = req.body;
+    console.log('DEBUG: Received request to approve payment for customerId:', customerId); // TAMBAH LOG INI
     if (!customerId) {
         return res.status(400).json({ error: 'customerId is required.'});
     }
