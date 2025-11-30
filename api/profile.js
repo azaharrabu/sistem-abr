@@ -49,7 +49,7 @@ module.exports = async (req, res) => {
     const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
       .select('id, affiliate_code, commission_rate') // Dapatkan juga 'id'
-      .eq('user_id', user.id)
+      .eq('user_id', profile.user_id)
       .single();
 
     if (affiliateError && affiliateError.code !== 'PGRST116') {
