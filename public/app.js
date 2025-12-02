@@ -268,8 +268,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (pendingApprovalSection) pendingApprovalSection.style.display = 'block';
                     break;
                 case 'rejected':
+                    console.log("UI Sub-Path: Payment was rejected. Please resubmit.");
+                    if (paymentSection) paymentSection.style.display = 'block'; 
+                    break;
+                case null:
+                case undefined:
                 default:
-                    console.log("UI Sub-Path: Payment rejected or default.");
+                    console.log("UI Sub-Path: New user or undefined status. Showing payment form.");
                     if (paymentSection) paymentSection.style.display = 'block'; 
                     break;
             }
