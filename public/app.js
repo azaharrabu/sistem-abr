@@ -245,7 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'rejected':
                 default:
                     console.log("UI Sub-Path: Payment rejected or default.");
-                    if (paymentSection) paymentSection.style.display = 'block'; 
+                    if (paymentSection) {
+                        paymentSection.style.display = 'block';
+                        // Pre-fill the reference number with the user's email
+                        const referenceInput = document.getElementById('reference_no');
+                        if (referenceInput && user && user.email) {
+                            referenceInput.value = user.email;
+                        }
+                    }
                     break;
             }
         } 
