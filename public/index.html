@@ -20,51 +20,6 @@
             text-decoration: none;
             color: #007bff;
         }
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto;
-            padding: 25px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 8px;
-            position: relative;
-        }
-        .close-button {
-            color: #aaa;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-        }
-        .button-secondary {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .button-secondary:hover {
-            background-color: #5a6268;
-        }
     </style>
 </head>
 <body>
@@ -126,6 +81,10 @@
             </div>
             <form id="payment-proof-form">
                 <div class="form-group">
+                    <label for="reference_no">Nombor Rujukan Bank</label>
+                    <input type="text" id="reference_no" placeholder="Cth: 123456789" required>
+                </div>
+                <div class="form-group">
                     <label for="payment_date">Tarikh Bayaran</label>
                     <input type="date" id="payment_date" required>
                 </div>
@@ -137,33 +96,6 @@
                     <label for="amount">Jumlah Bayaran (RM)</label>
                     <input type="number" id="amount" step="0.01" placeholder="Cth: 50.00" required>
                 </div>
-
-                <div id="affiliate-fields-container" style="margin-top: 15px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #f9f9f9;">
-                    <h4>Butiran Pendaftaran Affiliate</h4>
-                    <p>Sila lengkapkan maklumat berikut untuk tujuan pembayaran komisyen.</p>
-                    <div class="form-group">
-                        <label for="affiliate-full-name">Nama Penuh (seperti dalam akaun bank)</label>
-                        <input type="text" id="affiliate-full-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="affiliate-phone">Nombor Telefon</label>
-                        <input type="tel" id="affiliate-phone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="affiliate-bank-name">Nama Bank</label>
-                        <input type="text" id="affiliate-bank-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="affiliate-bank-account">Nombor Akaun Bank</label>
-                        <input type="text" id="affiliate-bank-account" required>
-                    </div>
-                    <div class="commission-notice" style="padding: 10px; background-color: #f0f8ff; border: 1px solid #b6dfff; border-radius: 4px; margin-top: 15px; margin-bottom: 15px; text-align: center;">
-                        <p style="margin: 0; font-size: 0.9em; color: #31708f;">
-                            <strong>Makluman:</strong> Bayaran komisyen akan diproses dan dibayar ke akaun anda pada setiap <strong>1hb</strong> dan <strong>15hb</strong> setiap bulan.
-                        </p>
-                    </div>
-                </div>
-
                 <button type="submit">Hantar Bukti Pembayaran</button>
             </form>
         </div>
@@ -188,16 +120,14 @@
             <p>Langganan anda aktif. Klik butang di bawah untuk mengakses sistem.</p>
             <button id="open-interactive-button">Buka Sistem Rujukan Interaktif</button>
 
-            <!-- Bahagian untuk Pendaftaran Affiliate (Fungsi dipindahkan ke borang pembayaran) -->
+            <!-- Bahagian untuk Pendaftaran Affiliate -->
+            <div id="affiliate-register-view" style="display: none; margin-top: 15px;">
+                <button id="btn-register-affiliate">Daftar sebagai Agen Affiliate</button>
+            </div>
 
             <!-- Bahagian untuk Paparan Affiliate -->
             <div id="affiliate-dashboard-view" style="display: none; margin-top: 25px; padding: 20px; background-color: #e9f5ff; border: 1px solid #b3d7ff; border-radius: 8px; text-align: left;">
                 <h3 style="margin-top:0; color: #343a40;">Papan Pemuka Affiliate Anda</h3>
-
-                <div id="affiliate-notification-area" style="display: none; margin-bottom: 15px; padding: 10px; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 4px; color: #856404;">
-                    <p style="margin: 0;"><strong>Perhatian:</strong> Sila kemaskini maklumat bank anda untuk memastikan anda menerima bayaran komisen.</p>
-                </div>
-
                 <div class="dashboard-item">
                     <label for="affiliate-link">Pautan Affiliate Unik Anda (untuk dikongsi):</label>
                     <input type="text" id="affiliate-link" readonly style="cursor: copy; width: 100%; box-sizing: border-box;">
@@ -215,9 +145,6 @@
                 </div>
                  <div class="nav-links" style="text-align: left; padding: 10px 0;">
                     <a href="affiliate-leaderboard.html" target="_blank" id="affiliate-leaderboard-link">Lihat Papan Pendahulu & Prestasi Terperinci</a>
-                </div>
-                <div class="dashboard-item" style="margin-top: 15px;">
-                    <button id="edit-affiliate-details-btn" class="button-secondary">Kemaskini Maklumat Bank</button>
                 </div>
                 <small style="color: #6c757d; display: block; margin-top: 1em;">Statistik akan dikemas kini secara berkala.</small>
             </div>
@@ -249,37 +176,8 @@
                 </table>
             </div>
         </div>
-
-        <!-- Bahagian 6: Modal Kemaskini Butiran Affiliate -->
-        <div id="edit-affiliate-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-button" id="close-edit-affiliate-modal">&times;</span>
-                <h3>Kemaskini Maklumat Pembayaran</h3>
-                <p>Pastikan maklumat anda tepat untuk menerima komisen.</p>
-                <form id="edit-affiliate-form">
-                    <div class="form-group">
-                        <label for="edit-affiliate-full-name">Nama Penuh (seperti dalam akaun bank)</label>
-                        <input type="text" id="edit-affiliate-full-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-affiliate-phone">Nombor Telefon</label>
-                        <input type="tel" id="edit-affiliate-phone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-affiliate-bank-name">Nama Bank</label>
-                        <input type="text" id="edit-affiliate-bank-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-affiliate-bank-account">Nombor Akaun Bank</label>
-                        <input type="text" id="edit-affiliate-bank-account" required>
-                    </div>
-                    <button type="submit">Simpan Perubahan</button>
-                </form>
-            </div>
-        </div>
-        
     </div>
     <script src="config.js"></script>
-    <script src="app.js?v=2"></script>
+    <script src="app.js"></script>
 </body>
 </html>
