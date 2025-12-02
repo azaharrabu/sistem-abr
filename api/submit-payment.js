@@ -14,21 +14,31 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // 1. Sahkan token dan dapatkan pengguna
+    // 1. Sahkan token dan dapatkan maklumat pengguna
     const user = await verifyToken(req);
 
-    const { reference_no, payment_date, payment_time, amount } = req.body;
+    const { 
+      payment_date, 
+      payment_time, 
+      amount,
+      full_name,
+      phone_number,
+      bank_name, // akan jadi pilihan
+      bank_account_number // akan jadi pilihan
+    } = req.body;
 
-    if (!reference_no || !payment_date || !payment_time || !amount) {
-      return res.status(400).json({ error: 'All payment fields are required.' });
+    // 2. Pengesahan - hanya medan asas yang wajib
+    if (!payment_date || !payment_time || !amount || !full_name || !phone_number) {
+      return res.status(400).json({ error: 'Please fill in all required fields: payment details, full name, and phone number.' });
     }
 
-    // 2. Masukkan bukti pembayaran ke dalam jadual 'payments'
+    // 3. Masukkan bukti pembayaran ke dalam jadual 'payments'
+    // Gunakan email pengguna sebagai 'reference_no' secara automatik
     const { error: paymentError } = await supabase
       .from('payments')
       .insert({
         user_id: user.id,
-        reference_no,
+        reference_no: user.email, // Menggunakan email sebagai nombor rujukan
         payment_date,
         payment_time,
         amount,
@@ -40,21 +50,29 @@ module.exports = async (req, res) => {
       return res.status(500).json({ error: `Failed to submit payment proof: ${paymentError.message}` });
     }
 
-    // 3. Kemas kini status pengguna dalam jadual 'users' kepada 'pending'
+    // 4. Bina payload untuk mengemaskini profil pengguna
+    const userUpdatePayload = { 
+        payment_status: 'pending',
+        full_name,
+        phone_number,
+        bank_name: bank_name || null, // Simpan null jika tidak diberi
+        account_number: bank_account_number || null // Simpan null jika tidak diberi
+    };
+
+    // 5. Kemas kini jadual 'users' (atau 'profiles') dengan data affiliate
     const { error: userUpdateError } = await supabase
       .from('users')
-      .update({ payment_status: 'pending' })
+      .update(userUpdatePayload)
       .eq('user_id', user.id);
 
     if (userUpdateError) {
-      // Walaupun bayaran berjaya direkod, status pengguna gagal dikemas kini. Ini perlu log untuk penyiasatan.
-      console.error('User status update after payment failed:', userUpdateError.message);
-      // Maklumkan kepada frontend tentang kejayaan separa.
-      return res.status(207).json({ message: 'Payment proof submitted, but failed to update user status.' });
+      console.error('User status/profile update after payment failed:', userUpdateError.message);
+      // Walaupun profil gagal dikemas kini, pembayaran telah direkodkan.
+      return res.status(207).json({ message: 'Payment proof submitted, but failed to update user profile.' });
     }
 
-    // 4. Hantar respons berjaya sepenuhnya
-    return res.status(200).json({ message: 'Payment proof submitted successfully and user status updated.' });
+    // 6. Hantar respons berjaya sepenuhnya
+    return res.status(200).json({ message: 'Payment and affiliate registration submitted successfully.' });
 
   } catch (err) {
     console.error('Submit Payment API Error:', err.message);

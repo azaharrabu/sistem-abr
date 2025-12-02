@@ -203,6 +203,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // --> MULA PINDAAN: Logik mengisi e-mel ke medan rujukan pembayaran
+        // Logik ini dijalankan setiap kali UI dipaparkan untuk memastikan medan sentiasa diisi jika pengguna wujud.
+        const referenceInput = document.getElementById('reference_no');
+        if (referenceInput) {
+            if (user && user.email) {
+                referenceInput.value = user.email;
+                console.log(`Medan rujukan pembayaran diisi dengan e-mel: ${user.email}`);
+            } else {
+                // Kosongkan medan jika tiada pengguna/e-mel, contohnya selepas log keluar
+                referenceInput.value = '';
+                console.warn('Tidak dapat mengisi medan rujukan: objek pengguna atau e-mel tidak ditemui.');
+            }
+        }
+        // <-- TAMAT PINDAAN
+
         if (profile && profile.role === 'admin') {
             console.log("UI Path: Admin");
             if (adminPanelSection) adminPanelSection.style.display = 'block';
@@ -243,9 +258,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (pendingApprovalSection) pendingApprovalSection.style.display = 'block';
                     break;
                 case 'rejected':
-                default:
-                    console.log("UI Sub-Path: Payment rejected or default.");
-                    if (paymentSection) paymentSection.style.display = 'block'; 
+                default: // Also covers new users where status is null/undefined
+                    console.log("UI Sub-Path: Needs payment (new, rejected, or other).");
+                    if (paymentSection) {
+                        paymentSection.style.display = 'block';
+                    }
                     break;
             }
         } 
@@ -356,36 +373,28 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Kumpul semua data dari borang
+        // Kumpul data yang relevan dari borang
         const reference_no = document.getElementById('reference_no').value;
         const payment_date = document.getElementById('payment_date').value;
         const payment_time = document.getElementById('payment_time').value;
         const amount = document.getElementById('amount').value;
-        const affiliate_full_name = document.getElementById('affiliate-full-name').value;
-        const affiliate_phone = document.getElementById('affiliate-phone').value;
-        const affiliate_bank_name = document.getElementById('affiliate-bank-name').value;
-        const affiliate_bank_account = document.getElementById('affiliate-bank-account').value;
+        const full_name = document.getElementById('affiliate-full-name').value;
+        const phone_number = document.getElementById('affiliate-phone').value;
 
         // Semak jika semua medan yang diperlukan diisi
         if (!reference_no.trim() || !payment_date || !payment_time || !amount ||
-            !affiliate_full_name.trim() || !affiliate_phone.trim() || 
-            !affiliate_bank_name.trim() || !affiliate_bank_account.trim()) {
-            alert('Sila lengkapkan semua butiran pembayaran dan pendaftaran affiliate.');
+            !full_name.trim() || !phone_number.trim()) {
+            alert('Sila lengkapkan semua butiran yang diperlukan.');
             return;
         }
 
-        // Sediakan badan permintaan
+        // Sediakan badan permintaan (flat structure)
         const body = {
-            reference_no,
             payment_date,
             payment_time,
             amount,
-            affiliate_details: {
-                full_name: affiliate_full_name,
-                phone: affiliate_phone,
-                bank_name: affiliate_bank_name,
-                bank_account: affiliate_bank_account
-            }
+            full_name,
+            phone_number 
         };
 
         try {
