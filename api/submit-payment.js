@@ -16,66 +16,55 @@ module.exports = async (req, res) => {
   try {
     // 1. Sahkan token dan dapatkan maklumat pengguna
     const user = await verifyToken(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Authentication failed' });
+    }
 
     const { 
       payment_date, 
       payment_time, 
       amount,
       full_name,
-      phone_number,
-      bank_name, // akan jadi pilihan
-      bank_account_number // akan jadi pilihan
+      phone_number
     } = req.body;
 
-    // 2. Pengesahan - hanya medan asas yang wajib
+    // 2. Pengesahan input - pastikan semua medan yang diperlukan wujud
     if (!payment_date || !payment_time || !amount || !full_name || !phone_number) {
-      return res.status(400).json({ error: 'Please fill in all required fields: payment details, full name, and phone number.' });
+      return res.status(400).json({ error: 'Sila lengkapkan semua medan yang diperlukan.' });
     }
 
-    // 3. Masukkan bukti pembayaran ke dalam jadual 'payments'
-    // Gunakan email pengguna sebagai 'reference_no' secara automatik
-    const { error: paymentError } = await supabase
-      .from('payments')
-      .insert({
-        user_id: user.id,
-        reference_no: user.email, // Menggunakan email sebagai nombor rujukan
-        payment_date,
-        payment_time,
-        amount,
-        status: 'pending'
-      });
+    // 3. Panggil fungsi pangkalan data `handle_new_payment`
+    const { data, error } = await supabase.rpc('handle_new_payment', {
+      p_user_id: user.id,
+      p_user_email: user.email,
+      p_payment_date: payment_date,
+      p_payment_time: payment_time,
+      p_amount: amount,
+      p_full_name: full_name,
+      p_phone_number: phone_number
+    });
 
-    if (paymentError) {
-      console.error('Payment Insert Error:', paymentError.message);
-      return res.status(500).json({ error: `Failed to submit payment proof: ${paymentError.message}` });
+    if (error) {
+      console.error('RPC Error:', error.message);
+      return res.status(500).json({ error: `Gagal memproses bayaran: ${error.message}` });
     }
 
-    // 4. Bina payload untuk mengemaskini profil pengguna
-    const userUpdatePayload = { 
-        payment_status: 'pending',
-        full_name,
-        phone_number,
-        bank_name: bank_name || null, // Simpan null jika tidak diberi
-        account_number: bank_account_number || null // Simpan null jika tidak diberi
-    };
-
-    // 5. Kemas kini jadual 'users' (atau 'profiles') dengan data affiliate
-    const { error: userUpdateError } = await supabase
-      .from('users')
-      .update(userUpdatePayload)
-      .eq('user_id', user.id);
-
-    if (userUpdateError) {
-      console.error('User status/profile update after payment failed:', userUpdateError.message);
-      // Walaupun profil gagal dikemas kini, pembayaran telah direkodkan.
-      return res.status(207).json({ message: 'Payment proof submitted, but failed to update user profile.' });
+    // 4. Kendalikan maklum balas daripada fungsi
+    if (data === 'conflict') {
+      console.warn(`Duplicate payment attempt for user ${user.id}.`);
+      return res.status(409).json({ error: 'Anda sudah mempunyai bayaran yang aktif atau sedang menunggu kelulusan.' });
     }
 
-    // 6. Hantar respons berjaya sepenuhnya
-    return res.status(200).json({ message: 'Payment and affiliate registration submitted successfully.' });
+    if (data === 'success') {
+      return res.status(200).json({ message: 'Bukti pembayaran dan butiran peribadi berjaya dihantar.' });
+    }
+
+    // Jika maklum balas adalah 'error' atau sesuatu yang tidak dijangka
+    return res.status(500).json({ error: 'Berlaku ralat yang tidak dijangka semasa memproses pembayaran anda.' });
 
   } catch (err) {
     console.error('Submit Payment API Error:', err.message);
+    // Asingkan ralat pengesahan daripada ralat server yang lain
     const statusCode = err.message.includes('Authentication failed') ? 401 : 500;
     return res.status(statusCode).json({ error: err.message });
   }
