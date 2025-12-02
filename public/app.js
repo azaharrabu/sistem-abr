@@ -184,8 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Fungsi fetchAffiliateDashboard telah dibuang kerana tidak lagi diperlukan.
-
     // Fungsi untuk memaparkan UI berdasarkan status & peranan pengguna
     const showUi = (user, profile, token) => {
         console.log("--- showUi dipanggil ---");
@@ -209,29 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("UI Path: Admin");
             if (adminPanelSection) adminPanelSection.style.display = 'block';
             fetchPendingPayments(token);
-        } else if (profile && profile.role === 'affiliate') {
-            console.log("UI Path: Affiliate");
-            if (mainContentSection) mainContentSection.style.display = 'block';
-            if (affiliateDashboardView) affiliateDashboardView.style.display = 'block';
-            if (affiliateRegisterView) affiliateRegisterView.style.display = 'none';
-            if (affiliateCodeSpan) affiliateCodeSpan.textContent = profile.affiliate_code;
-            const affiliateLinkInput = document.getElementById('affiliate-link');
-            if (affiliateLinkInput) {
-                affiliateLinkInput.value = `${window.location.origin}?ref=${profile.affiliate_code}`;
-            }
-            
-            // Data kini dibaca terus dari profil, tidak perlu fetch berasingan.
-            const salesValueEl = document.getElementById('affiliate-sales-value');
-            const commissionEl = document.getElementById('affiliate-commission');
-
-            if (salesValueEl) {
-                salesValueEl.textContent = `RM ${profile.totalSalesAmount || '0.00'}`;
-            }
-            if (commissionEl) {
-                commissionEl.textContent = `RM ${profile.totalCommission || '0.00'}`;
-            }
-        } 
-        else if (profile && profile.role === 'user') {
+        } else if (profile && profile.role === 'user') {
             console.log(`UI Path: User (Payment Status: ${profile.payment_status})`);
             switch (profile.payment_status) {
                 case 'paid':
@@ -246,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             affiliateLinkInput.value = `${window.location.origin}?ref=${profile.affiliate_code}`;
                         }
                         
-                        // Data kini dibaca terus dari profil, tidak perlu fetch berasingan.
                         const salesValueEl = document.getElementById('affiliate-sales-value');
                         const commissionEl = document.getElementById('affiliate-commission');
 
@@ -268,13 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (pendingApprovalSection) pendingApprovalSection.style.display = 'block';
                     break;
                 case 'rejected':
-                    console.log("UI Sub-Path: Payment was rejected. Please resubmit.");
-                    if (paymentSection) paymentSection.style.display = 'block'; 
-                    break;
-                case null:
-                case undefined:
                 default:
-                    console.log("UI Sub-Path: New user or undefined status. Showing payment form.");
+                    console.log("UI Sub-Path: Payment rejected or default.");
                     if (paymentSection) paymentSection.style.display = 'block'; 
                     break;
             }
@@ -335,13 +305,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleAuth(event, endpoint) {
-        console.log(`handleAuth started for endpoint: ${endpoint}`); // DEBUG
         event.preventDefault();
         const form = event.target;
         const email = form.querySelector('input[type="email"]').value;
         const password = form.querySelector('input[type="password"]').value;
         let body = { email, password };
-
         if (endpoint === '/api/signup') {
             const planInput = form.querySelector('input[name="subscription_plan"]:checked');
             if (!planInput) {
@@ -355,115 +323,104 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`Pendaftaran dirujuk oleh kod affiliate: ${affiliateCode}`);
             }
         }
-
-        console.log('Preparing to fetch with body:', body); // DEBUG
-
         try {
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
-
-            console.log(`Fetch response status: ${response.status}`); // DEBUG
             const data = await response.json();
-            console.log('Fetch response data:', data); // DEBUG
-
-            if (!response.ok) {
-                console.error('Response not OK. Throwing error.'); // DEBUG
-                throw new Error(data.error || 'Ralat tidak diketahui');
-            }
-
+            if (!response.ok) throw new Error(data.error || 'Ralat tidak diketahui');
             if (endpoint === '/api/signin') {
-                console.log('Signin successful, setting session...'); // DEBUG
                 if (!data.session) {
                     throw new Error("Respons log masuk tidak lengkap dari server.");
                 }
                 await _supabase.auth.setSession(data.session);
-                await checkUserSession();
+                await checkUserSession(); // Panggil fungsi yang mendapatkan profil penuh & betul
             } else { 
-                console.log('Signup successful, showing alert.'); // DEBUG
                 alert('Pendaftaran berjaya! Sila semak emel anda untuk pengesahan, kemudian log masuk.');
                 if(signupContainer) signupContainer.style.display = 'none';
                 if(loginContainer) loginContainer.style.display = 'block';
             }
         } catch (error) {
-            console.error('Error in handleAuth catch block:', error); // DEBUG
             alert(`Ralat Log Masuk: ${error.message}`);
         }
         form.reset();
     }
 
     async function handlePaymentProofSubmit(event) {
-    event.preventDefault();
+        event.preventDefault();
+        const token = currentSessionToken;
+        if (!token) {
+            alert('Sesi anda telah tamat. Sila log masuk semula.');
+            return;
+        }
 
-    const submitButton = event.target.querySelector('button[type="submit"]');
-    submitButton.disabled = true;
-    submitButton.textContent = 'Menghantar...';
+        // Kumpul semua data dari borang
+        const reference_no = document.getElementById('reference_no').value;
+        const payment_date = document.getElementById('payment_date').value;
+        const payment_time = document.getElementById('payment_time').value;
+        const amount = document.getElementById('amount').value;
+        const affiliate_full_name = document.getElementById('affiliate-full-name').value;
+        const affiliate_phone = document.getElementById('affiliate-phone').value;
+        const affiliate_bank_name = document.getElementById('affiliate-bank-name').value;
+        const affiliate_bank_account = document.getElementById('affiliate-bank-account').value;
 
-    const token = currentSessionToken;
-    if (!token) {
-        alert('Sesi anda telah tamat. Sila log masuk semula.');
-        submitButton.disabled = false;
-        submitButton.textContent = 'Hantar Bukti Pembayaran';
-        return;
+        // Semak jika semua medan yang diperlukan diisi
+        if (!reference_no.trim() || !payment_date || !payment_time || !amount ||
+            !affiliate_full_name.trim() || !affiliate_phone.trim() || 
+            !affiliate_bank_name.trim() || !affiliate_bank_account.trim()) {
+            alert('Sila lengkapkan semua butiran pembayaran dan pendaftaran affiliate.');
+            return;
+        }
+
+        // Sediakan badan permintaan
+        const body = {
+            reference_no,
+            payment_date,
+            payment_time,
+            amount,
+            affiliate_details: {
+                full_name: affiliate_full_name,
+                phone: affiliate_phone,
+                bank_name: affiliate_bank_name,
+                bank_account: affiliate_bank_account
+            }
+        };
+
+        try {
+            const response = await fetch('/api/submit-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Gagal menghantar bukti pembayaran.');
+            }
+
+            alert('Terima kasih. Permohonan anda akan disemak dan diproses dalam masa 3 hari bekerja.');
+            
+            // Kemas kini profil tempatan untuk mencerminkan status 'pending'
+            const customerProfile = JSON.parse(localStorage.getItem('customerProfile'));
+            if (customerProfile) {
+                customerProfile.payment_status = 'pending';
+                localStorage.setItem('customerProfile', JSON.stringify(customerProfile));
+                const { data: { user } } = await _supabase.auth.getUser();
+                showUi(user, customerProfile, token);
+            } else {
+                // Fallback jika profil tidak wujud
+                if(paymentSection) paymentSection.style.display = 'none';
+                if(pendingApprovalSection) pendingApprovalSection.style.display = 'block';
+            }
+        } catch (error) {
+            alert(`Ralat: ${error.message}`);
+        }
     }
-
-    // Ambil data dari borang
-    const payment_date = document.getElementById('payment_date').value;
-    const payment_time = document.getElementById('payment_time').value;
-    const amount = document.getElementById('amount').value;
-    const fullName = document.getElementById('affiliate-full-name').value;
-    const phone = document.getElementById('affiliate-phone').value;
-    const bankName = document.getElementById('affiliate-bank-name').value;
-    const bankAccount = document.getElementById('affiliate-bank-account').value;
-
-    // Pengesahan data - semua medan kini wajib
-    if (!payment_date || !payment_time || !amount || !fullName.trim() || !phone.trim() || !bankName.trim() || !bankAccount.trim()) {
-        alert('Sila lengkapkan semua butiran pembayaran dan pendaftaran affiliate anda.');
-        submitButton.disabled = false;
-        submitButton.textContent = 'Hantar Bukti Pembayaran';
-        return;
-    }
-
-    // Data untuk dihantar ke API
-    const body = { 
-        payment_date, 
-        payment_time, 
-        amount,
-        full_name: fullName,
-        phone_number: phone,
-        bank_name: bankName,
-        bank_account_number: bankAccount,
-        register_as_affiliate: true // Pendaftaran affiliate kini automatik
-    };
-
-    try {
-        console.log("Attempting to submit payment proof with mandatory affiliate data...");
-        const response = await fetch('/api/submit-payment', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(body)
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Gagal menghantar bukti pembayaran.');
-        
-        // Mesej kejayaan yang dikemaskini
-        const successMessage = 'Terima kasih. Permohonan langganan dan pendaftaran affiliate anda akan disemak dan diproses dalam masa 3 hari bekerja.';
-        alert(successMessage);
-
-        await checkUserSession();
-
-    } catch (error) {
-        alert(`Ralat Penghantaran Bayaran: ${error.message}`);
-    } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Hantar Bukti Pembayaran';
-    }
-}
 
     // Fungsi untuk log keluar
     async function handleSignOut() {
