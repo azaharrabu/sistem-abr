@@ -243,14 +243,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (pendingApprovalSection) pendingApprovalSection.style.display = 'block';
                     break;
                 case 'rejected':
-                default:
-                    console.log("UI Sub-Path: Payment rejected or default.");
+                default: // Also covers new users where status is null/undefined
+                    console.log("UI Sub-Path: Needs payment (new, rejected, or other).");
                     if (paymentSection) {
                         paymentSection.style.display = 'block';
-                        // Pre-fill the reference number with the user's email
+                        // Always try to populate the email for the payment form
                         const referenceInput = document.getElementById('reference_no');
                         if (referenceInput && user && user.email) {
                             referenceInput.value = user.email;
+                            console.log(`Email '${user.email}' populated into reference field.`);
+                        } else {
+                            console.warn("Could not populate email into reference field.", {
+                                hasReferenceInput: !!referenceInput,
+                                hasUser: !!user,
+                                hasEmail: user ? !!user.email : false
+                            });
                         }
                     }
                     break;
