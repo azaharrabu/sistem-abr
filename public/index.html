@@ -81,10 +81,6 @@
             </div>
             <form id="payment-proof-form">
                 <div class="form-group">
-                    <label for="reference_no">Nombor Rujukan Bank</label>
-                    <input type="text" id="reference_no" placeholder="Cth: 123456789" required>
-                </div>
-                <div class="form-group">
                     <label for="payment_date">Tarikh Bayaran</label>
                     <input type="date" id="payment_date" required>
                 </div>
@@ -96,7 +92,29 @@
                     <label for="amount">Jumlah Bayaran (RM)</label>
                     <input type="number" id="amount" step="0.01" placeholder="Cth: 50.00" required>
                 </div>
-                <button type="submit">Hantar Bukti Pembayaran</button>
+
+                <hr style="margin: 20px 0;">
+                <h4 style="margin-bottom: 10px;">Butiran Pendaftaran Affiliate</h4>
+                <p style="margin-bottom: 15px;">Sila lengkapkan maklumat di bawah untuk tujuan pembayaran komisyen anda.</p>
+
+                <div class="form-group">
+                    <label for="affiliate-full-name">Nama Penuh (seperti di Akaun Bank)</label>
+                    <input type="text" id="affiliate-full-name" placeholder="Nama Penuh Anda" required>
+                </div>
+                <div class="form-group">
+                    <label for="affiliate-phone">Nombor Telefon</label>
+                    <input type="tel" id="affiliate-phone" placeholder="Cth: 0123456789" required>
+                </div>
+                <div class="form-group">
+                    <label for="affiliate-bank-name">Nama Bank</label>
+                    <input type="text" id="affiliate-bank-name" placeholder="Cth: Maybank, CIMB Bank" required>
+                </div>
+                <div class="form-group">
+                    <label for="affiliate-bank-account">Nombor Akaun Bank</label>
+                    <input type="text" id="affiliate-bank-account" placeholder="Nombor Akaun Anda" required>
+                </div>
+
+                <button type="submit">Hantar Bukti Pembayaran & Daftar Affiliate</button>
             </form>
         </div>
 
