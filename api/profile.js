@@ -5,8 +5,45 @@ const { verifyToken } = require('./_utils/auth');
 module.exports = async (req, res) => {
   console.log("--- api/profile function invoked ---");
 
+  if (req.method === 'POST') {
+    // Handle profile update
+    try {
+      const user = await verifyToken(req);
+      const { full_name, phone_number, bank_name, account_number } = req.body;
+
+      if (!full_name || !phone_number || !bank_name || !account_number) {
+        return res.status(400).json({ error: 'All fields are required to update bank details.' });
+      }
+      
+      const supabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_KEY
+      );
+
+      const { data, error } = await supabase
+        .from('customers')
+        .update({
+          full_name,
+          phone_number,
+          bank_name,
+          account_number
+        })
+        .eq('user_id', user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      return res.status(200).json({ message: 'Profile updated successfully.' });
+
+    } catch (err) {
+      console.error('Update Profile Error:', err.message);
+      return res.status(500).json({ error: 'Failed to update profile.' });
+    }
+  }
+
   if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET');
+    res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
@@ -27,9 +64,9 @@ module.exports = async (req, res) => {
     }
     console.log(`Token verified for user ID: ${user.id}`);
 
-    // 3. Fetch main profile from 'users' table
+    // 3. Fetch main profile from 'customers' table
     const { data: profile, error: profileError } = await supabase
-      .from('users')
+      .from('customers')
       .select('*')
       .eq('user_id', user.id)
       .single();
@@ -45,10 +82,10 @@ module.exports = async (req, res) => {
     }
     console.log(`Profile fetched for ${profile.email}. Role: ${profile.role}`);
 
-    // 3. Dapatkan maklumat affiliate (termasuk ID dan kadar komisyen)
+    // 3. Dapatkan maklumat affiliate (termasuk semua butiran untuk paparan profil)
     const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
-      .select('id, affiliate_code, commission_rate') // Dapatkan juga 'id'
+      .select('*') // Dapatkan semua butiran affiliate
       .eq('user_id', profile.user_id)
       .single();
 
@@ -60,12 +97,17 @@ module.exports = async (req, res) => {
     // 4. Gabungkan data dan kira jualan jika pengguna adalah affiliate
     profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
+      // Data dari jadual 'affiliates'
+      profile.affiliate_id = affiliateInfo.id;
       profile.affiliate_code = affiliateInfo.affiliate_code;
       
-      // Kira statistik jualan dari jadual 'sales' yang betul
+      // Data 'full_name', 'phone_number', etc., sudah sedia ada dalam objek 'profile'
+      // dari jadual 'users'. Tidak perlu disalin dari 'affiliateInfo'.
+
+      // Kira statistik jualan dari jadual 'sales'
       const { data: sales, error: salesError } = await supabase
-        .from('sales') // BETULKAN: Guna nama jadual 'sales'
-        .select('sale_amount, commission_amount') // Dapatkan juga komisyen yang telah dikira oleh DB
+        .from('sales')
+        .select('sale_amount, commission_amount')
         .eq('affiliate_id', affiliateInfo.id);
       
       if (salesError) {
@@ -73,11 +115,9 @@ module.exports = async (req, res) => {
       }
       
       const salesData = sales || [];
-      // Jumlahkan terus dari data yang betul
       const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.sale_amount) || 0), 0);
       const totalCommission = salesData.reduce((sum, sale) => sum + (parseFloat(sale.commission_amount) || 0), 0);
 
-      // Attach stats to the profile to be sent to the frontend
       profile.totalSalesAmount = totalSalesAmount.toFixed(2);
       profile.totalCommission = totalCommission.toFixed(2);
       console.log(`Sales for ${profile.email}: Amount=RM${profile.totalSalesAmount}, Commission=RM${profile.totalCommission}`);
