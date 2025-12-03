@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
     // 2. Cipta profil pengguna secara manual dalam jadual 'public.users'.
     console.log(`[signup.js] Attempting to insert profile for user_id: ${authData.user.id}`);
     const { data: insertedData, error: profileError } = await supabase
-      .from('users')
+      .from('customers')
       .insert([
         {
           user_id: authData.user.id,
