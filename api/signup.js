@@ -31,30 +31,46 @@ module.exports = async (req, res) => {
 
   try {
     // 1. Daftar pengguna baru di Supabase Auth.
-    // Maklumat tambahan dihantar melalui options.data untuk digunakan oleh Database Trigger.
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: {
-            subscription_plan: subscription_plan,
-            subscription_price: subscriptionPrices[subscription_plan],
-            is_promo_user: true,
-            referred_by: referred_by || null,
-            payment_status: 'rejected'
-        }
-      }
+      // options.data tidak lagi digunakan kerana profil dicipta secara manual di bawah.
     });
 
     if (signUpError) {
+      // Log ralat sebenar di server untuk penyahpepijatan
+      console.error('Supabase sign up error:', signUpError.message);
       return res.status(400).json({ error: signUpError.message });
     }
     
     if (!authData.user) {
-        return res.status(500).json({ error: "Signup succeeded but no user data returned."})
+        return res.status(500).json({ error: "Signup succeeded but no user data returned."});
     }
 
-    // 2. Pendaftaran Auth berjaya. Trigger pangkalan data akan menguruskan penciptaan profil.
+    // 2. Cipta profil pengguna secara manual dalam jadual 'public.users'.
+    const { error: profileError } = await supabase
+      .from('users')
+      .insert([
+        {
+          user_id: authData.user.id,
+          email: authData.user.email, // Guna emel dari data Auth yang disahkan
+          role: 'user',
+          subscription_plan: subscription_plan,
+          subscription_price: subscriptionPrices[subscription_plan],
+          is_promo_user: true,
+          referred_by: referred_by || null,
+          payment_status: 'needs_payment'
+        }
+      ]);
+
+    if (profileError) {
+      // Log ralat sebenar di server untuk penyahpepijatan
+      console.error('Error creating user profile:', profileError.message);
+      // Ralat kritikal: Pengguna disahkan tetapi profil gagal dicipta.
+      return res.status(500).json({ error: 'Database error saving new user.' });
+    }
+
+    // 3. Pendaftaran dan penciptaan profil berjaya.
     return res.status(201).json({ message: 'Signup successful. Please check your email for verification.' });
 
 
