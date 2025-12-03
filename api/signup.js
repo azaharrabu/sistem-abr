@@ -48,7 +48,8 @@ module.exports = async (req, res) => {
     }
 
     // 2. Cipta profil pengguna secara manual dalam jadual 'public.users'.
-    const { error: profileError } = await supabase
+    console.log(`[signup.js] Attempting to insert profile for user_id: ${authData.user.id}`);
+    const { data: insertedData, error: profileError } = await supabase
       .from('users')
       .insert([
         {
@@ -61,14 +62,17 @@ module.exports = async (req, res) => {
           referred_by: referred_by || null,
           payment_status: 'needs_payment'
         }
-      ]);
+      ])
+      .select(); // Add .select() to get the inserted data back
 
     if (profileError) {
       // Log ralat sebenar di server untuk penyahpepijatan
-      console.error('Error creating user profile:', profileError.message);
+      console.error('[signup.js] CRITICAL: Error creating user profile. Full error object:', JSON.stringify(profileError, null, 2));
       // Ralat kritikal: Pengguna disahkan tetapi profil gagal dicipta.
       return res.status(500).json({ error: 'Database error saving new user.' });
     }
+
+    console.log('[signup.js] Successfully inserted profile. Returned data:', JSON.stringify(insertedData, null, 2));
 
     // 3. Pendaftaran dan penciptaan profil berjaya.
     return res.status(201).json({ message: 'Signup successful. Please check your email for verification.' });
