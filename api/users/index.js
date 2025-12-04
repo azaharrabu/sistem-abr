@@ -9,17 +9,21 @@ const supabase = createClient(
 
 // Fungsi untuk menyemak peranan admin
 async function isAdmin(userId) {
+  // Menggunakan .maybeSingle() untuk mengelakkan ralat jika tiada rekod ditemui.
+  // Ia akan mengembalikan `null` jika tiada baris, dan bukannya error.
   const { data, error } = await supabase
-    .from('users')
+    .from('customers')
     .select('role')
     .eq('user_id', userId)
-    .single();
-  
+    .maybeSingle();
+
   if (error) {
+    // Ralat ini kini hanya akan berlaku untuk masalah pangkalan data sebenar, bukan baris sifar.
     console.error('Error checking admin role:', error.message);
     return false;
   }
-  
+
+  // Jika data adalah null (tiada pengguna ditemui) atau peranan bukan 'admin', kembalikan false.
   return data && data.role === 'admin';
 }
 
@@ -59,8 +63,8 @@ module.exports = async (req, res) => {
 
     // 5. Dapatkan semua profil pengguna yang sepadan dalam satu panggilan
     const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('user_id, email, subscription_plan')
+      .from('customers')
+      .select('user_id, email')
       .in('user_id', userIds);
 
     if (usersError) {
