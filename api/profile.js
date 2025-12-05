@@ -93,7 +93,7 @@ module.exports = async (req, res) => {
     console.log('[PROFILE] Step 2.5: Fetching role from "users" table...');
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('role, payment_status, is_affiliate')
+      .select('role, payment_status')
       .eq('user_id', user.id)
       .single();
 
@@ -107,9 +107,7 @@ module.exports = async (req, res) => {
     if (userData) {
       profile.role = userData.role;
       profile.payment_status = userData.payment_status;
-      // The 'is_affiliate' from the users table will be the authoritative source.
-      profile.is_affiliate = userData.is_affiliate;
-      console.log(`[PROFILE] Step 2.5 DONE: Role '${profile.role}', Payment Status '${profile.payment_status}', Is Affiliate '${profile.is_affiliate}' merged.`);
+      console.log(`[PROFILE] Step 2.5 DONE: Role '${profile.role}', Payment Status '${profile.payment_status}' merged.`);
     } else {
       // This case is problematic, means user exists in auth but not our public.users table
       throw new Error(`Inconsistent data: User ${user.id} not found in 'users' table.`);
