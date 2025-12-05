@@ -1,35 +1,56 @@
--- Skrip 4: Pembetulan Polisi Keselamatan Admin
--- Sila jalankan keseluruhan skrip ini di Supabase SQL Editor anda.
+-- =====================================================================================
+-- FIX: PERBETULKAN ROW LEVEL SECURITY (RLS) POLICIES
+-- =====================================================================================
+-- TUJUAN: Skrip ini membetulkan ralat "Forbidden" dengan mengemas kini polisi keselamatan
+--         (RLS) pada jadual `public.users`. Ia melakukan perkara berikut:
+--         1. Mengaktifkan RLS pada jadual `users`.
+--         2. Membenarkan admin untuk melihat SEMUA rekod pengguna.
+--         3. Membenarkan pengguna individu untuk melihat rekod MEREKA SENDIRI sahaja.
+--         4. Memadam polisi lama yang mungkin masih wujud pada jadual `profiles` lama.
+--
+-- ARAHAN:
+-- 1. Pergi ke dashboard Supabase projek anda.
+-- 2. Pergi ke "SQL Editor".
+-- 3. Salin dan tampal SEMUA kandungan fail ini ke dalam editor.
+-- 4. Klik "RUN" untuk melaksanakan skrip.
+-- =====================================================================================
 
--- LANGKAH 1: Cipta fungsi untuk mendapatkan peranan pengguna dengan selamat
--- Fungsi ini mengelakkan gelung 'infinite recursion'.
-CREATE OR REPLACE FUNCTION get_my_role()
-RETURNS TEXT
-LANGUAGE sql
-SECURITY DEFINER
-AS $$
-  SELECT role FROM public.users WHERE user_id = auth.uid();
-$$;
+BEGIN;
 
--- LANGKAH 2: Padam polisi admin yang rosak dari jadual 'users'
-DROP POLICY IF EXISTS "Admins have full access." ON public.users;
+-- Langkah 1: Aktifkan Row Level Security pada jadual 'users' jika belum aktif.
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
--- LANGKAH 3: Cipta semula polisi admin yang betul menggunakan fungsi baru
-CREATE POLICY "Admins have full access."
-ON public.users FOR ALL
-USING (get_my_role() = 'admin');
+-- Langkah 2: Padam polisi sedia ada pada 'users' untuk mengelakkan konflik.
+DROP POLICY IF EXISTS "Allow admin to view all users." ON public.users;
+DROP POLICY IF EXISTS "Allow individual users to view their own data." ON public.users;
+
+-- Langkah 3: Cipta polisi untuk ADMIN.
+-- Polisi ini membenarkan pengguna dengan peranan 'admin' untuk melaksanakan operasi SELECT.
+CREATE POLICY "Allow admin to view all users."
+ON public.users
+FOR SELECT
+USING (
+  (SELECT role FROM public.users WHERE user_id = auth.uid()) = 'admin'
+);
+
+-- Langkah 4: Cipta polisi untuk PENGGUNA BIASA.
+-- Polisi ini membenarkan pengguna untuk melihat data mereka sendiri sahaja.
+CREATE POLICY "Allow individual users to view their own data."
+ON public.users
+FOR SELECT
+USING (
+  auth.uid() = user_id
+);
+
+-- Langkah 5: (Pembersihan) Padam polisi lama pada jadual 'profiles' yang sudah tidak wujud.
+-- Ini untuk memastikan tiada lagi rujukan kepada jadual lama.
+DROP POLICY IF EXISTS "Users can view their own profile." ON public.profiles;
+DROP POLICY IF EXISTS "Users can update their own profile." ON public.profiles;
 
 
--- LANGKAH 4: Padam polisi admin yang mungkin rosak pada jadual lain & cipta semula
+COMMIT;
 
--- Untuk Jadual 'sales'
-DROP POLICY IF EXISTS "Allow admin full access to sales" ON public.sales;
-CREATE POLICY "Allow admin full access to sales"
-ON public.sales FOR ALL
-USING (get_my_role() = 'admin');
-
--- Untuk Jadual 'payments'
-DROP POLICY IF EXISTS "Admins have full access to payments." ON public.payments;
-CREATE POLICY "Admins have full access to payments."
-ON public.payments FOR ALL
-USING (get_my_role() = 'admin');
+-- =====================================================================================
+-- SELESAI. Polisi RLS telah dikemas kini. Sila cuba log masuk semula dan akses
+-- panel admin. Ralat "Forbidden" sepatutnya telah selesai.
+-- =====================================================================================

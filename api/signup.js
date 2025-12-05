@@ -7,7 +7,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-// Harga untuk pelan langganan (anda boleh jadikan ini lebih dinamik pada masa hadapan)
+// Harga untuk pelan langganan
 const subscriptionPrices = {
   '6-bulan': 50.00,  // Harga promosi
   '12-bulan': 80.00, // Harga promosi
@@ -34,11 +34,9 @@ module.exports = async (req, res) => {
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      // options.data tidak lagi digunakan kerana profil dicipta secara manual di bawah.
     });
 
     if (signUpError) {
-      // Log ralat sebenar di server untuk penyahpepijatan
       console.error('Supabase sign up error:', signUpError.message);
       return res.status(400).json({ error: signUpError.message });
     }
@@ -47,36 +45,47 @@ module.exports = async (req, res) => {
         return res.status(500).json({ error: "Signup succeeded but no user data returned."});
     }
 
-    // 2. Cipta profil pengguna secara manual dalam jadual 'public.profiles'.
-    console.log(`[signup.js] Attempting to insert profile for user_id: ${authData.user.id}`);
-    const { data: insertedData, error: profileError } = await supabase
-      .from('profiles')
-      .insert([
-        {
-          user_id: authData.user.id,
-          email: authData.user.email, // Guna emel dari data Auth yang disahkan
+    const userId = authData.user.id;
+    const userEmail = authData.user.email;
+
+    // 2. Gunakan 'upsert' untuk memasukkan atau mengemas kini rekod pengguna.
+    // Ini mengelakkan ralat jika trigger 'on_auth_user_created' telah mencipta rekod asas.
+    const { error: userError } = await supabase
+      .from('users')
+      .upsert({
+          user_id: userId,
+          email: userEmail,
           role: 'user',
           subscription_plan: subscription_plan,
           subscription_price: subscriptionPrices[subscription_plan],
-          is_promo_user: true,
           referred_by: referred_by || null,
-          payment_status: 'needs_payment'
-        }
-      ])
-      .select(); // Add .select() to get the inserted data back
+          payment_status: 'pending'
+      }, { onConflict: 'user_id' });
 
-    if (profileError) {
-      // Log ralat sebenar di server untuk penyahpepijatan
-      console.error('[signup.js] CRITICAL: Error creating user profile. Full error object:', JSON.stringify(profileError, null, 2));
-      // Ralat kritikal: Pengguna disahkan tetapi profil gagal dicipta.
-      return res.status(500).json({ error: 'Database error saving new user.' });
+    if (userError) {
+      console.error('[signup.js] CRITICAL: Error upserting user record.', userError);
+      return res.status(500).json({ error: 'Database error creating user record.' });
     }
 
-    console.log('[signup.js] Successfully inserted profile. Returned data:', JSON.stringify(insertedData, null, 2));
+    // 3. Cipta profil pengguna dalam jadual 'public.profiles'.
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert([
+        {
+          user_id: userId,
+          email: userEmail,
+          is_promo_user: true, 
+        }
+      ]);
 
-    // 3. Pendaftaran dan penciptaan profil berjaya.
+    // Abaikan ralat jika profil sudah wujud (kod 23505), kerana ia tidak kritikal.
+    if (profileError && profileError.code !== '23505') {
+      console.error('[signup.js] CRITICAL: Error creating user profile.', profileError);
+      return res.status(500).json({ error: 'Error creating user profile. The database schema might be out of sync. Please check the table definitions.' });
+    }
+
+    // 4. Pendaftaran dan penciptaan rekod berjaya.
     return res.status(201).json({ message: 'Signup successful. Please check your email for verification.' });
-
 
   } catch (err) {
     console.error('Server Error:', err.message);
