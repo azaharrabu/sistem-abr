@@ -50,61 +50,98 @@ module.exports = async (req, res) => {
   let supabase;
   try {
     // 1. Initialize Supabase client
-    console.log("Initializing Supabase client for profile fetch...");
+    console.log("[PROFILE] Initializing Supabase client...");
     supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_SERVICE_KEY
     );
+    console.log("[PROFILE] Supabase client initialized.");
 
     // 2. Verify user token from header
+    console.log("[PROFILE] Step 1: Verifying user token...");
     const user = await verifyToken(req);
     if (!user) {
       // verifyToken already logs the error, just return
       return res.status(401).json({ error: 'Authentication failed.' });
     }
-    console.log(`Token verified for user ID: ${user.id}`);
+    console.log(`[PROFILE] Step 1 DONE: Token verified for user ID: ${user.id}`);
 
     // 3. Fetch main profile from 'profiles' table
-    const { data: profile, error: profileError } = await supabase
+    console.log('[PROFILE] Step 2: Fetching main profile from "profiles" table...');
+    const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('*')
+      .eq('user_id', user.id);
+
+    if (profileError) {
+      throw profileError;
+    }
+    console.log('[PROFILE] Step 2 DONE: Main profile data fetched.');
+
+    if (!profiles || profiles.length === 0) {
+      console.warn(`No profile found for user_id: ${user.id}`);
+      return res.status(404).json({ error: 'User profile not found.' });
+    }
+    
+    const profile = profiles[0];
+    if (profiles.length > 1) {
+      console.warn(`Duplicate profiles found for user_id: ${user.id}. Using the first one.`);
+    }
+    console.log(`[PROFILE] Profile data ready for user: ${user.email}`);
+
+    // NEW STEP: Fetch role and payment_status from 'users' table
+    console.log('[PROFILE] Step 2.5: Fetching role from "users" table...');
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('role, payment_status, is_affiliate')
       .eq('user_id', user.id)
       .single();
 
-    if (profileError || !profile) {
-      // Handle cases where profile doesn't exist even for a valid user
-      if (profileError && profileError.code === 'PGRST116') { // No rows found
-        console.warn(`No profile found in 'profiles' table for user_id: ${user.id}`);
-        return res.status(404).json({ error: 'User profile not found.' });
-      }
-      // For other errors, throw to be caught by the outer catch block
-      throw profileError || new Error('User profile not found after login.');
-    }
-    console.log(`Profile fetched for ${profile.email}. Role: ${profile.role}`);
-
-    // 3. Dapatkan maklumat affiliate (termasuk semua butiran untuk paparan profil)
-    const { data: affiliateInfo, error: affiliateError } = await supabase
-      .from('affiliates')
-      .select('*') // Dapatkan semua butiran affiliate
-      .eq('user_id', profile.user_id)
-      .single();
-
-    if (affiliateError && affiliateError.code !== 'PGRST116') {
-        console.error(`Error fetching affiliate details for user ${user.id}:`, affiliateError.message);
-        // Do not throw; proceed without affiliate data
+    if (userError) {
+      console.error(`Error fetching role for user ${user.id}:`, userError.message);
+      // If we can't get the role, we can't proceed safely.
+      throw new Error(`Could not fetch user role: ${userError.message}`);
     }
     
-    // 4. Gabungkan data dan kira jualan jika pengguna adalah affiliate
+    // Merge essential data from 'users' table into the profile object
+    if (userData) {
+      profile.role = userData.role;
+      profile.payment_status = userData.payment_status;
+      // The 'is_affiliate' from the users table will be the authoritative source.
+      profile.is_affiliate = userData.is_affiliate;
+      console.log(`[PROFILE] Step 2.5 DONE: Role '${profile.role}', Payment Status '${profile.payment_status}', Is Affiliate '${profile.is_affiliate}' merged.`);
+    } else {
+      // This case is problematic, means user exists in auth but not our public.users table
+      throw new Error(`Inconsistent data: User ${user.id} not found in 'users' table.`);
+    }
+
+    // 4. Fetch affiliate details
+    console.log('[PROFILE] Step 3: Fetching affiliate info...');
+    const { data: affiliateInfos, error: affiliateError } = await supabase
+      .from('affiliates')
+      .select('*')
+      .eq('user_id', profile.user_id);
+
+    if (affiliateError && affiliateError.code !== 'PGRST116') { // Ignore "relation does not exist" if no rows found
+        console.error(`Error fetching affiliate details for user ${user.id}:`, affiliateError.message);
+    }
+    console.log('[PROFILE] Step 3 DONE: Affiliate info fetched.');
+    
+    let affiliateInfo = null;
+    if (affiliateInfos && affiliateInfos.length > 0) {
+      affiliateInfo = affiliateInfos[0];
+      if (affiliateInfos.length > 1) {
+        console.warn(`Duplicate affiliate records for user ${user.id}. Using first record.`);
+      }
+    }
+
+    // 5. Combine data and calculate sales if the user is an affiliate
     profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
-      // Data dari jadual 'affiliates'
+      console.log('[PROFILE] Step 4: Affiliate detected, processing sales data...');
       profile.affiliate_id = affiliateInfo.id;
       profile.affiliate_code = affiliateInfo.affiliate_code;
       
-      // Data 'full_name', 'phone_number', etc., sudah sedia ada dalam objek 'profile'
-      // dari jadual 'users'. Tidak perlu disalin dari 'affiliateInfo'.
-
-      // Kira statistik jualan dari jadual 'sales'
       const { data: sales, error: salesError } = await supabase
         .from('sales')
         .select('sale_amount, commission_amount')
@@ -120,23 +157,31 @@ module.exports = async (req, res) => {
 
       profile.totalSalesAmount = totalSalesAmount.toFixed(2);
       profile.totalCommission = totalCommission.toFixed(2);
-      console.log(`Sales for ${profile.email}: Amount=RM${profile.totalSalesAmount}, Commission=RM${profile.totalCommission}`);
+      console.log(`[PROFILE] Step 4 DONE: Sales for ${user.email}: Amount=RM${profile.totalSalesAmount}, Commission=RM${profile.totalCommission}`);
     } else {
-      console.log(`User ${profile.email} is not an affiliate.`);
+      console.log(`[PROFILE] User ${user.email} is not an affiliate.`);
     }
 
     // 6. Send the combined profile data
-    console.log("--- Successfully sending combined profile to frontend ---");
+    console.log("[PROFILE] Step 5: Successfully preparing to send combined profile to frontend.");
     return res.status(200).json(profile);
 
   } catch (err) {
-    // Generic error handler
     console.error('--- UNHANDLED PROFILE API ERROR ---');
-    console.error('Full error object:', JSON.stringify(err, null, 2)); // Log the full error object
+    console.error('Error Name:', err.name);
+    console.error('Error Message:', err.message);
+    console.error('Error Code:', err.code);
+    console.error('Stack Trace:', err.stack);
+    
     const errorMessage = err.message || 'An unknown error occurred.';
-    console.error('Error message:', errorMessage);
-    console.error(err.stack); // Log stack for more details
     const statusCode = errorMessage.includes('Authentication') ? 401 : 500;
-    return res.status(statusCode).json({ error: 'Profile API Error: ' + errorMessage });
+    
+    return res.status(statusCode).json({ 
+        error: 'Profile API Error: ' + errorMessage,
+        details: {
+            name: err.name,
+            code: err.code
+        }
+    });
   }
 };
