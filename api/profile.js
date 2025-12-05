@@ -131,9 +131,10 @@ module.exports = async (req, res) => {
 
   } catch (err) {
     // Generic error handler
-    const errorMessage = err.message || 'An unknown error occurred.';
     console.error('--- UNHANDLED PROFILE API ERROR ---');
-    console.error(errorMessage);
+    console.error('Full error object:', JSON.stringify(err, null, 2)); // Log the full error object
+    const errorMessage = err.message || 'An unknown error occurred.';
+    console.error('Error message:', errorMessage);
     console.error(err.stack); // Log stack for more details
     const statusCode = errorMessage.includes('Authentication') ? 401 : 500;
     return res.status(statusCode).json({ error: 'Profile API Error: ' + errorMessage });
