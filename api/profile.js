@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
       );
 
       const { data, error } = await supabase
-        .from('profiles')
+        .from('affiliates')
         .update({
           full_name,
           phone_number,
@@ -66,52 +66,36 @@ module.exports = async (req, res) => {
     }
     console.log(`[PROFILE] Step 1 DONE: Token verified for user ID: ${user.id}`);
 
-    // 3. Fetch main profile from 'profiles' table
-    console.log('[PROFILE] Step 2: Fetching main profile from "profiles" table...');
-    const { data: profiles, error: profileError } = await supabase
-      .from('profiles')
+    // 3. Fetch combined profile from 'users' table
+    console.log('[PROFILE] Step 2: Fetching main profile from "users" table...');
+    const { data: userProfile, error: profileError } = await supabase
+      .from('users')
       .select('*')
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .single();
 
     if (profileError) {
-      throw profileError;
+        // Handle case where user exists in auth but not in our public.users table
+        if (profileError.code === 'PGRST116') { // "PostgREST error 116: query result not valid" (means no rows found for .single())
+            console.error(`Inconsistent data: User ${user.id} not found in 'users' table.`);
+            return res.status(404).json({ error: 'User profile data not found. Please contact support.' });
+        }
+        // For other database errors
+        throw profileError;
     }
-    console.log('[PROFILE] Step 2 DONE: Main profile data fetched.');
-
-    if (!profiles || profiles.length === 0) {
+    
+    if (!userProfile) {
       console.warn(`No profile found for user_id: ${user.id}`);
       return res.status(404).json({ error: 'User profile not found.' });
     }
     
-    const profile = profiles[0];
-    if (profiles.length > 1) {
-      console.warn(`Duplicate profiles found for user_id: ${user.id}. Using the first one.`);
-    }
-    console.log(`[PROFILE] Profile data ready for user: ${user.email}`);
+    // The fetched user data is our base profile object
+    const profile = userProfile;
+    console.log(`[PROFILE] Step 2 DONE: Profile data ready for user: ${user.email}`);
+    console.log(`[PROFILE] Details: Role='${profile.role}', Payment Status='${profile.payment_status}'`);
 
-    // NEW STEP: Fetch role and payment_status from 'users' table
-    console.log('[PROFILE] Step 2.5: Fetching role from "users" table...');
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role, payment_status')
-      .eq('user_id', user.id)
-      .single();
+    // Steps below will merge affiliate data into this 'profile' object.
 
-    if (userError) {
-      console.error(`Error fetching role for user ${user.id}:`, userError.message);
-      // If we can't get the role, we can't proceed safely.
-      throw new Error(`Could not fetch user role: ${userError.message}`);
-    }
-    
-    // Merge essential data from 'users' table into the profile object
-    if (userData) {
-      profile.role = userData.role;
-      profile.payment_status = userData.payment_status;
-      console.log(`[PROFILE] Step 2.5 DONE: Role '${profile.role}', Payment Status '${profile.payment_status}' merged.`);
-    } else {
-      // This case is problematic, means user exists in auth but not our public.users table
-      throw new Error(`Inconsistent data: User ${user.id} not found in 'users' table.`);
-    }
 
     // 4. Fetch affiliate details
     console.log('[PROFILE] Step 3: Fetching affiliate info...');

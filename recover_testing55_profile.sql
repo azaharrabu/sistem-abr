@@ -16,8 +16,6 @@
 -- 4. Click "RUN" to execute the script.
 -- =====================================================================================
 
-BEGIN;
-
 -- Step 1: Insert the missing record into the public.users table.
 -- The ON CONFLICT clause ensures it doesn't fail if the record somehow already exists.
 -- We are setting default values for subscription plan and price as they are unknown.
@@ -33,8 +31,6 @@ INSERT INTO public.profiles (user_id, email, is_promo_user)
 VALUES
     ('707764a0-35ac-4bca-9966-d09cea131928', 'testing55@gmail.com', TRUE)
 ON CONFLICT (user_id) DO NOTHING;
-
-COMMIT;
 
 -- =====================================================================================
 -- COMPLETE. The profile for 'testing55@gmail.com' should now be recovered.

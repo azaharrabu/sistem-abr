@@ -1,9 +1,9 @@
 -- =====================================================================================
 -- DATABASE FUNCTION: create_user_and_profile
 -- =====================================================================================
--- PURPOSE: This function creates a new user record in both the public.users and
---          public.profiles tables within a single, atomic transaction. It also
---          incorporates the business logic for promotional pricing.
+-- PURPOSE: This function creates a new user record in the public.users table 
+--          within a single, atomic transaction. It also incorporates the business 
+--          logic for promotional pricing.
 --
 -- PARAMETERS:
 --   - p_user_id: The user's ID from auth.users.
@@ -53,12 +53,8 @@ BEGIN
     END IF;
 
     -- Insert into public.users table
-    INSERT INTO public.users (user_id, email, role, payment_status, subscription_plan, subscription_price, is_affiliate, referred_by)
-    VALUES (p_user_id, p_email, 'user', 'pending', p_subscription_plan, final_price, FALSE, p_referred_by);
-
-    -- Insert into public.profiles table
-    INSERT INTO public.profiles (user_id, email, is_promo_user)
-    VALUES (p_user_id, p_email, is_promo_user);
+    INSERT INTO public.users (user_id, email, role, payment_status, subscription_plan, subscription_price, is_affiliate, referred_by, is_promo_user)
+    VALUES (p_user_id, p_email, 'user', 'awaiting_payment', p_subscription_plan, final_price, FALSE, p_referred_by, is_promo_user);
 END;
 $$;
 
