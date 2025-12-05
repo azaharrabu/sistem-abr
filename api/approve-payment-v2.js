@@ -59,11 +59,13 @@ module.exports = async (req, res) => {
 
     console.log(`DEBUG: Found user ${userProfile.user_id} to approve.`);
 
-    // 2. Update the user's payment status to 'paid' in the 'profiles' table.
+    // 2. Update the user's payment status to 'paid' in the 'users' table.
     const { error: updateUserError } = await supabase
         .from('users')
         .update({ payment_status: 'paid' })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select()
+        .single();
 
     if (updateUserError) {
         console.error(`Error updating user status for userId: ${userId}`, updateUserError);
