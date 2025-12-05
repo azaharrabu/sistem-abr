@@ -17,6 +17,7 @@ async function isAdmin(userId) {
 }
 
 module.exports = async (req, res) => {
+  console.log('--- EXECUTING LATEST VERSION OF approve-payment.js ---');
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
