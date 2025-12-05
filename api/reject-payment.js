@@ -12,8 +12,14 @@ async function isAdmin(userId) {
     .from('users')
     .select('role')
     .eq('user_id', userId)
-    .single();
-  return data && data.role === 'admin';
+    .limit(1); // Using .limit(1) is safer than .single()
+
+  if (error) {
+    console.error('Error checking admin role in reject-payment:', error.message);
+    return false;
+  }
+  
+  return data && data.length > 0 && data[0].role === 'admin';
 }
 
 module.exports = async (req, res) => {

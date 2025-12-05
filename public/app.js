@@ -90,13 +90,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         try {
-            const response = await fetch(`/api/approve-payment`, {
+            const response = await fetch(`/api/approve-payment-v2`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ customerId })
+                body: JSON.stringify({ userId: customerId }) // Tukar customerId kepada userId
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Gagal meluluskan pembayaran.');

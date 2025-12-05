@@ -34,19 +34,34 @@ module.exports = async (req, res) => {
         return res.status(400).json({ error: 'customerId is required.'});
     }
 
-    // 1. Kemas kini status pengguna kepada 'paid'
-    const { data: updatedUser, error: updateUserError } = await supabase
+    // 1. Sahkan pengguna wujud
+    const { data: existingUser, error: userFetchError } = await supabase
+      .from('users')
+      .select('user_id, referred_by')
+      .eq('user_id', customerId)
+      .single();
+
+    if (userFetchError || !existingUser) {
+        console.error(`Error fetching user or user not found for customerId: ${customerId}`, userFetchError);
+        return res.status(404).json({ error: `User with ID ${customerId} not found.` });
+    }
+    console.log(`DEBUG: Found user ${existingUser.user_id} to approve.`);
+
+    // 2. Kemas kini status pengguna kepada 'paid'
+    const { error: updateUserError } = await supabase
         .from('users')
         .update({ payment_status: 'paid' })
-        .eq('user_id', customerId)
-        .select('referred_by')
-        .single();
+        .eq('user_id', customerId);
 
-    if (updateUserError || !updatedUser) {
-        throw new Error(`Failed to update user status: ${updateUserError?.message || 'User not found'}`);
+    if (updateUserError) {
+        console.error(`Error updating user status for customerId: ${customerId}`, updateUserError);
+        throw new Error(`Failed to update user status: ${updateUserError.message}`);
     }
 
-    // 2. Cari bayaran 'pending' dan kemas kini kepada 'approved'
+    // Gunakan 'existingUser' dari fetch sebelumnya untuk logik seterusnya
+    const updatedUser = existingUser;
+
+    // 3. Cari bayaran 'pending' dan kemas kini kepada 'approved'
     const { data: approvedPayments, error: paymentError } = await supabase
         .from('payments')
         .update({ status: 'approved' })
@@ -63,9 +78,10 @@ module.exports = async (req, res) => {
         return res.status(200).json({ message: 'Payment status for user updated, but no pending payment record was found to approve.' });
     }
     
+    /*
     const paymentForSale = approvedPayments[0];
 
-    // 3. Jika pengguna dirujuk, cipta rekod jualan menggunakan affiliate_id
+    // 4. (DISABLED) Jika pengguna dirujuk, cipta rekod jualan menggunakan affiliate_id
     if (updatedUser.referred_by && paymentForSale.amount > 0) {
         // Cari ID affiliate dan kadar komisen berdasarkan kod rujukan
         const { data: affiliate, error: affiliateError } = await supabase
@@ -94,8 +110,9 @@ module.exports = async (req, res) => {
             }
         }
     }
+    */
 
-    return res.status(200).json({ message: 'Payment approved successfully.' });
+    return res.status(200).json({ message: 'Payment approved successfully. Affiliate logic is temporarily disabled for debugging.' });
 
   } catch (err) {
     console.error('Approve Payment API Error:', err.message);
