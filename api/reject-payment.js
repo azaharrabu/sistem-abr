@@ -12,14 +12,14 @@ async function isAdmin(userId) {
     .from('users')
     .select('role')
     .eq('user_id', userId)
-    .limit(1); // Using .limit(1) is safer than .single()
+    .single();
 
   if (error) {
     console.error('Error checking admin role in reject-payment:', error.message);
     return false;
   }
   
-  return data && data.length > 0 && data[0].role === 'admin';
+  return data && data.role === 'admin';
 }
 
 module.exports = async (req, res) => {
@@ -33,19 +33,35 @@ module.exports = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Admin privileges required.' });
     }
 
-    const { customerId } = req.body;
-    if (!customerId) {
-        return res.status(400).json({ error: 'customerId is required.'});
+    const { userId } = req.body;
+    if (!userId) {
+        return res.status(400).json({ error: 'userId is required.'});
     }
 
-    // Kemas kini status kepada 'rejected'
-    await supabase.from('users').update({ payment_status: 'rejected' }).eq('user_id', customerId);
-    await supabase.from('payments').update({ status: 'rejected' }).eq('user_id', customerId);
+    // Update payment_status to 'rejected' in the profiles table
+    const { error: profileError } = await supabase
+        .from('users')
+        .update({ payment_status: 'rejected' })
+        .eq('user_id', userId);
+
+    if (profileError) {
+        throw new Error(`Failed to update user profile: ${profileError.message}`);
+    }
+
+    // Update status to 'rejected' in the payments table
+    const { error: paymentError } = await supabase
+        .from('payments')
+        .update({ status: 'rejected' })
+        .eq('user_id', userId);
+        
+    if (paymentError) {
+        throw new Error(`Failed to update payment status: ${paymentError.message}`);
+    }
 
     return res.status(200).json({ message: 'Payment rejected successfully.' });
 
   } catch (err) {
     console.error('Reject Payment API Error:', err.message);
-    return res.status(500).json({ error: 'An internal server error occurred.' });
+    return res.status(500).json({ error: `An internal server error occurred: ${err.message}` });
   }
 };

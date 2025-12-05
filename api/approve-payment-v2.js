@@ -1,4 +1,4 @@
-// api/approve-payment.js
+// api/approve-payment-v2.js
 const { createClient } = require('@supabase/supabase-js');
 const { verifyToken } = require('./_utils/auth');
 
@@ -13,11 +13,17 @@ async function isAdmin(userId) {
     .select('role')
     .eq('user_id', userId)
     .single();
+  
+  if (error) {
+    console.error('Error checking admin role:', error.message);
+    return false;
+  }
+  
   return data && data.role === 'admin';
 }
 
 module.exports = async (req, res) => {
-  console.log('--- EXECUTING LATEST VERSION OF approve-payment.js ---');
+  console.log('--- EXECUTING LATEST VERSION OF approve-payment-v2.js ---');
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -28,44 +34,47 @@ module.exports = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Admin privileges required.' });
     }
 
-    const { customerId } = req.body;
-    console.log('DEBUG: Received request to approve payment for customerId:', customerId); // TAMBAH LOG INI
-    if (!customerId) {
-        return res.status(400).json({ error: 'customerId is required.'});
+    const { userId } = req.body;
+    console.log('DEBUG: Received request to approve payment for userId:', userId);
+    if (!userId) {
+        return res.status(400).json({ error: 'userId is required.'});
     }
 
-    // 1. Sahkan pengguna wujud
-    const { data: existingUser, error: userFetchError } = await supabase
-      .from('users')
-      .select('user_id, referred_by')
-      .eq('user_id', customerId)
-      .single();
+    // 1. Fetch the user's profile to ensure they exist.
+    const { data: userProfile, error: userFetchError } = await supabase
+        .from('users')
+        .select('user_id, referred_by')
+        .eq('user_id', userId)
+        .single();
 
-    if (userFetchError || !existingUser) {
-        console.error(`Error fetching user or user not found for customerId: ${customerId}`, userFetchError);
-        return res.status(404).json({ error: `User with ID ${customerId} not found.` });
+    if (userFetchError) {
+        console.error(`Error fetching user profile for userId: ${userId}`, userFetchError);
+        return res.status(500).json({ error: `Database error while fetching user profile: ${userFetchError.message}` });
     }
-    console.log(`DEBUG: Found user ${existingUser.user_id} to approve.`);
 
-    // 2. Kemas kini status pengguna kepada 'paid'
+    if (!userProfile) {
+        console.error(`User profile with ID ${userId} not found.`);
+        return res.status(404).json({ error: `User profile with ID ${userId} not found.` });
+    }
+
+    console.log(`DEBUG: Found user ${userProfile.user_id} to approve.`);
+
+    // 2. Update the user's payment status to 'paid' in the 'profiles' table.
     const { error: updateUserError } = await supabase
         .from('users')
         .update({ payment_status: 'paid' })
-        .eq('user_id', customerId);
+        .eq('user_id', userId);
 
     if (updateUserError) {
-        console.error(`Error updating user status for customerId: ${customerId}`, updateUserError);
+        console.error(`Error updating user status for userId: ${userId}`, updateUserError);
         throw new Error(`Failed to update user status: ${updateUserError.message}`);
     }
-
-    // Gunakan 'existingUser' dari fetch sebelumnya untuk logik seterusnya
-    const updatedUser = existingUser;
-
-    // 3. Cari bayaran 'pending' dan kemas kini kepada 'approved'
+    
+    // 3. Find the user's pending payment and update it to 'approved'.
     const { data: approvedPayments, error: paymentError } = await supabase
         .from('payments')
         .update({ status: 'approved' })
-        .eq('user_id', customerId)
+        .eq('user_id', userId)
         .eq('status', 'pending')
         .select('amount');
 
@@ -74,33 +83,32 @@ module.exports = async (req, res) => {
     }
 
     if (!approvedPayments || approvedPayments.length === 0) {
-        console.warn(`Could not find a 'pending' payment record for user ${customerId}.`);
+        console.warn(`Could not find a 'pending' payment record for user ${userId}.`);
         return res.status(200).json({ message: 'Payment status for user updated, but no pending payment record was found to approve.' });
     }
     
-    /*
     const paymentForSale = approvedPayments[0];
 
-    // 4. (DISABLED) Jika pengguna dirujuk, cipta rekod jualan menggunakan affiliate_id
-    if (updatedUser.referred_by && paymentForSale.amount > 0) {
-        // Cari ID affiliate dan kadar komisen berdasarkan kod rujukan
+    // 4. If the user was referred, create a sales record for the affiliate.
+    if (userProfile.referred_by && paymentForSale.amount > 0) {
+        // Find the affiliate's ID and commission rate based on the referral code.
         const { data: affiliate, error: affiliateError } = await supabase
             .from('affiliates')
             .select('id, commission_rate')
-            .eq('affiliate_code', updatedUser.referred_by)
+            .eq('affiliate_code', userProfile.referred_by)
             .single();
 
         if (affiliateError || !affiliate) {
-            console.error(`CRITICAL: Could not find affiliate with code: ${updatedUser.referred_by}. Sale not recorded.`);
+            console.error(`CRITICAL: Could not find affiliate with code: ${userProfile.referred_by}. Sale not recorded.`);
         } else {
-            // Masukkan rekod jualan ke dalam jadual 'sales'
+            // Insert the sales record into the 'sales' table.
             const { error: saleInsertError } = await supabase
                 .from('sales')
                 .insert({
                     affiliate_id: affiliate.id,
-                    purchaser_user_id: customerId,
+                    purchaser_user_id: userId,
                     sale_amount: paymentForSale.amount
-                    // 'commission_amount' akan dikira secara automatik oleh pangkalan data
+                    // 'commission_amount' will be calculated automatically by the database.
                 });
             
             if (saleInsertError) {
@@ -110,9 +118,8 @@ module.exports = async (req, res) => {
             }
         }
     }
-    */
 
-    return res.status(200).json({ message: 'Payment approved successfully. Affiliate logic is temporarily disabled for debugging.' });
+    return res.status(200).json({ message: 'Payment approved and sale recorded successfully.' });
 
   } catch (err) {
     console.error('Approve Payment API Error:', err.message);

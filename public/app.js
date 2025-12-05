@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             alert('Tahniah! Anda kini seorang affiliate. Antaramuka akan dikemaskini.');
-            localStorage.removeItem('customerProfile');
+            localStorage.removeItem('userProfile');
             await checkUserSession();
 
         } catch (error) {
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function handleApprovePayment(event, customerId, token) {
+    async function handleApprovePayment(event, userId, token) {
         if (!confirm('Anda pasti mahu meluluskan pembayaran ini?')) return;
         if (!token) {
             alert('Sesi anda telah tamat. Sila log masuk semula.');
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ userId: customerId }) // Tukar customerId kepada userId
+                body: JSON.stringify({ userId }) // Pastikan backend mengharapkan 'userId'
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Gagal meluluskan pembayaran.');
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function handleRejectPayment(event, customerId, token) {
+    async function handleRejectPayment(event, userId, token) {
         if (!confirm('Anda pasti mahu menolak pembayaran ini? Tindakan ini tidak boleh diundur.')) return;
         if (!token) {
             alert('Sesi anda telah tamat. Sila log masuk semula.');
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ customerId })
+                body: JSON.stringify({ userId })
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Gagal menolak pembayaran.');
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (adminPanelSection) adminPanelSection.style.display = 'none';
         if (signupContainer) signupContainer.style.display = 'none';
         if (loginContainer) loginContainer.style.display = 'block';
-        localStorage.removeItem('customerProfile');
+        localStorage.removeItem('userProfile');
     };
 
     // Fungsi utama untuk memeriksa sesi pengguna
@@ -297,9 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 cache: 'no-cache' // Elakkan caching profil
             });
             if (response.ok) {
-                const customerProfile = await response.json();
-                localStorage.setItem('customerProfile', JSON.stringify(customerProfile));
-                showUi(session.user, customerProfile, token);
+                const userProfile = await response.json();
+                localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                showUi(session.user, userProfile, token);
             } else {
                 console.error("Gagal mendapatkan profil, log keluar...");
                 await handleSignOut();
@@ -415,12 +415,12 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Terima kasih. Permohonan anda akan disemak dan diproses dalam masa 3 hari bekerja.');
             
             // Kemas kini profil tempatan untuk mencerminkan status 'pending'
-            const customerProfile = JSON.parse(localStorage.getItem('customerProfile'));
-            if (customerProfile) {
-                customerProfile.payment_status = 'pending';
-                localStorage.setItem('customerProfile', JSON.stringify(customerProfile));
+            const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+            if (userProfile) {
+                userProfile.payment_status = 'pending';
+                localStorage.setItem('userProfile', JSON.stringify(userProfile));
                 const { data: { user } } = await _supabase.auth.getUser();
-                showUi(user, customerProfile, token);
+                showUi(user, userProfile, token);
             } else {
                 // Fallback jika profil tidak wujud
                 if(paymentSection) paymentSection.style.display = 'none';
@@ -434,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fungsi untuk log keluar
     async function handleSignOut() {
         await _supabase.auth.signOut();
-        localStorage.removeItem('customerProfile');
+        localStorage.removeItem('userProfile');
         currentSessionToken = null;
         showAuth();
         window.location.href = '/';
