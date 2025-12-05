@@ -12,7 +12,7 @@ async function isAdmin(userId) {
   // Menggunakan .maybeSingle() untuk mengelakkan ralat jika tiada rekod ditemui.
   // Ia akan mengembalikan `null` jika tiada baris, dan bukannya error.
   const { data, error } = await supabase
-    .from('profiles')
+    .from('users')
     .select('role')
     .eq('user_id', userId)
     .maybeSingle();
@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
 
     // 5. Dapatkan semua profil pengguna yang sepadan dalam satu panggilan
     const { data: users, error: usersError } = await supabase
-      .from('profiles')
+      .from('users')
       .select('user_id, email')
       .in('user_id', userIds);
 
