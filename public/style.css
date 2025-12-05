@@ -91,11 +91,11 @@ a:hover {
     font-weight: bold;
 }
 
-#customer-list {
+#user-list {
     margin-top: 20px;
 }
 
-.customer-item {
+.user-item {
     background-color: #f9f9f9;
     padding: 15px;
     border: 1px solid #eee;
@@ -106,7 +106,7 @@ a:hover {
     align-items: center;
 }
 
-.customer-item .delete-button {
+.user-item .delete-button {
     background-color: #ff4d4d;
     color: white;
     border: none;
@@ -117,7 +117,7 @@ a:hover {
     font-size: 12px;
 }
 
-.customer-item .delete-button:hover {
+.user-item .delete-button:hover {
     background-color: #e60000;
 }
 

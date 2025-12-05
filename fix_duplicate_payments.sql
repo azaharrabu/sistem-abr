@@ -32,7 +32,7 @@ BEGIN
     VALUES (p_user_id, p_user_email, p_payment_date, p_payment_time, p_amount, 'pending');
 
     -- Also, update the user's profile with their details and set their status to 'pending'.
-    UPDATE public.customers
+    UPDATE public.users
     SET 
         payment_status = 'pending',
         full_name = p_full_name,

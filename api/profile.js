@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
       );
 
       const { data, error } = await supabase
-        .from('customers')
+        .from('profiles')
         .update({
           full_name,
           phone_number,
@@ -64,9 +64,9 @@ module.exports = async (req, res) => {
     }
     console.log(`Token verified for user ID: ${user.id}`);
 
-    // 3. Fetch main profile from 'customers' table
+    // 3. Fetch main profile from 'profiles' table
     const { data: profile, error: profileError } = await supabase
-      .from('customers')
+      .from('profiles')
       .select('*')
       .eq('user_id', user.id)
       .single();
@@ -74,7 +74,7 @@ module.exports = async (req, res) => {
     if (profileError || !profile) {
       // Handle cases where profile doesn't exist even for a valid user
       if (profileError && profileError.code === 'PGRST116') { // No rows found
-        console.warn(`No profile found in 'users' table for user_id: ${user.id}`);
+        console.warn(`No profile found in 'profiles' table for user_id: ${user.id}`);
         return res.status(404).json({ error: 'User profile not found.' });
       }
       // For other errors, throw to be caught by the outer catch block

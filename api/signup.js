@@ -47,10 +47,10 @@ module.exports = async (req, res) => {
         return res.status(500).json({ error: "Signup succeeded but no user data returned."});
     }
 
-    // 2. Cipta profil pengguna secara manual dalam jadual 'public.users'.
+    // 2. Cipta profil pengguna secara manual dalam jadual 'public.profiles'.
     console.log(`[signup.js] Attempting to insert profile for user_id: ${authData.user.id}`);
     const { data: insertedData, error: profileError } = await supabase
-      .from('customers')
+      .from('profiles')
       .insert([
         {
           user_id: authData.user.id,
