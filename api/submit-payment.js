@@ -23,13 +23,12 @@ module.exports = async (req, res) => {
     const { 
       payment_date, 
       payment_time, 
-      amount,
       full_name,
       phone_number
     } = req.body;
 
     // 2. Pengesahan input - pastikan semua medan yang diperlukan wujud
-    if (!payment_date || !payment_time || !amount || !full_name || !phone_number) {
+    if (!payment_date || !payment_time || !full_name || !phone_number) {
       return res.status(400).json({ error: 'Sila lengkapkan semua medan yang diperlukan.' });
     }
 
@@ -39,7 +38,6 @@ module.exports = async (req, res) => {
       p_user_email: user.email,
       p_payment_date: payment_date,
       p_payment_time: payment_time,
-      p_amount: amount,
       p_full_name: full_name,
       p_phone_number: phone_number
     });
