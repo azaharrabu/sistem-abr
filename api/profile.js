@@ -128,6 +128,13 @@ module.exports = async (req, res) => {
       console.log(`[PROFILE] User ${user.email} is not an affiliate.`);
     }
 
+    // Check if essential profile information is missing to prompt a frontend update.
+    // This flag can be used by the frontend to show a pop-up or notification.
+    profile.needs_profile_update = !profile.full_name || !profile.phone_number;
+    if (profile.needs_profile_update) {
+      console.log(`[PROFILE] User ${user.email} will be prompted to update their profile.`);
+    }
+
     // 6. Send the combined profile data
     console.log("[PROFILE] Step 5: Successfully preparing to send combined profile to frontend.");
     return res.status(200).json(profile);
