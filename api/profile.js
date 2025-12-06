@@ -97,48 +97,32 @@ module.exports = async (req, res) => {
     // Steps below will merge affiliate data into this 'profile' object.
 
 
-    // 4. Fetch affiliate details
+    // 4. Fetch affiliate details, including pre-calculated totals
     console.log('[PROFILE] Step 3: Fetching affiliate info...');
-    const { data: affiliateInfos, error: affiliateError } = await supabase
+    const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
-      .select('*')
-      .eq('user_id', profile.user_id);
+      .select('id, affiliate_code, total_sales, total_commission')
+      .eq('user_id', profile.user_id)
+      .single();
 
-    if (affiliateError && affiliateError.code !== 'PGRST116') { // Ignore "relation does not exist" if no rows found
+    if (affiliateError && affiliateError.code !== 'PGRST116') { // Ignore error if user is just not an affiliate
         console.error(`Error fetching affiliate details for user ${user.id}:`, affiliateError.message);
     }
     console.log('[PROFILE] Step 3 DONE: Affiliate info fetched.');
     
-    let affiliateInfo = null;
-    if (affiliateInfos && affiliateInfos.length > 0) {
-      affiliateInfo = affiliateInfos[0];
-      if (affiliateInfos.length > 1) {
-        console.warn(`Duplicate affiliate records for user ${user.id}. Using first record.`);
-      }
-    }
-
-    // 5. Combine data and calculate sales if the user is an affiliate
+    // 5. Combine data and use pre-calculated totals if the user is an affiliate
     profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
-      console.log('[PROFILE] Step 4: Affiliate detected, processing sales data...');
+      console.log('[PROFILE] Step 4: Affiliate detected, using pre-calculated totals...');
       profile.affiliate_id = affiliateInfo.id;
       profile.affiliate_code = affiliateInfo.affiliate_code;
       
-      const { data: sales, error: salesError } = await supabase
-        .from('sales')
-        .select('sale_amount, commission_amount')
-        .eq('affiliate_id', affiliateInfo.id);
-      
-      if (salesError) {
-          console.error('Sales query error:', salesError.message);
-      }
-      
-      const salesData = sales || [];
-      const totalSalesAmount = salesData.reduce((sum, sale) => sum + (parseFloat(sale.sale_amount) || 0), 0);
-      const totalCommission = salesData.reduce((sum, sale) => sum + (parseFloat(sale.commission_amount) || 0), 0);
+      // FIX: Use the totals directly from the affiliates table.
+      // The database now handles all calculations, preventing floating-point errors.
+      // The Supabase library returns 'numeric' types as strings, which is safe for display.
+      profile.totalSalesAmount = affiliateInfo.total_sales;
+      profile.totalCommission = affiliateInfo.total_commission;
 
-      profile.totalSalesAmount = totalSalesAmount.toFixed(2);
-      profile.totalCommission = totalCommission.toFixed(2);
       console.log(`[PROFILE] Step 4 DONE: Sales for ${user.email}: Amount=RM${profile.totalSalesAmount}, Commission=RM${profile.totalCommission}`);
     } else {
       console.log(`[PROFILE] User ${user.email} is not an affiliate.`);
