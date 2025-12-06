@@ -93,24 +93,31 @@ module.exports = async (req, res) => {
 
     // 4. If the user was referred, create a sales record for the affiliate.
     if (userProfile.referred_by && paymentForSale.amount > 0) {
+        console.log(`User was referred by affiliate with user_id: ${userProfile.referred_by}. Attempting to record sale.`);
+        
         // Find the affiliate's ID and commission rate based on the referral code.
         const { data: affiliate, error: affiliateError } = await supabase
             .from('affiliates')
             .select('id, commission_rate')
-            .eq('affiliate_code', userProfile.referred_by)
+            .eq('user_id', userProfile.referred_by) 
             .single();
 
+        if (affiliateError) {
+            console.error(`Database error while looking for affiliate with user_id: ${userProfile.referred_by}`, affiliateError);
+        }
+
         if (affiliateError || !affiliate) {
-            console.error(`CRITICAL: Could not find affiliate with code: ${userProfile.referred_by}. Sale not recorded.`);
+            console.error(`CRITICAL: Could not find affiliate with user_id: ${userProfile.referred_by}. Sale not recorded.`);
         } else {
+            console.log(`Found affiliate with id: ${affiliate.id}. Preparing to insert sale record.`);
             // Insert the sales record into the 'sales' table.
             const { error: saleInsertError } = await supabase
                 .from('sales')
                 .insert({
                     affiliate_id: affiliate.id,
                     purchaser_user_id: userId,
-                    sale_amount: paymentForSale.amount
-                    // 'commission_amount' will be calculated automatically by the database.
+                    sale_amount: paymentForSale.amount,
+                    commission_rate: affiliate.commission_rate // FIX: Pass the affiliate's specific commission rate.
                 });
             
             if (saleInsertError) {
