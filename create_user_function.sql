@@ -19,7 +19,7 @@ CREATE OR REPLACE FUNCTION public.create_user_and_profile(
     p_user_id uuid,
     p_email text,
     p_subscription_plan text,
-    p_referred_by uuid DEFAULT NULL
+    p_referred_by text DEFAULT NULL -- Changed type from uuid to text
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -30,14 +30,13 @@ DECLARE
     final_price numeric;
     is_promo_user boolean;
     user_count integer;
+    affiliate_user_id uuid; -- New variable to store the looked-up affiliate user ID
 BEGIN
-    -- Check the total number of users to determine promo eligibility
-    SELECT count(*) INTO user_count FROM users;
-    
-    -- Users are eligible for promo if they are one of the first 100
+    -- Determine promo eligibility by counting active ('paid') users
+    SELECT count(*) INTO user_count FROM public.users WHERE payment_status = 'paid';
     is_promo_user := user_count < 100;
 
-    -- Set the price based on promo eligibility and the selected plan
+    -- Set subscription price based on promo status and plan
     IF is_promo_user THEN
         IF p_subscription_plan = '6-bulan' THEN
             final_price := 50.00;
@@ -52,9 +51,18 @@ BEGIN
         END IF;
     END IF;
 
-    -- Insert into public.users table
+    -- If a referral code is provided, find the corresponding affiliate's user_id
+    IF p_referred_by IS NOT NULL THEN
+        SELECT user_id INTO affiliate_user_id
+        FROM public.affiliates
+        WHERE affiliate_code = p_referred_by;
+    ELSE
+        affiliate_user_id := NULL;
+    END IF;
+
+    -- Insert the new user record with the correct referred_by UUID
     INSERT INTO public.users (user_id, email, role, payment_status, subscription_plan, subscription_price, is_affiliate, referred_by, is_promo_user)
-    VALUES (p_user_id, p_email, 'user', 'awaiting_payment', p_subscription_plan, final_price, FALSE, p_referred_by, is_promo_user);
+    VALUES (p_user_id, p_email, 'user', 'awaiting_payment', p_subscription_plan, final_price, FALSE, affiliate_user_id, is_promo_user);
 END;
 $$;
 
