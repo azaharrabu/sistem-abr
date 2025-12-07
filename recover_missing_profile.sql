@@ -1,39 +1,25 @@
--- =====================================================================================
--- FIX: RECOVER MISSING USER PROFILE
--- =====================================================================================
--- PURPOSE: This script inserts the missing records for a user who was created in the
---          authentication system but not in the public application tables.
---
--- USER DETAILS (from error log):
--- User ID: 707764a0-35ac-4bca-9966-d09cea131928
--- Email:   testing55@gmail.com
---
--- INSTRUCTIONS:
--- 1. Go to your Supabase project dashboard.
--- 2. Go to the "SQL Editor".
--- 3. Copy and paste the entire content of this script into the editor.
--- 4. Click "RUN" to execute the script.
--- =====================================================================================
+-- recover_missing_profile.sql
 
-BEGIN;
+-- Skrip ini direka untuk membaiki ketidakkonsistenan data antara jadual
+-- `auth.users` dan `public.users`. Ia akan mencari semua pengguna yang
+-- wujud dalam sistem pengesahan (`auth.users`) tetapi tidak mempunyai
+-- rekod profil yang sepadan dalam jadual data awam (`public.users`),
+-- dan kemudian mencipta rekod yang hilang itu.
 
--- Step 1: Insert the missing record into the public.users table.
--- The ON CONFLICT clause ensures it doesn't fail if the record somehow already exists.
-INSERT INTO public.users (user_id, email, role, payment_status, is_affiliate)
-VALUES
-    ('707764a0-35ac-4bca-9966-d09cea131928', 'testing55@gmail.com', 'user', 'pending', FALSE)
-ON CONFLICT (user_id) DO NOTHING;
+-- Lakukan operasi ini sebagai satu transaksi untuk memastikan integriti data.
+RAISE NOTICE 'Memulakan proses pemulihan profil pengguna...';
 
--- Step 2: Insert the missing record into the public.profiles table.
--- The ON CONFLICT clause ensures it doesn't fail if the profile already exists.
-INSERT INTO public.profiles (user_id, email, is_promo_user)
-VALUES
-    ('707764a0-35ac-4bca-9966-d09cea131928', 'testing55@gmail.com', FALSE)
-ON CONFLICT (user_id) DO NOTHING;
-
-COMMIT;
-
--- =====================================================================================
--- COMPLETE. The profile for 'testing55@gmail.com' should now be recovered.
--- Login should now proceed successfully.
--- =====================================================================================
+-- Masukkan rekod pengguna yang hilang ke dalam `public.users`.
+-- Ia memilih pengguna dari `auth.users` yang tiada padanan `user_id` dalam `public.users`.
+INSERT INTO public.users (user_id, email, role, payment_status)
+SELECT
+    u.id,
+    u.email,
+    'user' AS role, -- Tetapkan peranan lalai sebagai 'user'
+    NULL AS payment_status -- Tetapkan status pembayaran sebagai NULL
+FROM
+    auth.users u
+LEFT JOIN
+    public.users pu ON u.id = pu.user_id
+WHERE
+    pu.user_id IS NULL; -- Syarat utama: hanya pilih jika tiada dalam public.users

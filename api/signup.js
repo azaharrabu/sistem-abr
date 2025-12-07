@@ -63,7 +63,23 @@ module.exports = async (req, res) => {
       return res.status(500).json({ error: 'Database error creating user profile. Please contact support.' });
     }
 
-    // 3. Pendaftaran dan penciptaan rekod berjaya.
+    // 3. Create the initial pending payment record for the new user.
+    const price = subscriptionPrices[subscription_plan];
+    const { error: paymentInsertError } = await supabase
+      .from('payments')
+      .insert({
+        user_id: authData.user.id,
+        amount: price,
+        status: 'pending',
+      });
+
+    if (paymentInsertError) {
+      console.error('[signup.js] CRITICAL: User profile created, but failed to create initial pending payment.', paymentInsertError);
+      // This is also a partial failure state. The user exists but can't pay.
+      return res.status(500).json({ error: 'User created, but failed to initialize payment. Please contact support.' });
+    }
+
+    // 4. Pendaftaran dan penciptaan rekod berjaya.
     return res.status(201).json({ message: 'Signup successful. Please check your email for verification.' });
 
   } catch (err) {

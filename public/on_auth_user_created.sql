@@ -15,26 +15,15 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- LANGKAH 2: CIPTA TRIGGER DENGAN KEBENARAN YANG BETUL
--- Kita menggunakan blok DO untuk menukar peranan sesi kepada 'supabase_admin' buat sementara waktu.
--- Ini membolehkan kita mencipta trigger pada jadual 'auth.users' yang dilindungi.
-DO
-$do$
-BEGIN
-   -- Tukar peranan kepada supabase_admin untuk mendapatkan kebenaran yang diperlukan.
-   SET ROLE supabase_admin;
+-- Pastikan anda menjalankan arahan berikut dengan peranan yang mempunyai kebenaran yang mencukupi (cth., 'postgres' atau 'supabase_admin').
 
-   -- Padam trigger lama jika ia wujud untuk mengelakkan konflik.
-   DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+-- Padam trigger lama jika ia wujud untuk mengelakkan konflik.
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 
-   -- Cipta trigger baru.
-   CREATE TRIGGER on_auth_user_created
-     AFTER INSERT ON auth.users
-     FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
-
-   -- Kembalikan peranan kepada asal.
-   RESET ROLE;
-END
-$do$;
+-- Cipta trigger baru.
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
 -- LANGKAH 3: BERI KOMEN UNTUK DOKUMENTASI
 COMMENT ON FUNCTION public.handle_new_user() IS 'Mencipta profil pengguna asas di jadual public.users selepas pendaftaran di auth.users.';

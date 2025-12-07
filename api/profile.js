@@ -94,6 +94,27 @@ module.exports = async (req, res) => {
     console.log(`[PROFILE] Step 2 DONE: Profile data ready for user: ${user.email}`);
     console.log(`[PROFILE] Details: Role='${profile.role}', Payment Status='${profile.payment_status}'`);
 
+    // **New Step**: If payment is pending, get the amount from the 'payments' table
+    if (profile.payment_status === 'pending') {
+      console.log(`[PROFILE] User has pending payment. Fetching amount...`);
+      const { data: pendingPayment, error: paymentError } = await supabase
+        .from('payments')
+        .select('amount')
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (paymentError) {
+        // Log the error but don't block the whole profile from loading
+        console.error(`[PROFILE] Warning: Could not fetch pending payment amount: ${paymentError.message}`);
+      } else if (pendingPayment) {
+        profile.pending_amount = pendingPayment.amount;
+        console.log(`[PROFILE] Pending amount of ${profile.pending_amount} added to profile object.`);
+      }
+    }
+
     // Steps below will merge affiliate data into this 'profile' object.
 
 

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papan Pendahulu Pertandingan</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="leaderboard-style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Papan Pendahulu Pertandingan Affiliate</h2>
+        </div>
+        <p>Pilih tempoh tarikh untuk melihat kedudukan affiliate bagi pertandingan yang diumumkan.</p>
+        
+        <div class="date-picker-container">
+            <div class="date-input">
+                <label for="start_date">Tarikh Mula:</label>
+                <input type="date" id="start_date" name="start_date">
+            </div>
+            <div class="date-input">
+                <label for="end_date">Tarikh Tamat:</label>
+                <input type="date" id="end_date" name="end_date">
+            </div>
+            <button id="view_button">Papar Kedudukan</button>
+        </div>
+
+        <div id="leaderboard-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pangkat</th>
+                        <th>Nama Agen</th>
+                        <th>Jumlah Jualan (Tempoh)</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-table-body">
+                    <!-- Data akan dimasukkan di sini oleh JavaScript -->
+                    <tr>
+                        <td colspan="3" style="text-align: center;">Sila pilih tempoh dan klik "Papar Kedudukan".</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="loading-message" style="display: none;">Memuatkan data...</div>
+        </div>
+        <div class="nav-links">
+            <a href="/">Kembali ke Laman Utama</a>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="competition-leaderboard.js"></script>
+</body>
+</html>

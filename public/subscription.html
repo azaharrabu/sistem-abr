@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urus Langganan</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        #message {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none; /* Hidden by default */
+        }
+        .message-success { background-color: #d4edda; color: #155724; }
+        .message-error { background-color: #f8d7da; color: #721c24; }
+        .message-loading { background-color: #e2e3e5; color: #383d41; }
+        .message-info { background-color: #d1ecf1; color: #0c5460; }
+
+        .subscription-status, .renewal-form {
+            padding: 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+        }
+        .subscription-status h2, .renewal-form h2 {
+            margin-top: 0;
+            color: #4a6fa5;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+        .status-item span:first-child { font-weight: bold; }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        select, button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        button {
+            background-color: #4a6fa5;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3b5a8a;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Urus Langganan Anda</h1>
+            <button id="logout-button" style="padding: 10px 15px; background-color: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">Log Keluar</button>
+        </div>
+        <div id="message"></div>
+
+        <!-- Bahagian 1: Status dan Pemilihan Pelan -->
+        <div id="renewal-section">
+            <div class="subscription-status">
+                <h2>Status Semasa</h2>
+                <div id="status-loading">Memuatkan status langganan anda...</div>
+                <div id="status-content" style="display: none;">
+                    <div class="status-item">
+                        <span>Pelan Semasa:</span>
+                        <span id="current-plan"></span>
+                    </div>
+                    <div class="status-item">
+                        <span>Tamat Pada:</span>
+                        <span id="expiry-date"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="renewal-form">
+                <h2>Perbaharui atau Tukar Pelan</h2>
+                <form id="renewal-form">
+                    <div class="form-group">
+                        <label for="plan-selection">Pilih Pelan Baru:</label>
+                        <select id="plan-selection" name="plan">
+                            <option value='{"plan": "Pelan 6 Bulan", "price": 60}'>Pelan 6 Bulan - RM60</option>
+                            <option value='{"plan": "Pelan 12 Bulan", "price": 100}'>Pelan 12 Bulan - RM100</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="submit-renewal-button">Hantar Permintaan Pembaharuan</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bahagian 2: Borang Bukti Pembayaran (Tersembunyi pada mulanya) -->
+        <div id="payment-proof-section" style="display: none;">
+            <div class="payment-form">
+                <h2>Sahkan Pembayaran Anda</h2>
+                <p>Permintaan langganan anda telah diterima. Sila lengkapkan butiran pembayaran di bawah.</p>
+                <form id="renewal-payment-form">
+                    <div class="form-group">
+                        <label for="ref-no">No. Rujukan / Emel</label>
+                        <input type="text" id="ref-no" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">Jumlah Bayaran (RM)</label>
+                        <input type="number" id="amount" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-date">Tarikh Bayaran</label>
+                        <input type="date" id="payment-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-time">Masa Bayaran</label>
+                        <input type="time" id="payment-time" required>
+                    </div>
+                    <button type="submit" id="submit-payment-button">Hantar Bukti Pembayaran</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Muatkan Pustaka Supabase dan Konfigurasi Projek -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
+    <script>
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let userEmail = '';
+        
+        async function getAuthToken() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) userEmail = session.user.email;
+            return session ? session.access_token : null;
+        }
+
+        async function handleSignOut() {
+            await _supabase.auth.signOut();
+            localStorage.removeItem('userProfile');
+            window.location.href = '/';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Tiada';
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('ms-MY', options);
+        }
+
+        function showMessage(type, text) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `message-${type}`;
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        window.addEventListener('load', async () => {
+            document.getElementById('logout-button').addEventListener('click', handleSignOut);
+
+            const token = await getAuthToken();
+            if (!token) {
+                showMessage('error', 'Sila log masuk untuk menguruskan langganan anda.');
+                document.getElementById('renewal-section').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/profile', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!response.ok) { throw new Error((await response.json()).error || 'Gagal mendapatkan data profil.'); }
+                const profile = await response.json();
+
+                // Logic based on payment status
+                if (profile.payment_status === 'pending') {
+                    // User has a pending payment, show the payment proof form
+                    showMessage('info', 'Anda mempunyai permintaan langganan yang sedang menunggu pembayaran. Sila lengkapkan butiran di bawah.');
+                    document.getElementById('renewal-section').style.display = 'none';
+                    document.getElementById('payment-proof-section').style.display = 'block';
+                    document.getElementById('ref-no').value = userEmail;
+                    document.getElementById('amount').value = profile.pending_amount || 'Sila semak pelan anda'; // Fallback
+                } else {
+                    // Default view for users without pending payments
+                    document.getElementById('current-plan').textContent = profile.subscription_plan || 'Tiada';
+                    document.getElementById('expiry-date').textContent = formatDate(profile.subscription_end_date);
+                    document.getElementById('status-loading').style.display = 'none';
+                    document.getElementById('status-content').style.display = 'block';
+                }
+            } catch (error) {
+                showMessage('error', `Ralat memuatkan data: ${error.message}`);
+                document.getElementById('renewal-section').style.display = 'none';
+                document.getElementById('payment-proof-section').style.display = 'none';
+            }
+        });
+
+        document.getElementById('renewal-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const submitButton = document.getElementById('submit-renewal-button');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Memproses...';
+            
+            const token = await getAuthToken();
+            if (!token) { return showMessage('error', 'Sesi anda telah tamat. Sila log masuk semula.'); }
+
+            const selection = JSON.parse(document.getElementById('plan-selection').value);
+
+            try {
+                const response = await fetch('/api/renew-subscription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ plan: selection.plan, price: selection.price })
+                });
+                const result = await response.json();
+                if (!response.ok) { throw new Error(result.error || 'Sesuatu yang tidak kena telah berlaku.'); }
+
+                showMessage('success', 'Langkah 1 Selesai. Sila teruskan ke Langkah 2 di bawah.');
+                document.getElementById('renewal-section').style.display = 'none';
+                document.getElementById('payment-proof-section').style.display = 'block';
+                document.getElementById('ref-no').value = userEmail;
+                document.getElementById('amount').value = selection.price;
+
+            } catch (error) {
+                showMessage('error', `Ralat: ${error.message}`);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Hantar Permintaan Pembaharuan';
+            }
+        });
+        
+        document.getElementById('renewal-payment-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const submitButton = document.getElementById('submit-payment-button');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Menghantar...';
+
+            const token = await getAuthToken();
+            if (!token) { return showMessage('error', 'Sesi anda telah tamat. Sila log masuk semula.'); }
+            
+            const body = {
+                payment_date: document.getElementById('payment-date').value,
+                payment_time: document.getElementById('payment-time').value,
+            };
+
+            try {
+                // TUKAR ENDPOINT KE API YANG BETUL
+                const response = await fetch('/api/update-payment-proof', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(body)
+                });
+                const result = await response.json();
+                if (!response.ok) { throw new Error(result.error || 'Gagal menghantar bukti pembayaran.'); }
+                
+                showMessage('success', result.message);
+                document.getElementById('payment-proof-section').style.display = 'none';
+
+            } catch (error) {
+                 showMessage('error', `Ralat: ${error.message}`);
+                 submitButton.disabled = false;
+                 submitButton.textContent = 'Hantar Bukti Pembayaran';
+            }
+        });
+    </script>
+
+</body>
+</html>

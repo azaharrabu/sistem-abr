@@ -51,18 +51,9 @@ BEGIN
         END IF;
     END IF;
 
-    -- If a referral code is provided, find the corresponding affiliate's user_id
-    IF p_referred_by IS NOT NULL THEN
-        SELECT user_id INTO affiliate_user_id
-        FROM public.affiliates
-        WHERE affiliate_code = p_referred_by;
-    ELSE
-        affiliate_user_id := NULL;
-    END IF;
-
-    -- Insert the new user record with the correct referred_by UUID
+    -- Insert the new user record with the referral code text
     INSERT INTO public.users (user_id, email, role, payment_status, subscription_plan, subscription_price, is_affiliate, referred_by, is_promo_user)
-    VALUES (p_user_id, p_email, 'user', 'awaiting_payment', p_subscription_plan, final_price, FALSE, affiliate_user_id, is_promo_user);
+    VALUES (p_user_id, p_email, 'user', 'awaiting_payment', p_subscription_plan, final_price, FALSE, p_referred_by, is_promo_user);
 END;
 $$;
 

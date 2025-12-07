@@ -14,55 +14,57 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // 1. Sahkan token dan dapatkan maklumat pengguna
     const user = await verifyToken(req);
     if (!user) {
       return res.status(401).json({ error: 'Authentication failed' });
     }
 
-    const { 
-      payment_date, 
-      payment_time, 
-      full_name,
-      phone_number
+    let {
+      payment_date,
+      payment_time
     } = req.body;
 
-    // 2. Pengesahan input - pastikan semua medan yang diperlukan wujud
-    if (!payment_date || !payment_time || !full_name || !phone_number) {
-      return res.status(400).json({ error: 'Sila lengkapkan semua medan yang diperlukan.' });
+    if (!payment_date || !payment_time) {
+      return res.status(400).json({ error: 'Sila lengkapkan tarikh dan masa pembayaran.' });
     }
 
-    // 3. Panggil fungsi pangkalan data `handle_new_payment`
-    const { data, error } = await supabase.rpc('handle_new_payment', {
-      p_user_id: user.id,
-      p_user_email: user.email,
-      p_payment_date: payment_date,
-      p_payment_time: payment_time,
-      p_full_name: full_name,
-      p_phone_number: phone_number
-    });
+    // 1. Cari rekod pembayaran 'pending' untuk pengguna ini.
+    const { data: pendingPayment, error: findError } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
 
-    if (error) {
-      console.error('RPC Error:', error.message);
-      return res.status(500).json({ error: `Gagal memproses bayaran: ${error.message}` });
+    if (findError || !pendingPayment) {
+        console.error('Error finding pending payment or none found:', findError);
+        return res.status(404).json({ error: 'Tiada permintaan pembayaran yang menunggu untuk dikemas kini. Sila mulakan permintaan pembaharuan terlebih dahulu.' });
     }
 
-    // 4. Kendalikan maklum balas daripada fungsi
-    if (data === 'conflict') {
-      console.warn(`Duplicate payment attempt for user ${user.id}.`);
-      return res.status(409).json({ error: 'Anda sudah mempunyai bayaran yang aktif atau sedang menunggu kelulusan.' });
-    }
+    // 2. Kemas kini rekod pembayaran dengan butiran yang diserahkan.
+    const { error: updatePaymentError } = await supabase
+      .from('payments')
+      .update({
+        payment_date: payment_date,
+        payment_time: payment_time,
+        reference_no: user.email, // Pastikan emel dilampirkan sebagai rujukan
+      })
+      .eq('id', pendingPayment.id);
 
-    if (data === 'success') {
-      return res.status(200).json({ message: 'Bukti pembayaran dan butiran peribadi berjaya dihantar.' });
+    if (updatePaymentError) {
+      console.error('Error updating payment record:', updatePaymentError.message);
+      throw new Error(`Gagal mengemas kini rekod pembayaran: ${updatePaymentError.message}`);
     }
+    
+    // Tiada lagi kemas kini nama dan no. telefon di sini kerana ia sepatutnya sudah ada.
+    // Jika perlu, ia boleh diuruskan di halaman profil pengguna.
 
-    // Jika maklum balas adalah 'error' atau sesuatu yang tidak dijangka
-    return res.status(500).json({ error: 'Berlaku ralat yang tidak dijangka semasa memproses pembayaran anda.' });
+    return res.status(200).json({ message: 'Bukti pembayaran berjaya dihantar dan sedang menunggu pengesahan admin.' });
 
   } catch (err) {
     console.error('Submit Payment API Error:', err.message);
-    // Asingkan ralat pengesahan daripada ralat server yang lain
     const statusCode = err.message.includes('Authentication failed') ? 401 : 500;
     return res.status(statusCode).json({ error: err.message });
   }
