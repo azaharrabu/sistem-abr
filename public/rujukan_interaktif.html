@@ -754,6 +754,7 @@
             }
         }
     </style>
+
     <script>
         // Disable right-click menu
         document.addEventListener("contextmenu", function(e){
@@ -773,11 +774,6 @@
 <div id="sidebar">
     <img src="images/abr-logo2.jpg" alt="Logo ABR" class="logo" />
     <h1>Rujukan UBBL 1984</h1>
-
-    <div id="search-container" style="padding: 1em 1.5em; border-bottom: 1px solid #ddd;">
-        <input type="text" id="search-input" placeholder="Cari kandungan..." style="width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-        <button id="search-button" style="width: 100%; padding: 0.7em; margin-top: 0.5em; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Cari</button>
-    </div>
 
     <ul>
         <li><a href="#home" class="nav-link active">Muka Depan</a></li>
@@ -814,10 +810,6 @@
 </div>
 
 <div id="main-content">
-            <div id="search-results" class="content-section">
-                <h2>Hasil Carian</h2>
-                <div id="search-results-list"></div>
-            </div>
             <div id="home" class="content-section active home-special-design">
                 <div class="front-page-images">
                     <img src="images/abr-logo2.jpg" alt="Logo ABR" class="front-page-img" />
@@ -3294,6 +3286,8 @@ vi.	Tangga keenam =  2750 mm
         const navLinks = document.querySelectorAll('.nav-link');
         const contentSections = document.querySelectorAll('.content-section');
 
+
+
         const initialHash = window.location.hash || '#home';
         // Make sure the link in the sidebar is also activated
         const activeLink = document.querySelector(`.nav-link[href="${initialHash}"]`);
@@ -3569,81 +3563,7 @@ vi.	Tangga keenam =  2750 mm
             });
         }
 
-        // --- START SEARCH FUNCTIONALITY ---
-        const searchInput = document.getElementById('search-input');
-        const searchButton = document.getElementById('search-button');
-        const searchResultsContainer = document.getElementById('search-results');
-        const searchResultsList = document.getElementById('search-results-list');
-        const allContentSectionsForSearch = document.querySelectorAll('.content-section'); 
 
-        function performSearch() {
-            const query = searchInput.value.toLowerCase().trim();
-            
-            // Deactivate all nav links first
-            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
-
-            if (!query) {
-                // If search is cleared, show the home page
-                showSection('#home');
-                return;
-            }
-
-            // Hide all sections and activate the search results container
-            allContentSectionsForSearch.forEach(section => {
-                section.classList.remove('active');
-            });
-            searchResultsContainer.classList.add('active');
-            searchResultsList.innerHTML = ''; // Clear previous results
-
-            let matchCount = 0;
-            const searchableSections = document.querySelectorAll('.content-section:not(#search-results):not(#home)');
-
-            searchableSections.forEach(section => {
-                const sectionText = section.innerText.toLowerCase();
-                const sectionTitle = section.querySelector('h2')?.innerText || 'Section';
-                const sectionId = section.id;
-
-                if (sectionId && sectionText.includes(query)) {
-                    matchCount++;
-                    const resultItem = document.createElement('div');
-                    resultItem.style.marginBottom = '1em';
-                    
-                    const link = document.createElement('a');
-                    link.href = `#${sectionId}`;
-                    link.textContent = `${matchCount}. ${sectionTitle}`;
-                    link.style.textDecoration = 'none';
-                    link.style.color = 'var(--primary-color)';
-                    link.style.fontWeight = 'bold';
-                    link.style.cursor = 'pointer';
-                    
-                    link.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const targetId = this.getAttribute('href');
-                        showSection(targetId);
-                        
-                        // Update the main nav link to be active
-                        document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
-                        const activeNavLink = document.querySelector(`.nav-link[href="${targetId}"]`);
-                        if(activeNavLink) activeNavLink.classList.add('active');
-                    });
-
-                    resultItem.appendChild(link);
-                    searchResultsList.appendChild(resultItem);
-                }
-            });
-
-            if (matchCount === 0) {
-                searchResultsList.innerHTML = '<p>Tiada hasil carian ditemui.</p>';
-            }
-        }
-
-        searchButton.addEventListener('click', performSearch);
-        searchInput.addEventListener('keyup', function(event) {
-            if (event.key === 'Enter') {
-                performSearch();
-            }
-        });
-        // --- END SEARCH FUNCTIONALITY ---
     });
 </script>
 
