@@ -768,12 +768,38 @@
             }
         });
     </script>
+    <style>
+        /* Styles for search highlighting */
+        mark.search-highlight {
+            background-color: yellow;
+            color: black;
+            border-radius: 3px;
+            padding: 0.1em;
+        }
+        mark.current-highlight {
+            background-color: orange;
+            box-shadow: 0 0 5px orange;
+        }
+    </style>
 </head>
 <body>
 
 <div id="sidebar">
     <img src="images/abr-logo2.jpg" alt="Logo ABR" class="logo" />
     <h1>Rujukan UBBL 1984</h1>
+
+    <!-- Search UI -->
+    <div id="search-wrapper" style="padding: 0 1.5em 1em; position: sticky; top: 0; background: #fff; z-index: 10; border-bottom: 1px solid #eee; margin-bottom: 1em;">
+        <input type="search" id="search-input" placeholder="Cari dalam rujukan..." style="width: 100%; padding: 0.6em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        <div id="search-results-nav" style="display: none; align-items: center; justify-content: space-between; margin-top: 0.5em;">
+            <span id="search-results-count" style="font-size: 0.9em; color: #555;"></span>
+            <div>
+                <button id="search-prev" title="Hasil sebelumnya" style="padding: 0.3em 0.6em; cursor: pointer;">&lt;</button>
+                <button id="search-next" title="Hasil seterusnya" style="padding: 0.3em 0.6em; cursor: pointer;">&gt;</button>
+            </div>
+        </div>
+    </div>
+
 
     <ul>
         <li><a href="#home" class="nav-link active">Muka Depan</a></li>
@@ -3567,5 +3593,177 @@ vi.	Tangga keenam =  2750 mm
     });
 </script>
 
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('search-input');
+        const resultsNav = document.getElementById('search-results-nav');
+        const resultsCount = document.getElementById('search-results-count');
+        const prevButton = document.getElementById('search-prev');
+        const nextButton = document.getElementById('search-next');
+        const mainContent = document.getElementById('main-content');
+
+        let highlights = [];
+        let currentIndex = -1;
+
+        // Function to remove highlights
+        function removeHighlights() {
+            const marks = mainContent.querySelectorAll('mark.search-highlight');
+            marks.forEach(mark => {
+                const parent = mark.parentNode;
+                if (parent) {
+                    parent.replaceChild(document.createTextNode(mark.textContent), mark);
+                    parent.normalize(); // Merges adjacent text nodes
+                }
+            });
+        }
+
+        function performSearch() {
+            const searchTerm = searchInput.value.trim();
+
+            // Always remove previous highlights before a new search
+            removeHighlights();
+            highlights = [];
+            currentIndex = -1;
+            resultsNav.style.display = 'none';
+
+            if (searchTerm.length < 3) {
+                return;
+            }
+
+            const regex = new RegExp(searchTerm.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'gi');
+            
+            const allTextNodes = [];
+            const treeWalker = document.createTreeWalker(mainContent, NodeFilter.SHOW_TEXT);
+            let currentNode;
+            while(currentNode = treeWalker.nextNode()) {
+                if (currentNode.parentNode.nodeName !== 'SCRIPT' && currentNode.parentNode.nodeName !== 'STYLE') {
+                    allTextNodes.push(currentNode);
+                }
+            }
+
+            allTextNodes.forEach(node => {
+                const text = node.nodeValue;
+                if (regex.test(text)) {
+                    const fragment = document.createDocumentFragment();
+                    let lastIndex = 0;
+                    
+                    text.replace(regex, (match, offset) => {
+                        // Add preceding text
+                        if (offset > lastIndex) {
+                            fragment.appendChild(document.createTextNode(text.substring(lastIndex, offset)));
+                        }
+
+                        // Add highlighted match
+                        const mark = document.createElement('mark');
+                        mark.className = 'search-highlight';
+                        mark.textContent = match;
+                        fragment.appendChild(mark);
+                        
+                        lastIndex = offset + match.length;
+                    });
+                    
+                    // Add remaining text
+                    if (lastIndex < text.length) {
+                        fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+                    }
+                    
+                    // Replace original text node with the fragment
+                    if (node.parentNode) {
+                        node.parentNode.replaceChild(fragment, node);
+                    }
+                }
+            });
+
+            highlights = Array.from(mainContent.querySelectorAll('mark.search-highlight'));
+            
+            resultsNav.style.display = 'flex';
+            if (highlights.length > 0) {
+                resultsCount.textContent = `${highlights.length} hasil ditemui`;
+                prevButton.style.display = 'inline-block';
+                nextButton.style.display = 'inline-block';
+                
+                currentIndex = 0;
+                navigateToCurrentHighlight();
+            } else {
+                resultsCount.textContent = 'Tiada hasil ditemui';
+                prevButton.style.display = 'none';
+                nextButton.style.display = 'none';
+            }
+        }
+        
+        function navigateToCurrentHighlight() {
+            if(currentIndex === -1) return;
+
+            const currentHighlight = highlights[currentIndex];
+            
+            // Make sure the section containing the highlight is visible
+            const parentSection = currentHighlight.closest('.content-section');
+            if (parentSection && !parentSection.classList.contains('active')) {
+                // Deactivate any active section
+                const activeSection = document.querySelector('.content-section.active');
+                if (activeSection) {
+                    activeSection.classList.remove('active');
+                }
+                // Activate the correct section
+                parentSection.classList.add('active');
+
+                // Update sidebar link
+                const activeLink = document.querySelector('#sidebar .nav-link.active');
+                if(activeLink) {
+                    activeLink.classList.remove('active');
+                }
+                const newActiveLink = document.querySelector(`#sidebar a[href="#${parentSection.id}"]`);
+                if(newActiveLink) {
+                    newActiveLink.classList.add('active');
+                }
+            }
+            
+            // Use a timeout to ensure scrolling happens after the section is displayed
+            setTimeout(() => {
+                currentHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                currentHighlight.classList.add('current-highlight');
+                resultsCount.textContent = `Hasil ${currentIndex + 1} dari ${highlights.length}`;
+            }, 100); // 100ms delay might be enough for the DOM to update
+        }
+
+
+        function navigateHighlights(direction) {
+            if (highlights.length === 0) return;
+
+            // Remove current highlight class
+            if (currentIndex !== -1) {
+                highlights[currentIndex].classList.remove('current-highlight');
+            }
+
+            currentIndex += direction;
+
+            if (currentIndex < 0) {
+                currentIndex = highlights.length - 1;
+            } else if (currentIndex >= highlights.length) {
+                currentIndex = 0;
+            }
+            
+            navigateToCurrentHighlight();
+        }
+
+        // Use a debounce function to avoid searching on every keystroke
+        let debounceTimer;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(performSearch, 300); // 300ms delay
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+
+        nextButton.addEventListener('click', () => navigateHighlights(1));
+        prevButton.addEventListener('click', () => navigateHighlights(-1));
+    });
+</script>
 </body>
 </html>
