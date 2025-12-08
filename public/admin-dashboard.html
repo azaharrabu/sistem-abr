@@ -58,6 +58,18 @@
         tr:hover {
             background-color: #e6f7ff;
         }
+        .button-link-secondary {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #6c757d;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .button-link-secondary:hover {
+            background-color: #5a6268;
+        }
     </style>
 </head>
 <body>
@@ -65,7 +77,10 @@
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <h1>Dashboard Admin: Senarai Pengguna</h1>
-            <button id="logout-button" style="padding: 10px 15px; background-color: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">Log Keluar</button>
+            <div>
+                <a href="/" class="button-link-secondary">Kembali ke Panel Admin</a>
+                <button id="logout-button" style="padding: 10px 15px; background-color: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 1rem;">Log Keluar</button>
+            </div>
         </div>
 
         <!-- Bahagian Pengurusan Komisyen Baru -->
@@ -160,6 +175,8 @@
         }
 
         window.addEventListener('load', async () => {
+            document.getElementById('logout-button').addEventListener('click', handleSignOut);
+            
             const searchInput = document.getElementById('search-input');
             const searchButton = document.getElementById('search-button');
 
