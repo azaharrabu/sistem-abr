@@ -12,18 +12,6 @@
             --sidebar-width: 280px;
         }
 
-        /* Styles for Search Highlighting */
-        mark.search-highlight {
-            background-color: #f1c40f; /* Yellow */
-            color: black;
-            padding: 2px;
-            border-radius: 3px;
-        }
-        mark.current-highlight {
-            background-color: #e67e22; /* Orange */
-            border: 1px solid #d35400;
-        }
-
         /* Styles for embedded calculator */
         .calculator-container {
             background-color: #fff;
@@ -786,15 +774,9 @@
     <img src="images/abr-logo2.jpg" alt="Logo ABR" class="logo" />
     <h1>Rujukan UBBL 1984</h1>
 
-    <!-- Search UI -->
-    <div id="search-container" style="padding: 0 1.5em 1em 1.5em; border-bottom: 1px solid #eee;">
-        <input type="text" id="search-input" placeholder="Cari perkataan..." style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
-        <div style="display: flex; gap: 5px; margin-top: 8px;">
-            <button id="search-button" style="flex: 1; padding: 8px; cursor: pointer;">Cari</button>
-            <button id="search-prev" style="flex: 1; padding: 8px; cursor: pointer;">&lt; Prev</button>
-            <button id="search-next" style="flex: 1; padding: 8px; cursor: pointer;">Next &gt;</button>
-        </div>
-        <div id="search-status" style="font-size: 0.8em; text-align: center; margin-top: 8px;"></div>
+    <div id="search-container" style="padding: 1em 1.5em; border-bottom: 1px solid #ddd;">
+        <input type="text" id="search-input" placeholder="Cari kandungan..." style="width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        <button id="search-button" style="width: 100%; padding: 0.7em; margin-top: 0.5em; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Cari</button>
     </div>
 
     <ul>
@@ -832,6 +814,10 @@
 </div>
 
 <div id="main-content">
+            <div id="search-results" class="content-section">
+                <h2>Hasil Carian</h2>
+                <div id="search-results-list"></div>
+            </div>
             <div id="home" class="content-section active home-special-design">
                 <div class="front-page-images">
                     <img src="images/abr-logo2.jpg" alt="Logo ABR" class="front-page-img" />
@@ -3582,139 +3568,84 @@ vi.	Tangga keenam =  2750 mm
                 outputDiv.innerHTML = resultsHTML;
             });
         }
-    });
-</script>
 
-<!-- === SCRIPT BARU UNTUK FUNGSI CARIAN (VERSI DIPERBAIKI) === -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('search-input');
-    const searchButton = document.getElementById('search-button');
-    const searchNextButton = document.getElementById('search-next');
-    const searchPrevButton = document.getElementById('search-prev');
-    const searchStatus = document.getElementById('search-status');
-    const contentArea = document.getElementById('main-content');
-    const sidebarLinks = document.querySelectorAll('#sidebar .nav-link');
-    
-    let searchResults = [];
-    let currentIndex = -1;
-    let originalHTMLs = new Map(); // Untuk menyimpan HTML asal setiap section
+        // --- START SEARCH FUNCTIONALITY ---
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const searchResultsContainer = document.getElementById('search-results');
+        const searchResultsList = document.getElementById('search-results-list');
+        const allContentSectionsForSearch = document.querySelectorAll('.content-section'); 
 
-    function clearHighlights() {
-        // Kembalikan kandungan asal untuk setiap section yang telah diubah
-        originalHTMLs.forEach((html, section) => {
-            section.innerHTML = html;
-        });
-        originalHTMLs.clear();
-        searchResults = [];
-        currentIndex = -1;
-        searchStatus.textContent = '';
-    }
-
-    function performSearch() {
-        clearHighlights();
-        const searchTerm = searchInput.value;
-        if (!searchTerm || searchTerm.trim().length < 2) {
-            searchStatus.textContent = 'Sila taip sekurang-kurangnya 2 huruf.';
-            return;
-        }
-
-        const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
-        const sections = contentArea.querySelectorAll('.content-section');
-        
-        sections.forEach(section => {
-            const originalHTML = section.innerHTML;
-            const newHTML = originalHTML.replace(regex, match => `<mark class="search-highlight">${match}</mark>`);
+        function performSearch() {
+            const query = searchInput.value.toLowerCase().trim();
             
-            if (originalHTML !== newHTML) {
-                originalHTMLs.set(section, originalHTML); // Simpan hanya jika ada perubahan
-                section.innerHTML = newHTML;
+            // Deactivate all nav links first
+            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+
+            if (!query) {
+                // If search is cleared, show the home page
+                showSection('#home');
+                return;
             }
-        });
 
-        searchResults = Array.from(contentArea.getElementsByClassName('search-highlight'));
-        currentIndex = -1;
-        
-        if (searchResults.length > 0) {
-            navigateToResult(0);
-        } else {
-            updateSearchStatus();
-        }
-    }
-    
-    function navigateToResult(index) {
-        if (index < 0 || index >= searchResults.length) return;
+            // Hide all sections and activate the search results container
+            allContentSectionsForSearch.forEach(section => {
+                section.classList.remove('active');
+            });
+            searchResultsContainer.classList.add('active');
+            searchResultsList.innerHTML = ''; // Clear previous results
 
-        // Alih keluar highlight semasa dari hasil carian sebelumnya
-        if (currentIndex > -1 && searchResults[currentIndex]) {
-            searchResults[currentIndex].classList.remove('current-highlight');
-        }
+            let matchCount = 0;
+            const searchableSections = document.querySelectorAll('.content-section:not(#search-results):not(#home)');
 
-        currentIndex = index;
-        const currentResult = searchResults[currentIndex];
-        
-        // --- LOGIK BARU: Pastikan section induk kelihatan ---
-        const parentSection = currentResult.closest('.content-section');
-        if (parentSection && !parentSection.classList.contains('active')) {
-            // Nyahaktifkan semua section lain
-            contentArea.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            // Aktifkan section yang betul
-            parentSection.classList.add('active');
-            
-            // Kemas kini juga pautan aktif di sidebar
-            const sectionId = parentSection.id;
-            sidebarLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${sectionId}`) {
-                    link.classList.add('active');
+            searchableSections.forEach(section => {
+                const sectionText = section.innerText.toLowerCase();
+                const sectionTitle = section.querySelector('h2')?.innerText || 'Section';
+                const sectionId = section.id;
+
+                if (sectionId && sectionText.includes(query)) {
+                    matchCount++;
+                    const resultItem = document.createElement('div');
+                    resultItem.style.marginBottom = '1em';
+                    
+                    const link = document.createElement('a');
+                    link.href = `#${sectionId}`;
+                    link.textContent = `${matchCount}. ${sectionTitle}`;
+                    link.style.textDecoration = 'none';
+                    link.style.color = 'var(--primary-color)';
+                    link.style.fontWeight = 'bold';
+                    link.style.cursor = 'pointer';
+                    
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const targetId = this.getAttribute('href');
+                        showSection(targetId);
+                        
+                        // Update the main nav link to be active
+                        document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+                        const activeNavLink = document.querySelector(`.nav-link[href="${targetId}"]`);
+                        if(activeNavLink) activeNavLink.classList.add('active');
+                    });
+
+                    resultItem.appendChild(link);
+                    searchResultsList.appendChild(resultItem);
                 }
             });
+
+            if (matchCount === 0) {
+                searchResultsList.innerHTML = '<p>Tiada hasil carian ditemui.</p>';
+            }
         }
 
-        // Tambah highlight baru dan tatal ke sana
-        currentResult.classList.add('current-highlight');
-        currentResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        updateSearchStatus();
-    }
-
-    function updateSearchStatus() {
-        if (searchResults.length > 0) {
-            searchStatus.textContent = `${currentIndex + 1} dari ${searchResults.length} ditemui`;
-        } else if (searchInput.value.trim().length > 1) {
-             searchStatus.textContent = 'Tiada hasil ditemui.';
-        } else {
-            searchStatus.textContent = '';
-        }
-    }
-
-    function escapeRegExp(string) {
-        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-
-    // Event Listeners
-    searchButton.addEventListener('click', performSearch);
-    searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            performSearch();
-        }
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+        // --- END SEARCH FUNCTIONALITY ---
     });
-
-    searchNextButton.addEventListener('click', () => {
-        if (searchResults.length > 0) {
-            const nextIndex = (currentIndex + 1) % searchResults.length;
-            navigateToResult(nextIndex);
-        }
-    });
-
-    searchPrevButton.addEventListener('click', () => {
-        if (searchResults.length > 0) {
-            const prevIndex = (currentIndex - 1 + searchResults.length) % searchResults.length;
-            navigateToResult(prevIndex);
-        }
-    });
-});
 </script>
+
 </body>
 </html>
