@@ -12,6 +12,18 @@
             --sidebar-width: 280px;
         }
 
+        /* Styles for Search Highlighting */
+        mark.search-highlight {
+            background-color: #f1c40f; /* Yellow */
+            color: black;
+            padding: 2px;
+            border-radius: 3px;
+        }
+        mark.current-highlight {
+            background-color: #e67e22; /* Orange */
+            border: 1px solid #d35400;
+        }
+
         /* Styles for embedded calculator */
         .calculator-container {
             background-color: #fff;
@@ -773,6 +785,18 @@
 <div id="sidebar">
     <img src="images/abr-logo2.jpg" alt="Logo ABR" class="logo" />
     <h1>Rujukan UBBL 1984</h1>
+
+    <!-- Search UI -->
+    <div id="search-container" style="padding: 0 1.5em 1em 1.5em; border-bottom: 1px solid #eee;">
+        <input type="text" id="search-input" placeholder="Cari perkataan..." style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+        <div style="display: flex; gap: 5px; margin-top: 8px;">
+            <button id="search-button" style="flex: 1; padding: 8px; cursor: pointer;">Cari</button>
+            <button id="search-prev" style="flex: 1; padding: 8px; cursor: pointer;">&lt; Prev</button>
+            <button id="search-next" style="flex: 1; padding: 8px; cursor: pointer;">Next &gt;</button>
+        </div>
+        <div id="search-status" style="font-size: 0.8em; text-align: center; margin-top: 8px;"></div>
+    </div>
+
     <ul>
         <li><a href="#home" class="nav-link active">Muka Depan</a></li>
         <li><a href="#penafian" class="nav-link">Penafian</a></li>
@@ -3559,6 +3583,138 @@ vi.	Tangga keenam =  2750 mm
             });
         }
     });
+</script>
+
+<!-- === SCRIPT BARU UNTUK FUNGSI CARIAN (VERSI DIPERBAIKI) === -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
+    const searchNextButton = document.getElementById('search-next');
+    const searchPrevButton = document.getElementById('search-prev');
+    const searchStatus = document.getElementById('search-status');
+    const contentArea = document.getElementById('main-content');
+    const sidebarLinks = document.querySelectorAll('#sidebar .nav-link');
+    
+    let searchResults = [];
+    let currentIndex = -1;
+    let originalHTMLs = new Map(); // Untuk menyimpan HTML asal setiap section
+
+    function clearHighlights() {
+        // Kembalikan kandungan asal untuk setiap section yang telah diubah
+        originalHTMLs.forEach((html, section) => {
+            section.innerHTML = html;
+        });
+        originalHTMLs.clear();
+        searchResults = [];
+        currentIndex = -1;
+        searchStatus.textContent = '';
+    }
+
+    function performSearch() {
+        clearHighlights();
+        const searchTerm = searchInput.value;
+        if (!searchTerm || searchTerm.trim().length < 2) {
+            searchStatus.textContent = 'Sila taip sekurang-kurangnya 2 huruf.';
+            return;
+        }
+
+        const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
+        const sections = contentArea.querySelectorAll('.content-section');
+        
+        sections.forEach(section => {
+            const originalHTML = section.innerHTML;
+            const newHTML = originalHTML.replace(regex, match => `<mark class="search-highlight">${match}</mark>`);
+            
+            if (originalHTML !== newHTML) {
+                originalHTMLs.set(section, originalHTML); // Simpan hanya jika ada perubahan
+                section.innerHTML = newHTML;
+            }
+        });
+
+        searchResults = Array.from(contentArea.getElementsByClassName('search-highlight'));
+        currentIndex = -1;
+        
+        if (searchResults.length > 0) {
+            navigateToResult(0);
+        } else {
+            updateSearchStatus();
+        }
+    }
+    
+    function navigateToResult(index) {
+        if (index < 0 || index >= searchResults.length) return;
+
+        // Alih keluar highlight semasa dari hasil carian sebelumnya
+        if (currentIndex > -1 && searchResults[currentIndex]) {
+            searchResults[currentIndex].classList.remove('current-highlight');
+        }
+
+        currentIndex = index;
+        const currentResult = searchResults[currentIndex];
+        
+        // --- LOGIK BARU: Pastikan section induk kelihatan ---
+        const parentSection = currentResult.closest('.content-section');
+        if (parentSection && !parentSection.classList.contains('active')) {
+            // Nyahaktifkan semua section lain
+            contentArea.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            // Aktifkan section yang betul
+            parentSection.classList.add('active');
+            
+            // Kemas kini juga pautan aktif di sidebar
+            const sectionId = parentSection.id;
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${sectionId}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Tambah highlight baru dan tatal ke sana
+        currentResult.classList.add('current-highlight');
+        currentResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        updateSearchStatus();
+    }
+
+    function updateSearchStatus() {
+        if (searchResults.length > 0) {
+            searchStatus.textContent = `${currentIndex + 1} dari ${searchResults.length} ditemui`;
+        } else if (searchInput.value.trim().length > 1) {
+             searchStatus.textContent = 'Tiada hasil ditemui.';
+        } else {
+            searchStatus.textContent = '';
+        }
+    }
+
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // Event Listeners
+    searchButton.addEventListener('click', performSearch);
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+
+    searchNextButton.addEventListener('click', () => {
+        if (searchResults.length > 0) {
+            const nextIndex = (currentIndex + 1) % searchResults.length;
+            navigateToResult(nextIndex);
+        }
+    });
+
+    searchPrevButton.addEventListener('click', () => {
+        if (searchResults.length > 0) {
+            const prevIndex = (currentIndex - 1 + searchResults.length) % searchResults.length;
+            navigateToResult(prevIndex);
+        }
+    });
+});
 </script>
 </body>
 </html>
