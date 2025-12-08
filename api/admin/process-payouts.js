@@ -38,24 +38,16 @@ module.exports = async (req, res) => {
 
     const { mode } = req.body; // 'calculate' or 'execute'
 
-    // 2. Fetch all unpaid sales, joining with affiliate and user data for a comprehensive summary
-    const { data: unpaidSales, error: fetchError } = await supabase
-      .from('sales')
-      .select(`
-        id,
-        commission_amount,
-        affiliates (
-          id,
-          users (
-            full_name,
-            email
-          )
-        )
-      `)
-      .eq('payout_status', 'unpaid');
+    // 2. Fetch all unpaid sales using the RPC function for a comprehensive summary
+    const { data: unpaidSales, error: rpcError } = await supabase
+      .rpc('get_unpaid_sales_summary');
 
-    if (fetchError) {
-      console.error('Error fetching unpaid sales:', fetchError.message);
+    if (rpcError) {
+      console.error('Error fetching unpaid sales via RPC:', rpcError.message);
+      // Add a specific check in case the user hasn't run the SQL script
+      if (rpcError.message.includes('function get_unpaid_sales_summary() does not exist')) {
+          throw new Error('Fungsi pangkalan data (get_unpaid_sales_summary) tidak ditemui. Sila pastikan anda telah menjalankan skrip SQL yang terkini.');
+      }
       throw new Error('Failed to fetch unpaid sales data.');
     }
 
@@ -65,26 +57,22 @@ module.exports = async (req, res) => {
 
     // 3. Process the data to create a summary per affiliate
     const payoutSummary = unpaidSales.reduce((summary, sale) => {
-      if (!sale.affiliates) return summary; // Skip if sale is not linked to an affiliate
+      const { affiliate_id, affiliate_name, affiliate_email, commission_amount, sale_id } = sale;
+      const commission = commission_amount || 0;
 
-      const affiliateId = sale.affiliates.id;
-      const affiliateName = sale.affiliates.users?.full_name || 'Nama Tidak Ditemui';
-      const affiliateEmail = sale.affiliates.users?.email || 'Emel Tidak Ditemui';
-      const commission = sale.commission_amount || 0;
-
-      if (!summary[affiliateId]) {
-        summary[affiliateId] = {
-          affiliateName,
-          affiliateEmail,
+      if (!summary[affiliate_id]) {
+        summary[affiliate_id] = {
+          affiliateName: affiliate_name || 'Nama Tidak Ditemui',
+          affiliateEmail: affiliate_email || 'Emel Tidak Ditemui',
           totalCommission: 0,
           salesCount: 0,
           unpaidSaleIds: [],
         };
       }
 
-      summary[affiliateId].totalCommission += commission;
-      summary[affiliateId].salesCount += 1;
-      summary[affiliateId].unpaidSaleIds.push(sale.id);
+      summary[affiliate_id].totalCommission += commission;
+      summary[affiliate_id].salesCount += 1;
+      summary[affiliate_id].unpaidSaleIds.push(sale_id);
       
       return summary;
     }, {});
