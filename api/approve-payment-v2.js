@@ -40,10 +40,10 @@ module.exports = async (req, res) => {
         return res.status(400).json({ error: 'userId is required.'});
     }
 
-    // 1. Fetch the user's profile to ensure they exist.
+    // 1. Fetch the user's profile to get subscription plan and referral info.
     const { data: userProfile, error: userFetchError } = await supabase
         .from('users')
-        .select('user_id, referred_by')
+        .select('user_id, email, full_name, subscription_plan, referred_by')
         .eq('user_id', userId)
         .single();
 
@@ -57,22 +57,42 @@ module.exports = async (req, res) => {
         return res.status(404).json({ error: `User profile with ID ${userId} not found.` });
     }
 
-    console.log(`DEBUG: Found user ${userProfile.user_id} to approve.`);
+    console.log(`DEBUG: Found user ${userProfile.user_id} (${userProfile.email}) to approve.`);
 
-    // 2. Update the user's payment status to 'paid' in the 'users' table.
+    // 2. Calculate the new subscription end date.
+    const newEndDate = new Date();
+    const plan = userProfile.subscription_plan;
+    let durationMonths = 0;
+    if (plan && plan.includes('12')) {
+        durationMonths = 12;
+    } else if (plan && plan.includes('6')) {
+        durationMonths = 6;
+    }
+    
+    if (durationMonths > 0) {
+        newEndDate.setMonth(newEndDate.getMonth() + durationMonths);
+    } else {
+        console.warn(`Could not determine subscription duration for plan: "${plan}". Subscription end date will not be updated.`);
+    }
+
+    // 3. Update user's payment status and subscription end date.
+    const updatePayload = { payment_status: 'paid' };
+    if (durationMonths > 0) {
+        updatePayload.subscription_end_date = newEndDate.toISOString();
+    }
+
     const { error: updateUserError } = await supabase
         .from('users')
-        .update({ payment_status: 'paid' })
-        .eq('user_id', userId)
-        .select()
-        .single();
+        .update(updatePayload)
+        .eq('user_id', userId);
 
     if (updateUserError) {
         console.error(`Error updating user status for userId: ${userId}`, updateUserError);
         throw new Error(`Failed to update user status: ${updateUserError.message}`);
     }
+    console.log(`Successfully updated user ${userId} status to 'paid' and set new end date to ${updatePayload.subscription_end_date}.`);
     
-    // 3. Find the user's pending payment and update it to 'approved'.
+    // 4. Find the user's pending payment and update it to 'approved'.
     const { data: approvedPayments, error: paymentError } = await supabase
         .from('payments')
         .update({ status: 'approved' })
@@ -86,38 +106,32 @@ module.exports = async (req, res) => {
 
     if (!approvedPayments || approvedPayments.length === 0) {
         console.warn(`Could not find a 'pending' payment record for user ${userId}.`);
-        return res.status(200).json({ message: 'Payment status for user updated, but no pending payment record was found to approve.' });
+        // We don't exit here because the main user status was updated.
     }
     
-    const paymentForSale = approvedPayments[0];
+    const paymentForSale = approvedPayments ? approvedPayments[0] : null;
 
-    // 4. If the user was referred, create a sales record for the affiliate.
-    if (userProfile.referred_by && paymentForSale.amount > 0) {
+    // 5. If the user was referred, create a sales record for the affiliate.
+    if (userProfile.referred_by && paymentForSale && paymentForSale.amount > 0) {
         console.log(`User was referred by affiliate with user_id: ${userProfile.referred_by}. Attempting to record sale.`);
         
-        // Find the affiliate's ID and commission rate based on the referral code.
         const { data: affiliate, error: affiliateError } = await supabase
             .from('affiliates')
             .select('id, commission_rate')
-            .eq('user_id', userProfile.referred_by) 
+            .eq('affiliate_code', userProfile.referred_by) 
             .single();
-
-        if (affiliateError) {
-            console.error(`Database error while looking for affiliate with user_id: ${userProfile.referred_by}`, affiliateError);
-        }
 
         if (affiliateError || !affiliate) {
             console.error(`CRITICAL: Could not find affiliate with user_id: ${userProfile.referred_by}. Sale not recorded.`);
         } else {
             console.log(`Found affiliate with id: ${affiliate.id}. Preparing to insert sale record.`);
-            // Insert the sales record into the 'sales' table.
             const { error: saleInsertError } = await supabase
                 .from('sales')
                 .insert({
                     affiliate_id: affiliate.id,
                     purchaser_user_id: userId,
                     sale_amount: paymentForSale.amount,
-                    commission_rate: affiliate.commission_rate // FIX: Pass the affiliate's specific commission rate.
+                    commission_rate: affiliate.commission_rate
                 });
             
             if (saleInsertError) {
@@ -128,10 +142,22 @@ module.exports = async (req, res) => {
         }
     }
 
-    return res.status(200).json({ message: 'Payment approved and sale recorded successfully.' });
+    // 6. SIMULATE-SUCCESS-NOTIFICATION: Log a confirmation message
+    console.log(
+        `HANTAR EMEL KEPADA: ${userProfile.email} | NAMA: ${userProfile.full_name} | NOTIFIKASI: Pembayaran anda telah diluluskan. Langganan anda kini aktif sehingga ${formatDate(updatePayload.subscription_end_date)}.`
+    );
+
+    return res.status(200).json({ message: 'Payment approved, subscription updated, and sale recorded successfully.' });
 
   } catch (err) {
     console.error('Approve Payment API Error:', err.message);
     return res.status(500).json({ error: 'An internal server error occurred.' });
   }
 };
+
+// Helper function to format date for logging, to avoid code duplication
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('ms-MY', options);
+}

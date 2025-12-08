@@ -1,23 +1,27 @@
--- public/get_leaderboard_function.sql
-DROP FUNCTION IF EXISTS public.get_leaderboard_data();
+-- public/get_competition_leaderboard.sql
+DROP FUNCTION IF EXISTS public.get_competition_leaderboard(DATE, DATE);
 
--- Cipta fungsi baru untuk mendapatkan data papan pendahulu
--- Versi ini membetulkan ralat dengan mengira jumlah jualan daripada jadual 'sales'
--- dan menggunakan ORDER BY yang lebih eksplisit untuk mengelakkan kemungkinan isu alias.
-CREATE OR REPLACE FUNCTION public.get_leaderboard_data()
+-- Fungsi baru untuk mendapatkan data papan pendahulu berdasarkan tempoh (untuk pertandingan)
+-- Menerima tarikh mula dan tamat sebagai parameter.
+CREATE OR REPLACE FUNCTION public.get_competition_leaderboard(
+    p_start_date DATE,
+    p_end_date DATE
+)
 RETURNS TABLE(rank BIGINT, name TEXT, total_sales NUMERIC)
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
-    -- Gunakan Common Table Expression (CTE) untuk mengira jumlah jualan bagi setiap affiliate
-    WITH affiliate_sales AS (
+    -- CTE untuk mengira jumlah jualan dalam tempoh yang ditetapkan
+    WITH affiliate_sales_period AS (
         SELECT
             s.affiliate_id,
             SUM(s.sale_amount) AS total_sales_amount
         FROM
             public.sales s
+        WHERE
+            s.created_at >= p_start_date AND s.created_at < (p_end_date + INTERVAL '1 day') -- Include whole end day
         GROUP BY
             s.affiliate_id
     )
@@ -27,18 +31,17 @@ BEGIN
         COALESCE(sa.total_sales_amount, 0) AS total_sales
     FROM
         public.affiliates a
-    -- Sertai jadual pengguna untuk mendapatkan nama/emel
     JOIN
         auth.users u ON a.user_id = u.id
     JOIN
         public.users pu ON u.id = pu.user_id
-    -- Sertai CTE untuk mendapatkan jumlah jualan
+    -- Sertai CTE jualan tempoh
     LEFT JOIN
-        affiliate_sales sa ON a.id = sa.affiliate_id
+        affiliate_sales_period sa ON a.id = sa.affiliate_id
     WHERE
         pu.subscription_end_date >= NOW() -- Hanya paparkan affiliate yang langganannya aktif
     ORDER BY
-        COALESCE(sa.total_sales_amount, 0) DESC -- Menggunakan ekspresi penuh untuk kestabilan
-    LIMIT 10;
+        total_sales DESC
+    LIMIT 10; -- Hanya paparkan 10 terbaik untuk meningkatkan persaingan
 END;
 $$;

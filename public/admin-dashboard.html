@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Pengurusan Pengguna</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        #message {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .message-loading {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #4a6fa5;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e6f7ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <h1>Dashboard Admin: Senarai Pengguna</h1>
+            <button id="logout-button" style="padding: 10px 15px; background-color: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">Log Keluar</button>
+        </div>
+
+        <!-- Bahagian Pengurusan Komisyen Baru -->
+        <div style="background-color: #f9f9f9; border: 1px solid #eee; padding: 1.5rem; border-radius: 8px; margin-top: 2rem; margin-bottom: 2rem;">
+            <h2 style="margin-top: 0;">Pengurusan Komisyen Affiliate</h2>
+            <p>Gunakan butang di bawah untuk mengira atau melaksanakan pembayaran komisyen bagi semua jualan yang berstatus 'unpaid'.</p>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button id="calculate-commissions-button" style="padding: 10px 15px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Kira Komisyen Tertunggak</button>
+                <button id="execute-payout-button" style="padding: 10px 15px; background-color: #2ecc71; color: white; border: none; border-radius: 5px; cursor: pointer;">Laksanakan Pembayaran</button>
+            </div>
+            <div id="commission-message" style="margin-top: 1rem;"></div>
+            <pre id="commission-results" style="background-color: #2c3e50; color: #ecf0f1; padding: 1rem; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; display: none;"></pre>
+        </div>
+        
+        <!-- Kotak Carian Baru -->
+        <div style="margin: 1.5rem 0;">
+            <input type="text" id="search-input" placeholder="Taip untuk cari nama atau emel..." style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        </div>
+
+        <div id="message"></div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Penuh</th>
+                        <th>Emel</th>
+                        <th>Pelan Langganan</th>
+                        <th>Tamat Langganan</th>
+                        <th>Status Bayaran</th>
+                        <th>Tarikh Daftar</th>
+                    </tr>
+                </thead>
+                <tbody id="user-list">
+                    <!-- Data pengguna akan dimasukkan di sini oleh JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Muatkan Pustaka Supabase dan Konfigurasi Projek -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
+    <script>
+        // Inisialisasi Supabase client sama seperti dalam app.js
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Fungsi untuk mendapatkan token dari sesi Supabase
+        async function getAuthToken() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            return session ? session.access_token : null;
+        }
+
+        // Fungsi log keluar yang standard
+        async function handleSignOut() {
+            await _supabase.auth.signOut();
+            localStorage.removeItem('userProfile'); // Bersihkan sisa profil
+            window.location.href = '/'; // Kembali ke halaman utama
+        }
+
+        // Fungsi untuk memformat tarikh
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('ms-MY', options);
+        }
+
+        // Fungsi untuk menapis jadual
+        function filterTable() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const rows = document.querySelectorAll('#user-list tr');
+            rows.forEach(row => {
+                // Cari dalam sel pertama (Nama) dan kedua (Emel)
+                const nameCell = row.cells[0].textContent.toLowerCase();
+                const emailCell = row.cells[1].textContent.toLowerCase();
+                if (nameCell.includes(searchTerm) || emailCell.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        window.addEventListener('load', async () => {
+            // Tambah event listener untuk butang log keluar dan kotak carian
+            document.getElementById('logout-button').addEventListener('click', handleSignOut);
+            document.getElementById('search-input').addEventListener('input', filterTable);
+
+            // --- Logik Baru untuk Butang Komisyen ---
+            const calcButton = document.getElementById('calculate-commissions-button');
+            const execButton = document.getElementById('execute-payout-button');
+            const commissionMessage = document.getElementById('commission-message');
+            const commissionResults = document.getElementById('commission-results');
+
+            const callPayoutApi = async (mode) => {
+                const isExecute = mode === 'execute';
+                if (isExecute) {
+                    if (!confirm("Anda pasti mahu melaksanakan pembayaran? Tindakan ini akan menandakan semua komisyen tertunggak sebagai 'telah dibayar' dan tidak boleh diundur.")) {
+                        return;
+                    }
+                }
+
+                commissionMessage.textContent = 'Memproses permintaan...';
+                commissionMessage.className = 'message-loading';
+                commissionResults.style.display = 'none';
+
+                try {
+                    const apiToken = await getAuthToken();
+                    if (!apiToken) throw new Error('Token pengesahan tidak ditemui.');
+
+                    const response = await fetch('/api/admin/process-payouts.js', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiToken}`
+                        },
+                        body: JSON.stringify({ mode: mode })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Sesuatu yang tidak kena telah berlaku.');
+                    }
+                    
+                    commissionMessage.textContent = data.message;
+                    // Tambah kelas CSS untuk mesej kejayaan
+                    commissionMessage.classList.remove('message-error', 'message-loading');
+                    commissionMessage.style.color = 'green';
+
+
+                    const results = data.payoutsPending || data.payoutsProcessed;
+                    if (results && Object.keys(results).length > 0) {
+                        commissionResults.textContent = JSON.stringify(results, null, 2);
+                        commissionResults.style.display = 'block';
+                    } else {
+                        commissionResults.textContent = '';
+                        commissionResults.style.display = 'none';
+                    }
+
+                } catch (err) {
+                    commissionMessage.textContent = `Ralat: ${err.message}`;
+                    commissionMessage.className = 'message-error';
+                }
+            };
+
+            calcButton.addEventListener('click', () => callPayoutApi('calculate'));
+            execButton.addEventListener('click', () => callPayoutApi('execute'));
+            // --- Tamat Logik Baru ---
+
+            const userListBody = document.getElementById('user-list');
+            const messageDiv = document.getElementById('message');
+            
+            messageDiv.textContent = 'Mengesahkan sesi dan memuatkan data pengguna...';
+            messageDiv.className = 'message-loading';
+
+            const token = await getAuthToken();
+
+            if (!token) {
+                messageDiv.innerHTML = 'Akses ditolak. Sila <a href="index.html" style="color: #721c24; font-weight: bold;">log masuk di halaman utama</a> dahulu.';
+                messageDiv.className = 'message-error';
+                // Sembunyikan kandungan utama jika tidak log masuk
+                document.querySelector('div[style="overflow-x:auto;"]').style.display = 'none';
+                document.querySelector('#search-input').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin-dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                     messageDiv.textContent = 'Akses Ditolak. Anda perlukan kebenaran Admin untuk melihat halaman ini.';
+                     messageDiv.className = 'message-error';
+                     userListBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tiada data.</td></tr>';
+                     return;
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const users = await response.json();
+                
+                if (users.length === 0) {
+                    messageDiv.textContent = 'Tiada pengguna yang berdaftar buat masa ini.';
+                    messageDiv.className = 'message-loading';
+                    return;
+                }
+
+                messageDiv.style.display = 'none';
+
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.full_name || 'Tidak Dinyatakan'}</td>
+                        <td>${user.email}</td>
+                        <td>${user.subscription_plan || 'Tiada'}</td>
+                        <td>${formatDate(user.subscription_end_date)}</td>
+                        <td>${user.payment_status || 'Tiada'}</td>
+                        <td>${formatDate(user.created_at)}</td>
+                    `;
+                    userListBody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                messageDiv.textContent = `Gagal memuatkan data: ${error.message}`;
+                messageDiv.className = 'message-error';
+            }
+        });
+    </script>
+
+</body>
+</html>

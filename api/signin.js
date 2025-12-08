@@ -1,8 +1,9 @@
 // api/signin.js
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
-module.exports = async (req, res) => {
-  console.log("--- api/signin function invoked ---");
+// Handler utama, kini menggunakan sintaks 'export default'
+export default async function handler(req, res) {
+  console.log("--- api/signin.js (ESM version) invoked ---");
 
   // Hanya benarkan kaedah POST
   if (req.method !== 'POST') {
@@ -11,37 +12,22 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  let supabase;
   try {
-    console.log("Initializing Supabase client...");
-    if (!process.env.SUPABASE_URL) throw new Error("SUPABASE_URL env var is missing.");
-    if (!process.env.SUPABASE_SERVICE_KEY) throw new Error("SUPABASE_SERVICE_KEY env var is missing.");
-    
-    console.log("Environment variables for Supabase found.");
-
-    supabase = createClient(
+    // Inisialisasi Supabase client
+    const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_SERVICE_KEY
     );
-    console.log("Supabase client created successfully.");
 
-  } catch (initError) {
-    console.error("--- CRITICAL: Supabase client initialization failed ---");
-    console.error(initError.message);
-    // Kembalikan ralat dalam format JSON untuk mengelakkan ralat HTML di frontend
-    return res.status(500).json({ error: "Server initialization failed.", details: initError.message });
-  }
+    const { email, password } = req.body;
 
-  const { email, password } = req.body;
+    if (!email || !password) {
+      console.log("Login attempt with missing email or password.");
+      return res.status(400).json({ error: 'Email and password are required.' });
+    }
 
-  if (!email || !password) {
-    console.log("Login attempt with missing email or password.");
-    return res.status(400).json({ error: 'Email and password are required.' });
-  }
-
-  try {
     console.log(`Attempting to sign in user: ${email}`);
-    // 1. Cuba log masuk pengguna dengan Supabase Auth
+    // Cuba log masuk pengguna dengan Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -66,9 +52,9 @@ module.exports = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(`--- UNHANDLED SERVER ERROR for ${email} ---`);
+    console.error(`--- UNHANDLED SERVER ERROR in signin.js for ${req.body.email} ---`);
     console.error(err.message);
     console.error(err.stack);
     return res.status(500).json({ error: 'Internal Server Error.' });
   }
-};
+}

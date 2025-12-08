@@ -14,6 +14,10 @@ const getSessionToken = async () => {
 
 // Balut semua logik aplikasi dalam DOMContentLoaded untuk memastikan semua elemen wujud.
 document.addEventListener('DOMContentLoaded', () => {
+    // Only run the app logic if we are on a page that has the main authentication section (i.e., index.html)
+    if (!document.getElementById('auth-section')) {
+        return; // Do not run on pages like subscription.html
+    }
     
     // --> MULA BLOK BARU: Tangkap kod affiliate dari URL dan simpan dalam kuki
     const urlParams = new URLSearchParams(window.location.search);
