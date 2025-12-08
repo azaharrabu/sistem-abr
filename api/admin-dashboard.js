@@ -44,19 +44,56 @@ module.exports = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Admin access required.' });
     }
 
-    // 3. Jika pengguna adalah admin, dapatkan semua data pengguna dari jadual 'users'
+    // 3. If user is admin, get all user data with affiliate stats
     const { data: allUsers, error: usersError } = await supabase
       .from('users')
-      .select('full_name, email, role, subscription_plan, subscription_end_date, payment_status, created_at')
+      .select(`
+        full_name,
+        email,
+        role,
+        subscription_plan,
+        subscription_end_date,
+        payment_status,
+        created_at,
+        affiliates (
+          affiliate_code,
+          sales (
+            sale_amount,
+            commission_amount
+          )
+        )
+      `)
       .order('created_at', { ascending: false });
 
     if (usersError) {
-      // Jika terdapat ralat semasa mengambil data, hantar ralat server
       throw new Error(`Failed to fetch users: ${usersError.message}`);
     }
 
+    // Process the data to calculate totals and flatten the structure
+    const processedUsers = allUsers.map(user => {
+        let total_sales = 0;
+        let total_commission = 0;
+        
+        // Supabase returns an array for one-to-one relationships, so we check the first element.
+        const affiliate = user.affiliates && user.affiliates.length > 0 ? user.affiliates[0] : null;
+
+        if (affiliate && affiliate.sales) {
+            total_sales = affiliate.sales.reduce((sum, sale) => sum + (sale.sale_amount || 0), 0);
+            total_commission = affiliate.sales.reduce((sum, sale) => sum + (sale.commission_amount || 0), 0);
+        }
+
+        // Create a new object without the nested 'affiliates' property
+        const { affiliates, ...rest } = user;
+        
+        return {
+            ...rest,
+            total_sales,
+            total_commission,
+        };
+    });
+
     // 4. Hantar data semua pengguna sebagai tindak balas
-    return res.status(200).json(allUsers);
+    return res.status(200).json(processedUsers);
 
   } catch (err) {
     // Tangani sebarang ralat lain (cth: token tidak sah, masalah server)
