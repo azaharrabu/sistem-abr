@@ -21,45 +21,50 @@ module.exports = async (req, res) => {
 
     let {
       payment_date,
-      payment_time
+      payment_time,
+      full_name,
+      phone_number,
+      amount
     } = req.body;
 
-    if (!payment_date || !payment_time) {
-      return res.status(400).json({ error: 'Sila lengkapkan tarikh dan masa pembayaran.' });
+    // Server-side validation to ensure all fields are present
+    if (!payment_date || !payment_time || !full_name || !phone_number || !amount) {
+      return res.status(400).json({ error: 'Sila lengkapkan semua butiran yang diperlukan: nama, no. telefon, tarikh, masa, dan jumlah.' });
     }
 
-    // 1. Cari rekod pembayaran 'pending' untuk pengguna ini.
-    const { data: pendingPayment, error: findError } = await supabase
-      .from('payments')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (findError || !pendingPayment) {
-        console.error('Error finding pending payment or none found:', findError);
-        return res.status(404).json({ error: 'Tiada permintaan pembayaran yang menunggu untuk dikemas kini. Sila mulakan permintaan pembaharuan terlebih dahulu.' });
-    }
-
-    // 2. Kemas kini rekod pembayaran dengan butiran yang diserahkan.
-    const { error: updatePaymentError } = await supabase
-      .from('payments')
+    // 1. Update the user's profile with the provided full name and phone number
+    const { error: updateUserError } = await supabase
+      .from('users')
       .update({
-        payment_date: payment_date,
-        payment_time: payment_time,
-        reference_no: user.email, // Pastikan emel dilampirkan sebagai rujukan
+        full_name: full_name,
+        phone_number: phone_number,
+        payment_status: 'pending' // Also update the status to 'pending'
       })
-      .eq('id', pendingPayment.id);
+      .eq('user_id', user.id);
 
-    if (updatePaymentError) {
-      console.error('Error updating payment record:', updatePaymentError.message);
-      throw new Error(`Gagal mengemas kini rekod pembayaran: ${updatePaymentError.message}`);
+    if (updateUserError) {
+      console.error('Error updating user profile:', updateUserError.message);
+      throw new Error(`Gagal mengemas kini profil pengguna: ${updateUserError.message}`);
     }
-    
-    // Tiada lagi kemas kini nama dan no. telefon di sini kerana ia sepatutnya sudah ada.
-    // Jika perlu, ia boleh diuruskan di halaman profil pengguna.
+
+    // 2. Update or create the payment record
+    const { error: upsertPaymentError } = await supabase
+      .from('payments')
+      .upsert({
+          user_id: user.id,
+          payment_date: payment_date,
+          payment_time: payment_time,
+          amount: amount,
+          reference_no: user.email,
+          status: 'pending'
+      }, {
+          onConflict: 'user_id' // If a record with this user_id exists, update it.
+      });
+
+    if (upsertPaymentError) {
+        console.error('Error upserting payment record:', upsertPaymentError.message);
+        throw new Error(`Gagal mengemas kini atau mencipta rekod pembayaran: ${upsertPaymentError.message}`);
+    }
 
     return res.status(200).json({ message: 'Bukti pembayaran berjaya dihantar dan sedang menunggu pengesahan admin.' });
 
