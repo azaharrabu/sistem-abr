@@ -19,47 +19,87 @@ module.exports = async (req, res) => {
       return res.status(401).json({ error: 'Authentication failed' });
     }
 
-    let {
+    const {
       payment_date,
-      payment_time
+      payment_time,
+      amount,
+      full_name,
+      phone_number
     } = req.body;
 
-    if (!payment_date || !payment_time) {
-      return res.status(400).json({ error: 'Sila lengkapkan tarikh dan masa pembayaran.' });
+    if (!payment_date || !payment_time || !amount || !full_name || !phone_number) {
+      return res.status(400).json({ error: 'Sila lengkapkan semua butiran yang diperlukan.' });
     }
 
-    // 1. Cari rekod pembayaran 'pending' untuk pengguna ini.
-    const { data: pendingPayment, error: findError } = await supabase
+    // Upsert logic - Step 1: Update user's profile with name and phone
+    const { error: profileUpdateError } = await supabase
+      .from('users')
+      .update({
+        full_name: full_name,
+        phone: phone_number
+      })
+      .eq('user_id', user.id);
+
+    if (profileUpdateError) {
+      console.error('Error updating user profile:', profileUpdateError.message);
+      throw new Error(`Gagal mengemas kini profil pengguna: ${profileUpdateError.message}`);
+    }
+
+    // Upsert logic - Step 2: Check for an existing 'pending' payment
+    const { data: existingPayment, error: findError } = await supabase
       .from('payments')
       .select('id')
       .eq('user_id', user.id)
       .eq('status', 'pending')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (findError || !pendingPayment) {
-        console.error('Error finding pending payment or none found:', findError);
-        return res.status(404).json({ error: 'Tiada permintaan pembayaran yang menunggu untuk dikemas kini. Sila mulakan permintaan pembaharuan terlebih dahulu.' });
+    if (findError) {
+      console.error('Error finding pending payment:', findError.message);
+      throw new Error('Ralat semasa mencari rekod pembayaran.');
     }
 
-    // 2. Kemas kini rekod pembayaran dengan butiran yang diserahkan.
-    const { error: updatePaymentError } = await supabase
-      .from('payments')
-      .update({
-        payment_date: payment_date,
-        payment_time: payment_time,
-        reference_no: user.email, // Pastikan emel dilampirkan sebagai rujukan
-      })
-      .eq('id', pendingPayment.id);
+    const paymentPayload = {
+      user_id: user.id,
+      payment_date,
+      payment_time,
+      amount,
+      reference_no: user.email,
+      status: 'pending',
+    };
 
-    if (updatePaymentError) {
-      console.error('Error updating payment record:', updatePaymentError.message);
-      throw new Error(`Gagal mengemas kini rekod pembayaran: ${updatePaymentError.message}`);
+    if (existingPayment) {
+      // Step 3a: Update existing payment
+      const { error: updateError } = await supabase
+        .from('payments')
+        .update(paymentPayload)
+        .eq('id', existingPayment.id);
+      
+      if (updateError) {
+        throw new Error(`Gagal mengemas kini rekod pembayaran sedia ada: ${updateError.message}`);
+      }
+      console.log(`Successfully updated existing pending payment for user: ${user.id}`);
+    } else {
+      // Step 3b: Insert new payment
+      const { error: insertError } = await supabase
+        .from('payments')
+        .insert(paymentPayload);
+
+      if (insertError) {
+        throw new Error(`Gagal mencipta rekod pembayaran baharu: ${insertError.message}`);
+      }
+      console.log(`Successfully created new pending payment for user: ${user.id}`);
     }
-    
-    // Tiada lagi kemas kini nama dan no. telefon di sini kerana ia sepatutnya sudah ada.
-    // Jika perlu, ia boleh diuruskan di halaman profil pengguna.
+
+    // Step 4: Update the user's main status to 'pending'
+    const { error: userStatusError } = await supabase
+      .from('users')
+      .update({ payment_status: 'pending' })
+      .eq('user_id', user.id);
+
+    if (userStatusError) {
+        // Log as a warning, as the primary payment submission was successful
+        console.warn(`Could not update user's primary status to 'pending' for user ${user.id}: ${userStatusError.message}`);
+    }
 
     return res.status(200).json({ message: 'Bukti pembayaran berjaya dihantar dan sedang menunggu pengesahan admin.' });
 
