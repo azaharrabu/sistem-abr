@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
       .from('users')
       .update({
         full_name: full_name,
-        phone: phone_number
+        phone_number: phone_number
       })
       .eq('user_id', user.id);
 
