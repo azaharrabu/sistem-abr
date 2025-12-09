@@ -150,7 +150,7 @@ module.exports = async (req, res) => {
             console.warn('RESEND_API_KEY is not set. Skipping email notification.');
         } else {
             const { data, error } = await resend.emails.send({
-                from: 'Sistem ABR <onboarding@resend.dev>',
+                from: 'Sistem ABR <noreply@abrbrillante.com>',
                 to: [userProfile.email],
                 subject: 'Langganan Diaktifkan - Pembayaran Anda Telah Diluluskan',
                 html: `

@@ -326,13 +326,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleAuth(event, endpoint) {
-        console.log("DEBUG: handleAuth function started for endpoint:", endpoint);
         event.preventDefault();
         const form = event.target;
         const email = form.querySelector('input[type="email"]').value;
         const password = form.querySelector('input[type="password"]').value;
-        console.log("DEBUG: Email and password retrieved.");
-
         let body = { email, password };
         if (endpoint === '/api/signup') {
             const planInput = form.querySelector('input[name="subscription_plan"]:checked');
@@ -347,19 +344,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`Pendaftaran dirujuk oleh kod affiliate: ${affiliateCode}`);
             }
         }
-        console.log("DEBUG: Body for API call prepared:", body);
-
         try {
-            console.log("DEBUG: Calling fetch to API endpoint...");
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
-            console.log("DEBUG: Fetch call completed. Response status:", response.status);
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Ralat tidak diketahui');
-
             if (endpoint === '/api/signin') {
                 if (!data.session) {
                     throw new Error("Respons log masuk tidak lengkap dari server.");
@@ -372,7 +364,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(loginContainer) loginContainer.style.display = 'block';
             }
         } catch (error) {
-            console.error("DEBUG: Error in handleAuth:", error);
             alert(`Ralat Log Masuk: ${error.message}`);
         }
         form.reset();
