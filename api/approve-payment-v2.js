@@ -1,11 +1,13 @@
 // api/approve-payment-v2.js
 const { createClient } = require('@supabase/supabase-js');
 const { verifyToken } = require('./_utils/auth');
+const { Resend } = require('resend');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function isAdmin(userId) {
   const { data, error } = await supabase
@@ -142,10 +144,43 @@ module.exports = async (req, res) => {
         }
     }
 
-    // 6. SIMULATE-SUCCESS-NOTIFICATION: Log a confirmation message
-    console.log(
-        `HANTAR EMEL KEPADA: ${userProfile.email} | NAMA: ${userProfile.full_name} | NOTIFIKASI: Pembayaran anda telah diluluskan. Langganan anda kini aktif sehingga ${formatDate(updatePayload.subscription_end_date)}.`
-    );
+    // 6. Send success notification email to the user
+    try {
+        if (!process.env.RESEND_API_KEY) {
+            console.warn('RESEND_API_KEY is not set. Skipping email notification.');
+        } else {
+            const { data, error } = await resend.emails.send({
+                from: 'Sistem ABR <onboarding@resend.dev>',
+                to: [userProfile.email],
+                subject: 'Langganan Diaktifkan - Pembayaran Anda Telah Diluluskan',
+                html: `
+                    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+                        <h2>Tahniah, ${userProfile.full_name || 'Ahli Baru'}!</h2>
+                        <p>Pembayaran anda telah berjaya disahkan dan langganan anda kini telah diaktifkan.</p>
+                        <p>Butiran langganan anda:</p>
+                        <ul>
+                            <li><strong>Pelan:</strong> ${userProfile.subscription_plan || 'N/A'}</li>
+                            <li><strong>Aktif Sehingga:</strong> ${formatDate(updatePayload.subscription_end_date)}</li>
+                        </ul>
+                        <p>Anda boleh mula mengakses sistem dengan log masuk ke akaun anda.</p>
+                        <p>Terima kasih kerana melanggan.</p>
+                        <br>
+                        <p>Yang benar,</p>
+                        <p><strong>Team ABR Brillante</strong></p>
+                    </div>
+                `
+            });
+
+            if (error) {
+                // Log the error but don't block the API from returning success
+                console.error(`EMAIL_ERROR: Failed to send approval email to ${userProfile.email}`, error);
+            } else {
+                console.log(`Successfully sent approval email to ${userProfile.email}. Message ID: ${data.id}`);
+            }
+        }
+    } catch (emailError) {
+        console.error(`EMAIL_EXCEPTION: An exception occurred while trying to send email to ${userProfile.email}`, emailError);
+    }
 
     return res.status(200).json({ message: 'Payment approved, subscription updated, and sale recorded successfully.' });
 
