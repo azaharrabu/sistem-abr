@@ -20,6 +20,20 @@
             text-decoration: none;
             color: #007bff;
         }
+        .button-link {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white !important; /* Ensure text is white */
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        .button-link:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -171,6 +185,7 @@
                 <button id="logout-button-admin">Log Keluar</button>
             </div>
             <h3>Permintaan Pembayaran Tertunda</h3>
+            <a href="/admin-dashboard.html" class="button-link" id="go-to-admin-dashboard">Buka Dashboard Pengurusan Pengguna</a>
             <div id="pending-payments-list">
                 <table>
                     <thead>
