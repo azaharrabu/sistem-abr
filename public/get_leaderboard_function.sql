@@ -34,9 +34,9 @@ BEGIN
         auth.users u ON a.user_id = u.id
     JOIN
         public.users pu ON u.id = pu.user_id
-    WHERE
-        -- Hanya paparkan affiliate dengan langganan aktif
-        pu.payment_status = 'paid'
+    -- WHERE
+    --    -- Hanya paparkan affiliate dengan langganan aktif
+    --    pu.payment_status = 'paid'
     ORDER BY
         total_sales DESC
     LIMIT 100;
