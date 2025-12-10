@@ -774,6 +774,19 @@
 <div id="sidebar">
     <img src="images/abr-logo2.jpg" alt="Logo ABR" class="logo" />
     <h1>Rujukan UBBL 1984</h1>
+    <div id="search-widget" style="padding: 0 1.5em 1em; border-bottom: 1px solid #eee; margin-bottom: 1em;">
+        <input type="text" id="full-text-search" placeholder="Cari dalam kandungan..." style="width: 100%; padding: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; margin-bottom: 0.5em;">
+        <div style="display: flex; gap: 0.5em; margin-bottom: 0.5em;">
+            <button id="search-btn" style="flex-grow: 1; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer;">Cari</button>
+            <button id="search-reset-btn" style="flex-grow: 1; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer;">Reset</button>
+        </div>
+        <div id="search-status" style="font-size: 0.9em; min-height: 2em; color: #555;"></div>
+        <div id="search-nav" style="display: none; justify-content: space-between; align-items: center;">
+            <button id="search-prev-btn" style="padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer;">&lt; Dulu</button>
+            <span id="search-counter"></span>
+            <button id="search-next-btn" style="padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer;">Lagi &gt;</button>
+        </div>
+    </div>
 
     <ul>
         <li><a href="#home" class="nav-link active">Muka Depan</a></li>
@@ -3567,5 +3580,196 @@ vi.	Tangga keenam =  2750 mm
     });
 </script>
 
+
+<style>
+    mark.search-highlight {
+        background-color: #ff0; /* Yellow */
+        color: black;
+        border-radius: 3px;
+    }
+    mark.current-match {
+        background-color: #f90; /* Orange */
+        box-shadow: 0 0 8px rgba(255, 153, 0, 0.8);
+    }
+</style>
+<script>
+// --- Advanced Full-Text Search Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Navigation logic from your original file ---
+    const navLinks = document.querySelectorAll('.nav-link');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    function showSection(hash) {
+        const targetId = hash ? hash.substring(1) : 'home';
+        
+        contentSections.forEach(section => {
+            section.classList.remove('active');
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+        });
+
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+            targetSection.classList.add('active');
+        }
+        
+        const activeLink = document.querySelector(`a[href="#${targetId}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active');
+        }
+    }
+    
+    // Show section based on initial URL hash or default to home
+    showSection(window.location.hash);
+
+    // Handle navigation clicks
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href');
+            history.pushState(null, null, targetId); // Update URL without reloading
+            showSection(targetId);
+            window.scrollTo(0, 0); // Scroll to top of page
+        });
+    });
+
+    // Handle back/forward browser buttons
+    window.addEventListener('popstate', () => {
+        showSection(window.location.hash);
+    });
+
+    // --- New Advanced Full-Text Search Logic ---
+    const searchInput = document.getElementById('full-text-search');
+    const searchBtn = document.getElementById('search-btn');
+    const resetBtn = document.getElementById('search-reset-btn');
+    const prevBtn = document.getElementById('search-prev-btn');
+    const nextBtn = document.getElementById('search-next-btn');
+    const searchStatus = document.getElementById('search-status');
+    const searchNav = document.getElementById('search-nav');
+    const searchCounter = document.getElementById('search-counter');
+    const contentArea = document.getElementById('main-content');
+
+    let matches = [];
+    let currentIndex = -1;
+    let originalContent = {}; // To store original content of sections
+
+    // Function to remove all highlights from the document
+    function clearSearch() {
+        for (const id in originalContent) {
+            const section = document.getElementById(id);
+            if (section) {
+                section.innerHTML = originalContent[id];
+            }
+        }
+        originalContent = {};
+        matches = [];
+        currentIndex = -1;
+        searchStatus.textContent = '';
+        searchNav.style.display = 'none';
+        if(searchInput) searchInput.value = '';
+    }
+
+    // Function to perform the search and highlight matches
+    function performSearch() {
+        clearSearch(); // Clear previous searches first
+        const term = searchInput.value.trim();
+        if (term.length < 3) {
+            searchStatus.textContent = 'Sila masukkan sekurang-kurangnya 3 aksara.';
+            return;
+        }
+
+        searchStatus.textContent = 'Mencari...';
+        
+        setTimeout(() => {
+            const regex = new RegExp(`(${term})`, 'gi');
+            
+            contentSections.forEach(section => {
+                // Store original content before modifying
+                originalContent[section.id] = section.innerHTML;
+                
+                // Only search in visible text, avoid breaking HTML structure
+                const walker = document.createTreeWalker(section, NodeFilter.SHOW_TEXT, null, false);
+                let node;
+                const textNodes = [];
+                while(node = walker.nextNode()) {
+                    textNodes.push(node);
+                }
+
+                textNodes.forEach(node => {
+                    const text = node.nodeValue;
+                    if (regex.test(text)) {
+                        const newNode = document.createElement('span');
+                        newNode.innerHTML = text.replace(regex, `<mark class="search-highlight">$1</mark>`);
+                        node.parentNode.replaceChild(newNode, node);
+                    }
+                });
+            });
+
+            matches = contentArea.querySelectorAll('mark.search-highlight');
+            updateNavUI();
+        }, 10);
+    }
+    
+    // Function to update the navigation UI after a search
+    function updateNavUI() {
+        if (matches.length > 0) {
+            searchStatus.textContent = `${matches.length} perkataan dijumpai.`;
+            searchNav.style.display = 'flex';
+            currentIndex = 0;
+            jumpToCurrent();
+        } else {
+            searchStatus.textContent = `Tiada hasil untuk "${searchInput.value}".`;
+            searchNav.style.display = 'none';
+        }
+    }
+
+    // Function to jump to the current match
+    function jumpToCurrent() {
+        matches.forEach((el, index) => {
+            el.classList.toggle('current-match', index === currentIndex);
+        });
+
+        if (matches[currentIndex]) {
+            const targetMatch = matches[currentIndex];
+            
+            // Make sure the section containing the match is visible
+            const parentSection = targetMatch.closest('.content-section');
+            if (parentSection && !parentSection.classList.contains('active')) {
+                showSection(`#${parentSection.id}`);
+            }
+
+            // Defer scroll to allow section to become visible
+            setTimeout(() => {
+                targetMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+
+            searchCounter.textContent = `${currentIndex + 1} / ${matches.length}`;
+        }
+    }
+
+    // Event Listeners
+    if (searchBtn) searchBtn.addEventListener('click', performSearch);
+    if (searchInput) searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+    if (resetBtn) resetBtn.addEventListener('click', clearSearch);
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+        if (matches.length > 0) {
+            currentIndex = (currentIndex + 1) % matches.length;
+            jumpToCurrent();
+        }
+    });
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+        if (matches.length > 0) {
+            currentIndex = (currentIndex - 1 + matches.length) % matches.length;
+            jumpToCurrent();
+        }
+    });
+});
+</script>
 </body>
 </html>
