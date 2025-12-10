@@ -6,7 +6,7 @@ DROP FUNCTION IF EXISTS public.get_leaderboard_data();
 CREATE OR REPLACE FUNCTION public.get_leaderboard_data()
 RETURNS TABLE(rank BIGINT, name TEXT, total_sales NUMERIC)
 LANGUAGE plpgsql
-SECURITY INVOKER
+SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
