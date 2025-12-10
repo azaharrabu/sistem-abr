@@ -118,11 +118,11 @@ module.exports = async (req, res) => {
     // Steps below will merge affiliate data into this 'profile' object.
 
 
-    // 4. Fetch affiliate details, including pre-calculated totals
+    // 4. Fetch basic affiliate details
     console.log('[PROFILE] Step 3: Fetching affiliate info...');
     const { data: affiliateInfo, error: affiliateError } = await supabase
       .from('affiliates')
-      .select('id, affiliate_code, total_sales, total_commission')
+      .select('id, affiliate_code') // Stop fetching pre-calculated totals
       .eq('user_id', profile.user_id)
       .single();
 
@@ -131,20 +131,32 @@ module.exports = async (req, res) => {
     }
     console.log('[PROFILE] Step 3 DONE: Affiliate info fetched.');
     
-    // 5. Combine data and use pre-calculated totals if the user is an affiliate
+    // 5. If user is an affiliate, CALCULATE sales totals on the fly for accuracy
     profile.is_affiliate = !!affiliateInfo;
     if (affiliateInfo) {
-      console.log('[PROFILE] Step 4: Affiliate detected, using pre-calculated totals...');
+      console.log('[PROFILE] Step 4: Affiliate detected, calculating totals from "sales" table...');
       profile.affiliate_id = affiliateInfo.id;
       profile.affiliate_code = affiliateInfo.affiliate_code;
       
-      // FIX: Use the totals directly from the affiliates table.
-      // The database now handles all calculations, preventing floating-point errors.
-      // The Supabase library returns 'numeric' types as strings, which is safe for display.
-      profile.totalSalesAmount = affiliateInfo.total_sales;
-      profile.totalCommission = affiliateInfo.total_commission;
+      // Calculate totals directly from the 'sales' table to ensure data is always fresh
+      const { data: sales, error: salesError } = await supabase
+        .from('sales')
+        .select('sale_amount, commission_amount')
+        .eq('affiliate_id', affiliateInfo.id);
 
-      console.log(`[PROFILE] Step 4 DONE: Sales for ${user.email}: Amount=RM${profile.totalSalesAmount}, Commission=RM${profile.totalCommission}`);
+      if (salesError) {
+        console.error(`[PROFILE] CRITICAL: Could not calculate sales for affiliate ${affiliateInfo.id}`, salesError.message);
+        // Set to zero if calculation fails
+        profile.totalSalesAmount = '0.00';
+        profile.totalCommission = '0.00';
+      } else {
+        const totalSales = sales.reduce((sum, record) => sum + (record.sale_amount || 0), 0);
+        const totalCommission = sales.reduce((sum, record) => sum + (record.commission_amount || 0), 0);
+        profile.totalSalesAmount = totalSales.toFixed(2);
+        profile.totalCommission = totalCommission.toFixed(2);
+      }
+
+      console.log(`[PROFILE] Step 4 DONE: On-the-fly calculation for ${user.email}: Amount=RM${profile.totalSalesAmount}, Commission=RM${profile.totalCommission}`);
     } else {
       console.log(`[PROFILE] User ${user.email} is not an affiliate.`);
     }
