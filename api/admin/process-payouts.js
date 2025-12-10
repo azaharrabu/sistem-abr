@@ -38,18 +38,15 @@ module.exports = async (req, res) => {
 
     const { mode } = req.body; // 'calculate' or 'execute'
 
-    // 2. Fetch all unpaid sales, joining with affiliate and user data for a comprehensive summary
+    // 2. Fetch all unpaid sales
     const { data: unpaidSales, error: fetchError } = await supabase
       .from('sales')
       .select(`
         id,
         commission_amount,
-        affiliates (
+        affiliates!inner (
           id,
-          users (
-            full_name,
-            email
-          )
+          user_id
         )
       `)
       .eq('payout_status', 'unpaid');
@@ -63,13 +60,38 @@ module.exports = async (req, res) => {
       return res.status(200).json({ message: 'Tiada komisyen yang belum dibayar pada masa ini.', summary: {} });
     }
 
+    // 2a. Create a map of affiliate details from the user profiles
+    const affiliateUserIds = [...new Set(unpaidSales.map(s => s.affiliates.user_id).filter(id => id))];
+    let affiliateDetailsMap = {};
+
+    if (affiliateUserIds.length > 0) {
+        const { data: affiliateUsers, error: usersError } = await supabase
+            .from('users')
+            .select('user_id, full_name, email')
+            .in('user_id', affiliateUserIds);
+
+        if (usersError) {
+            console.error('Error fetching affiliate user details:', usersError.message);
+            throw new Error('Failed to fetch affiliate user details.');
+        }
+
+        affiliateDetailsMap = affiliateUsers.reduce((map, user) => {
+            map[user.user_id] = user;
+            return map;
+        }, {});
+    }
+
     // 3. Process the data to create a summary per affiliate
     const payoutSummary = unpaidSales.reduce((summary, sale) => {
-      if (!sale.affiliates) return summary; // Skip if sale is not linked to an affiliate
+      // This check is now safer because of the !inner join
+      if (!sale.affiliates) return summary; 
 
       const affiliateId = sale.affiliates.id;
-      const affiliateName = sale.affiliates.users?.full_name || 'Nama Tidak Ditemui';
-      const affiliateEmail = sale.affiliates.users?.email || 'Emel Tidak Ditemui';
+      const affiliateUserId = sale.affiliates.user_id;
+      const affiliateInfo = affiliateDetailsMap[affiliateUserId] || {};
+
+      const affiliateName = affiliateInfo.full_name || 'Nama Tidak Ditemui';
+      const affiliateEmail = affiliateInfo.email || 'Emel Tidak Ditemui';
       const commission = sale.commission_amount || 0;
 
       if (!summary[affiliateId]) {

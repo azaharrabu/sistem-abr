@@ -775,6 +775,10 @@
     <img src="images/abr-logo2.jpg" alt="Logo ABR" class="logo" />
     <h1>Rujukan UBBL 1984</h1>
 
+    <div style="padding: 0 1.5em 1em;">
+        <input type="text" id="sidebar-search" placeholder="Cari topik..." style="width: 100%; padding: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+    </div>
+
     <ul>
         <li><a href="#home" class="nav-link active">Muka Depan</a></li>
         <li><a href="#penafian" class="nav-link">Penafian</a></li>
@@ -3567,5 +3571,27 @@ vi.	Tangga keenam =  2750 mm
     });
 </script>
 
+<script>
+    // JavaScript for Sidebar Search
+    document.addEventListener('DOMContentLoaded', () => {
+        // Handle search/filter functionality for the sidebar
+        const searchInput = document.getElementById('sidebar-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                const filter = searchInput.value.toLowerCase();
+                const navItems = document.querySelectorAll('#sidebar ul li');
+                navItems.forEach(li => {
+                    const link = li.querySelector('a');
+                    // Ensure link and its text content exist
+                    if (link && link.textContent.toLowerCase().includes(filter)) {
+                        li.style.display = '';
+                    } else {
+                        li.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
 </body>
 </html>
