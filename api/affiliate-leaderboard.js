@@ -22,7 +22,6 @@ module.exports = async (req, res) => {
         }
 
         // Hantar data yang telah diproses sebagai respons
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         return res.status(200).json(leaderboardData);
 
     } catch (unexpectedError) {
