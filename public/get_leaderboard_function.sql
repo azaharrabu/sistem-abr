@@ -36,7 +36,7 @@ BEGIN
         public.users pu ON u.id = pu.user_id
     WHERE
         -- Hanya paparkan affiliate dengan langganan aktif
-        pu.subscription_status = 'paid'
+        pu.payment_status = 'paid'
     ORDER BY
         total_sales DESC
     LIMIT 100;
