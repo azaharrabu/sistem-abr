@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (affiliateCodeSpan) affiliateCodeSpan.textContent = profile.affiliate_code;
                         const affiliateLinkInput = document.getElementById('affiliate-link');
                         if (affiliateLinkInput) {
-                            affiliateLinkInput.value = `${window.location.origin}?ref=${profile.affiliate_code}`;
+                            affiliateLinkInput.value = `https://sistemubbl.abrbrillante.com/?ref=${profile.affiliate_code}`;
                         }
                         
                         const salesValueEl = document.getElementById('affiliate-sales-value');
