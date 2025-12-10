@@ -17,15 +17,15 @@ module.exports = async (req, res) => {
         const { data: leaderboardData, error } = await supabase.rpc('get_leaderboard_data');
 
         if (error) {
-            console.error('Error calling get_leaderboard_data function:', error.message);
-            throw error;
+            console.error('Supabase RPC Error:', error.message);
+            return res.status(500).json({ error: 'Internal Server Error', details: error.message });
         }
 
         // Hantar data yang telah diproses sebagai respons
         return res.status(200).json(leaderboardData);
 
-    } catch (error) {
-        console.error('Leaderboard API Error:', error.message);
-        return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    } catch (unexpectedError) {
+        console.error('Leaderboard API Logic Error:', unexpectedError.message);
+        return res.status(500).json({ error: 'Internal Server Error', details: unexpectedError.message });
     }
 };
