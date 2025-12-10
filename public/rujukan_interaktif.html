@@ -787,6 +787,19 @@
             <button id="search-next-btn" style="padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer;">Lagi &gt;</button>
         </div>
     </div>
+    <div id="search-widget" style="padding: 0 1.5em 1em; border-bottom: 1px solid #eee; margin-bottom: 1em;">
+        <input type="text" id="full-text-search" placeholder="Cari dalam kandungan..." style="width: 100%; padding: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; margin-bottom: 0.5em;">
+        <div style="display: flex; gap: 0.5em; margin-bottom: 0.5em;">
+            <button id="search-btn" style="flex-grow: 1; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer;">Cari</button>
+            <button id="search-reset-btn" style="flex-grow: 1; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer;">Reset</button>
+        </div>
+        <div id="search-status" style="font-size: 0.9em; min-height: 2em; color: #555;"></div>
+        <div id="search-nav" style="display: none; justify-content: space-between; align-items: center;">
+            <button id="search-prev-btn" style="padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer;">&lt; Dulu</button>
+            <span id="search-counter"></span>
+            <button id="search-next-btn" style="padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer;">Lagi &gt;</button>
+        </div>
+    </div>
 
     <ul>
         <li><a href="#home" class="nav-link active">Muka Depan</a></li>
@@ -3749,6 +3762,179 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners
+    if (searchBtn) searchBtn.addEventListener('click', performSearch);
+    if (searchInput) searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+    if (resetBtn) resetBtn.addEventListener('click', clearSearch);
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+        if (matches.length > 0) {
+            currentIndex = (currentIndex + 1) % matches.length;
+            jumpToCurrent();
+        }
+    });
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+        if (matches.length > 0) {
+            currentIndex = (currentIndex - 1 + matches.length) % matches.length;
+            jumpToCurrent();
+        }
+    });
+});
+</script>
+<style>
+    mark.search-highlight {
+        background-color: #ff0; /* Yellow */
+        color: black;
+        border-radius: 3px;
+    }
+    mark.current-match {
+        background-color: #f90; /* Orange */
+        box-shadow: 0 0 8px rgba(255, 153, 0, 0.8);
+        border-radius: 3px;
+    }
+</style>
+<script>
+// --- Navigation and Search Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Navigation logic ---
+    const navLinks = document.querySelectorAll('.nav-link');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    function showSection(hash) {
+        const targetId = hash ? hash.substring(1) : 'home';
+        contentSections.forEach(section => section.classList.remove('active'));
+        navLinks.forEach(link => link.classList.remove('active'));
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) targetSection.classList.add('active');
+        const activeLink = document.querySelector(`a[href="#${targetId}"]`);
+        if (activeLink) activeLink.classList.add('active');
+    }
+    
+    if (navLinks.length > 0 && contentSections.length > 0) {
+        showSection(window.location.hash);
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                history.pushState(null, null, targetId);
+                showSection(targetId);
+                window.scrollTo(0, 0);
+            });
+        });
+        window.addEventListener('popstate', () => showSection(window.location.hash));
+    }
+
+    // --- Advanced Full-Text Search Logic ---
+    const searchInput = document.getElementById('full-text-search');
+    const searchBtn = document.getElementById('search-btn');
+    const resetBtn = document.getElementById('search-reset-btn');
+    const prevBtn = document.getElementById('search-prev-btn');
+    const nextBtn = document.getElementById('search-next-btn');
+    const searchStatus = document.getElementById('search-status');
+    const searchNav = document.getElementById('search-nav');
+    const searchCounter = document.getElementById('search-counter');
+    const contentArea = document.getElementById('main-content');
+
+    let matches = [];
+    let currentIndex = -1;
+
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    
+    function highlightText(node, term, regex) {
+        if (node.nodeType === 3) { // Node.TEXT_NODE
+            const text = node.nodeValue;
+            if (regex.test(text)) {
+                const fragment = document.createDocumentFragment();
+                let lastIndex = 0;
+                text.replace(regex, (match, offset) => {
+                    if (offset > lastIndex) {
+                        fragment.appendChild(document.createTextNode(text.substring(lastIndex, offset)));
+                    }
+                    const mark = document.createElement('mark');
+                    mark.className = 'search-highlight';
+                    mark.textContent = match;
+                    fragment.appendChild(mark);
+                    lastIndex = offset + match.length;
+                });
+                if (lastIndex < text.length) {
+                    fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+                }
+                node.parentNode.replaceChild(fragment, node);
+            }
+        } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE' && node.nodeName !== 'MARK') {
+            Array.from(node.childNodes).forEach(child => highlightText(child, term, regex));
+        }
+    }
+
+    function clearSearch() {
+        const highlighted = contentArea.querySelectorAll('mark.search-highlight');
+        highlighted.forEach(mark => {
+            const parent = mark.parentNode;
+            parent.replaceChild(document.createTextNode(mark.textContent), mark);
+            parent.normalize(); // Merges adjacent text nodes
+        });
+        matches = [];
+        currentIndex = -1;
+        if(searchStatus) searchStatus.textContent = '';
+        if(searchNav) searchNav.style.display = 'none';
+        if(searchInput) searchInput.value = '';
+    }
+
+    function performSearch() {
+        clearSearch();
+        const term = searchInput.value.trim();
+        if (!term) {
+            searchStatus.textContent = 'Sila masukkan perkataan untuk dicari.';
+            return;
+        }
+
+        searchStatus.textContent = 'Mencari...';
+        
+        setTimeout(() => {
+            const escapedTerm = escapeRegExp(term);
+            const regex = new RegExp(escapedTerm, 'gi');
+            highlightText(contentArea, term, regex);
+            matches = Array.from(contentArea.querySelectorAll('mark.search-highlight'));
+            updateNavUI();
+        }, 10);
+    }
+    
+    function updateNavUI() {
+        if (matches.length > 0) {
+            searchStatus.textContent = `${matches.length} perkataan dijumpai.`;
+            searchNav.style.display = 'flex';
+            currentIndex = 0;
+            jumpToCurrent();
+        } else {
+            searchStatus.textContent = `Tiada hasil untuk "${searchInput.value}".`;
+            searchNav.style.display = 'none';
+        }
+    }
+
+    function jumpToCurrent() {
+        matches.forEach((el, index) => {
+            el.classList.toggle('current-match', index === currentIndex);
+        });
+
+        if (matches[currentIndex]) {
+            const targetMatch = matches[currentIndex];
+            const parentSection = targetMatch.closest('.content-section');
+            if (parentSection && !parentSection.classList.contains('active')) {
+                showSection(`#${parentSection.id}`);
+            }
+            setTimeout(() => {
+                targetMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 150); // Slightly longer delay for section to render
+            searchCounter.textContent = `${currentIndex + 1} / ${matches.length}`;
+        }
+    }
+
+    // Event Listeners for search
     if (searchBtn) searchBtn.addEventListener('click', performSearch);
     if (searchInput) searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {

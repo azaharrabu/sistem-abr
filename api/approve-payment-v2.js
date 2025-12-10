@@ -142,10 +142,30 @@ module.exports = async (req, res) => {
         }
     }
 
-    // 6. SIMULATE-SUCCESS-NOTIFICATION: Log a confirmation message
-    console.log(
-        `HANTAR EMEL KEPADA: ${userProfile.email} | NAMA: ${userProfile.full_name} | NOTIFIKASI: Pembayaran anda telah diluluskan. Langganan anda kini aktif sehingga ${formatDate(updatePayload.subscription_end_date)}.`
-    );
+            const { data, error } = await resend.emails.send({
+                from: 'Sistem ABR <noreply@abrbrillante.com>',
+                to: [userProfile.email],
+                subject: 'Langganan Diaktifkan - Pembayaran Anda Telah Diluluskan',
+                html: `
+                    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                        <div style="max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                            <h2 style="color: #0056b3;">Tahniah, ${userProfile.full_name || 'Ahli Baru'}!</h2>
+                            <p>Pembayaran anda telah berjaya disahkan dan langganan anda kini telah diaktifkan.</p>
+                            <p>Butiran langganan anda:</p>
+                            <ul style="list-style-type: none; padding: 0;">
+                                <li style="margin-bottom: 10px;"><strong>Pelan:</strong> ${userProfile.subscription_plan || 'N/A'}</li>
+                                <li><strong>Aktif Sehingga:</strong> ${formatDate(updatePayload.subscription_end_date)}</li>
+                            </ul>
+                            <p>Sila klik butang di bawah untuk log masuk ke akaun anda dan mula mengakses sistem.</p>
+                            <a href="https://sistemubbl.abrbrillante.com/" style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">Log Masuk ke Sistem</a>
+                            <p style="margin-top: 20px;">Terima kasih kerana melanggan.</p>
+                            <br>
+                            <p>Yang benar,</p>
+                            <p><strong>Team ABR Brillante</strong></p>
+                        </div>
+                    </div>
+                `
+            });
 
     return res.status(200).json({ message: 'Payment approved, subscription updated, and sale recorded successfully.' });
 
