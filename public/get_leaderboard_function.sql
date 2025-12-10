@@ -2,42 +2,40 @@
 DROP FUNCTION IF EXISTS public.get_leaderboard_data();
 
 -- Cipta fungsi baharu untuk mendapatkan data papan pendahulu
--- Fungsi ini mengagregat jumlah jualan dari jadual 'payments' di mana statusnya 'approved'.
+-- Fungsi ini kini mengagregat jualan terus dari jadual 'sales' untuk memastikan data adalah selaras dengan dashboard affiliate.
 CREATE OR REPLACE FUNCTION public.get_leaderboard_data()
 RETURNS TABLE(rank BIGINT, name TEXT, total_sales NUMERIC)
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY INVOKER
 AS $$
 BEGIN
     RETURN QUERY
     WITH affiliate_sales AS (
-        -- Kira jumlah bayaran yang diluluskan untuk setiap kod rujukan (affiliate)
+        -- Agregat jualan untuk setiap affiliate
         SELECT
-            p.reference_no,
-            SUM(p.amount) AS calculated_total_sales
+            a.id,
+            COALESCE(SUM(s.sale_amount), 0) AS calculated_total_sales
         FROM
-            public.payments p
-        WHERE
-            p.status = 'approved' AND p.reference_no IS NOT NULL
+            public.affiliates a
+        LEFT JOIN
+            public.sales s ON a.id = s.affiliate_id
         GROUP BY
-            p.reference_no
+            a.id
     )
     SELECT
         ROW_NUMBER() OVER (ORDER BY sa.calculated_total_sales DESC) AS rank,
-        -- Dapatkan nama affiliate dari jadual users
-        COALESCE(NULLIF(TRIM(pu.full_name), ''), u_auth.email, 'Pengguna Tidak Dikenali') AS name,
+        COALESCE(NULLIF(TRIM(pu.full_name), ''), u.email, 'Pengguna Tidak Dikenali') AS name,
         sa.calculated_total_sales AS total_sales
     FROM
         affiliate_sales sa
     JOIN
-        -- Padankan kod rujukan dari bayaran kepada kod rujukan affiliate
-        public.affiliates a ON sa.reference_no = a.referral_code
+        public.affiliates a ON sa.id = a.id
     JOIN
-        auth.users u_auth ON a.user_id = u_auth.id
+        auth.users u ON a.user_id = u.id
     JOIN
-        public.users pu ON u_auth.id = pu.user_id
+        public.users pu ON u.id = pu.user_id
     WHERE
-        -- Pastikan hanya affiliate yang aktif (status 'paid') dipaparkan di papan pendahulu
+        -- Hanya paparkan affiliate dengan langganan aktif
         pu.payment_status = 'paid'
     ORDER BY
         total_sales DESC
