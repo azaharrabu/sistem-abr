@@ -11,9 +11,9 @@ AS $$
 BEGIN
     RETURN QUERY
     WITH affiliate_sales AS (
-        -- Kira jumlah bayaran yang diluluskan untuk setiap kod rujukan (affiliate)
+        -- Kira jumlah bayaran yang diluluskan untuk setiap e-mel affiliate
         SELECT
-            p.reference_no,
+            p.reference_no AS affiliate_email,
             SUM(p.amount) AS calculated_total_sales
         FROM
             public.payments p
@@ -24,16 +24,14 @@ BEGIN
     )
     SELECT
         ROW_NUMBER() OVER (ORDER BY sa.calculated_total_sales DESC) AS rank,
-        -- Dapatkan nama affiliate dari jadual users
-        COALESCE(NULLIF(TRIM(pu.full_name), ''), u_auth.email, 'Pengguna Tidak Dikenali') AS name,
+        -- Dapatkan nama affiliate dari jadual public.users menggunakan e-mel
+        COALESCE(NULLIF(TRIM(pu.full_name), ''), sa.affiliate_email, 'Pengguna Tidak Dikenali') AS name,
         sa.calculated_total_sales AS total_sales
     FROM
         affiliate_sales sa
     JOIN
-        -- Padankan kod rujukan dari bayaran kepada kod rujukan affiliate
-        public.affiliates a ON sa.reference_no = a.referral_code
-    JOIN
-        auth.users u_auth ON a.user_id = u_auth.id
+        -- Padankan e-mel dari bayaran kepada e-mel dalam jadual auth.users
+        auth.users u_auth ON sa.affiliate_email = u_auth.email
     JOIN
         public.users pu ON u_auth.id = pu.user_id
     WHERE
