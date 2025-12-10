@@ -94,6 +94,7 @@
                 <thead>
                     <tr>
                         <th>Nama Penuh</th>
+                        <th>No. Telefon</th>
                         <th>Emel</th>
                         <th>Pelan Langganan</th>
                         <th>Tamat Langganan</th>
@@ -246,7 +247,7 @@
                 if (response.status === 401 || response.status === 403) {
                      messageDiv.textContent = 'Akses Ditolak. Anda perlukan kebenaran Admin untuk melihat halaman ini.';
                      messageDiv.className = 'message-error';
-                     userListBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tiada data.</td></tr>';
+                     userListBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Tiada data.</td></tr>';
                      return;
                 }
 
@@ -269,6 +270,7 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${user.full_name || 'Tidak Dinyatakan'}</td>
+                        <td>${user.phone_number || 'N/A'}</td>
                         <td>${user.email}</td>
                         <td>${user.subscription_plan || 'Tiada'}</td>
                         <td>${formatDate(user.subscription_end_date)}</td>
