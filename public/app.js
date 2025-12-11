@@ -1,3 +1,4 @@
+// Force rebuild - 20251211
 // Konstanta SUPABASE_URL dan SUPABASE_KEY kini didefinisikan dalam config.js
 // Pastikan fail config.js dimuatkan sebelum app.js dalam HTML.
 
