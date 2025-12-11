@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
     // 3. Jika pengguna adalah admin, dapatkan semua data pengguna dari jadual 'users'
     const { data: allUsers, error: usersError } = await supabase
       .from('users')
-      .select('full_name, email, role, subscription_plan, subscription_end_date, payment_status, created_at')
+      .select('full_name, email, role, phone_number, subscription_plan, subscription_end_date, payment_status, created_at')
       .order('created_at', { ascending: false });
 
     if (usersError) {

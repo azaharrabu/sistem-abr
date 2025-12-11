@@ -65,7 +65,10 @@
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <h1>Dashboard Admin: Senarai Pengguna</h1>
-            <button id="logout-button" style="padding: 10px 15px; background-color: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">Log Keluar</button>
+            <div>
+                <a href="/" class="button-link-secondary">Kembali ke Panel Admin</a>
+                <button id="logout-button" style="padding: 10px 15px; background-color: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 1rem;">Log Keluar</button>
+            </div>
         </div>
 
         <!-- Bahagian Pengurusan Komisyen Baru -->
@@ -91,6 +94,7 @@
                 <thead>
                     <tr>
                         <th>Nama Penuh</th>
+                        <th>No. Telefon</th>
                         <th>Emel</th>
                         <th>Pelan Langganan</th>
                         <th>Tamat Langganan</th>
@@ -243,7 +247,7 @@
                 if (response.status === 401 || response.status === 403) {
                      messageDiv.textContent = 'Akses Ditolak. Anda perlukan kebenaran Admin untuk melihat halaman ini.';
                      messageDiv.className = 'message-error';
-                     userListBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tiada data.</td></tr>';
+                     userListBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Tiada data.</td></tr>';
                      return;
                 }
 
@@ -266,6 +270,7 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${user.full_name || 'Tidak Dinyatakan'}</td>
+                        <td>${user.phone_number || 'N/A'}</td>
                         <td>${user.email}</td>
                         <td>${user.subscription_plan || 'Tiada'}</td>
                         <td>${formatDate(user.subscription_end_date)}</td>

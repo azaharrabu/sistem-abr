@@ -1,11 +1,13 @@
 // api/approve-payment-v2.js
 const { createClient } = require('@supabase/supabase-js');
 const { verifyToken } = require('./_utils/auth');
+const { Resend } = require('resend');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function isAdmin(userId) {
   const { data, error } = await supabase
@@ -142,6 +144,11 @@ module.exports = async (req, res) => {
         }
     }
 
+    // 6. Send success notification email to the user
+    try {
+        if (!process.env.RESEND_API_KEY) {
+            console.warn('RESEND_API_KEY is not set. Skipping email notification.');
+        } else {
             const { data, error } = await resend.emails.send({
                 from: 'Sistem ABR <noreply@abrbrillante.com>',
                 to: [userProfile.email],
@@ -166,6 +173,17 @@ module.exports = async (req, res) => {
                     </div>
                 `
             });
+
+            if (error) {
+                // Log the error but don't block the API from returning success
+                console.error(`EMAIL_ERROR: Failed to send approval email to ${userProfile.email}`, error);
+            } else {
+                console.log(`Successfully sent approval email to ${userProfile.email}. Message ID: ${data.id}`);
+            }
+        }
+    } catch (emailError) {
+        console.error(`EMAIL_EXCEPTION: An exception occurred while trying to send email to ${userProfile.email}`, emailError);
+    }
 
     return res.status(200).json({ message: 'Payment approved, subscription updated, and sale recorded successfully.' });
 
