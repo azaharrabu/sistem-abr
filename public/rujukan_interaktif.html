@@ -3637,7 +3637,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let matches = [];
     let currentIndex = -1;
-    let originalContent = {}; // To store original content of sections to restore on clear
 
     function escapeRegExp(string) {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -3651,13 +3650,13 @@ document.addEventListener('DOMContentLoaded', () => {
         currentIndex = -1;
         if(searchStatus) searchStatus.textContent = '';
         if(searchNav) searchNav.style.display = 'none';
-        if(searchInput) searchInput.value = '';
     }
 
     // Function to perform the search
     function performSearch() {
-        clearSearch();
-        const term = searchInput.value.trim();
+        const term = searchInput.value.trim(); // Read the term first
+        clearSearch(); // Now clear highlights from previous search
+
         if (!term) {
             if(searchStatus) searchStatus.textContent = 'Sila masukkan perkataan untuk dicari.';
             return;
@@ -3674,20 +3673,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 separateWordSearch: false,
                 done: (count) => {
                     matches = contentArea.querySelectorAll('mark.search-highlight');
-                    updateNavUI(count);
+                    updateNavUI(count, term); // Pass the term to the UI update function
                 }
             });
         }, 10);
     }
     
-    function updateNavUI(count) {
+    function updateNavUI(count, term) { // Receive the term
         if (count > 0) {
             if(searchStatus) searchStatus.textContent = `${count} perkataan dijumpai.`;
             if(searchNav) searchNav.style.display = 'flex';
             currentIndex = 0;
             jumpToCurrent();
         } else {
-            if(searchStatus) searchStatus.textContent = `Tiada hasil untuk "${searchInput.value}".`;
+            if(searchStatus) searchStatus.textContent = `Tiada hasil untuk "${term}".`; // Use the passed term
             if(searchNav) searchNav.style.display = 'none';
         }
     }
@@ -3719,19 +3718,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event Listeners for search
     if (searchBtn) searchBtn.addEventListener('click', performSearch);
+    
     if (searchInput) searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             performSearch();
         }
     });
-    if (resetBtn) resetBtn.addEventListener('click', clearSearch);
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            clearSearch();
+            if (searchInput) searchInput.value = ''; // Clear input only on reset
+        });
+    }
+
     if (nextBtn) nextBtn.addEventListener('click', () => {
         if (matches.length > 0) {
             currentIndex = (currentIndex + 1) % matches.length;
             jumpToCurrent();
         }
     });
+
     if (prevBtn) prevBtn.addEventListener('click', () => {
         if (matches.length > 0) {
             currentIndex = (currentIndex - 1 + matches.length) % matches.length;
