@@ -165,6 +165,9 @@ module.exports = async (req, res) => {
                             </ul>
                             <p>Sila klik butang di bawah untuk log masuk ke akaun anda dan mula mengakses sistem.</p>
                             <a href="https://sistemubbl.abrbrillante.com/" style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">Log Masuk ke Sistem</a>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 15px;">
+                                Anda boleh log masuk menggunakan e-mel dan kata laluan yang anda daftarkan. Jika anda terlupa kata laluan anda, anda boleh menetapkannya semula melalui pautan 'Lupa Kata Laluan?' di halaman log masuk.
+                            </p>
                             <p style="margin-top: 20px;">Terima kasih kerana melanggan.</p>
                             <br>
                             <p>Yang benar,</p>
