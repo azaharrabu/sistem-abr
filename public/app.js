@@ -203,14 +203,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentSessionToken = token;
 
-        // Ciri Baru: Semak jika profil pengguna perlu dikemaskini dan paparkan modal secara wajib.
-        if (profile && profile.needs_profile_update) {
-            // Hanya tunjukkan modal jika ia belum diserahkan dalam sesi ini
-            if (profileUpdateModal && !sessionStorage.getItem('profileUpdateSubmitted')) {
-                profileUpdateModal.style.display = 'block'; // Paparkan modal
+        // Sembunyikan semua bahagian utama terlebih dahulu
+        const allSections = [authSection, paymentSection, pendingApprovalSection, mainContentSection, adminPanelSection];
+        allSections.forEach(el => { if (el) el.style.display = 'none'; });
+
+        // Ciri Baru: Semak jika profil pengguna perlu dikemaskini.
+        // Jika ya, paparkan modal dan hentikan fungsi di sini.
+        if (profile && profile.needs_profile_update && !sessionStorage.getItem('profileUpdateSubmitted')) {
+            console.log("UI Path: Wajib Kemas Kini Profil");
+            if (profileUpdateModal) {
+                profileUpdateModal.style.display = 'block';
             }
+            // Paparkan maklumat pengguna di latar belakang modal jika perlu
+            userInfoDisplays.forEach(display => {
+                if (user && user.email) {
+                    display.innerHTML = `Log masuk sebagai: <strong>${user.email}</strong>`;
+                }
+            });
+            return; // Hentikan pelaksanaan lebih lanjut untuk tumpukan pada modal
         }
         
+        // Jika tidak perlu kemas kini profil, teruskan dengan logik UI biasa
         const elements = [authSection, paymentSection, pendingApprovalSection, mainContentSection, adminPanelSection, affiliateRegisterView, affiliateDashboardView];
         elements.forEach(el => { if (el) el.style.display = 'none'; });
 
