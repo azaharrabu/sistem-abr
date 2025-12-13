@@ -1,13 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Supabase client
-// Note: It's generally better to use the service key for admin-level operations
-// if you need to bypass RLS, but for user-specific updates, the anon key is fine
-// as long as your RLS policies are correctly configured.
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY; // Using anon key, RLS must be set up properly.
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 module.exports = async (req, res) => {
     if (req.method !== 'POST') {
         res.setHeader('Allow', 'POST');
@@ -21,53 +13,65 @@ module.exports = async (req, res) => {
             return res.status(401).json({ error: 'Authentication token not provided.' });
         }
 
-        // 2. Verify the token using Supabase's own helper
-        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        // 2. Create a new Supabase client FOR THIS REQUEST, authenticated with the user's token.
+        // This is the correct way to handle user-specific operations in a serverless environment.
+        const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_ANON_KEY,
+            {
+                global: {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            }
+        );
+
+        // 3. Verify the token and get the user.
+        // Since the client is now authenticated, we can just call getUser().
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
 
         if (userError || !user) {
-            // Log the actual error for debugging
             console.error('Token verification error:', userError?.message);
-            // Return a generic error to the client
             return res.status(401).json({ error: 'Invalid or expired token.' });
         }
         
-        // 3. At this point, the user is authenticated. Proceed with the update.
-        const userId = user.id;
+        // 4. The user is authenticated. Proceed with the update.
         const { full_name, phone_number } = req.body;
 
         if (!full_name || !phone_number) {
             return res.status(400).json({ error: 'Full name and phone number are required.' });
         }
 
-        // 4. Upsert the user's profile in the 'users' table
-        // An 'upsert' will update the record if it exists, or insert it if it doesn't.
-        // This is more robust against inconsistencies where an auth user might lack a profile row.
+        // 5. Upsert the user's profile.
+        // The RLS policies we created will now work because auth.uid() is correctly identified.
         const { error: upsertError } = await supabase
             .from('users')
             .upsert({
-                user_id: userId, // The unique identifier to check for conflicts
+                user_id: user.id, // Match the user's own ID
                 full_name: full_name,
                 phone_number: phone_number,
-                email: user.email // Also ensure the email is synced
+                email: user.email // Keep email in sync
             }, {
-                onConflict: 'user_id' // The column to check for an existing row
+                onConflict: 'user_id'
             });
 
         if (upsertError) {
             console.error('Supabase upsert error:', upsertError.message);
-            // Check for specific errors, e.g., RLS violation
-            if (upsertError.code === '42501') { // RLS violation
+            // Check for RLS violation, though it shouldn't happen now
+            if (upsertError.code === '42501') { 
                  return res.status(403).json({ error: 'You do not have permission to update this profile.' });
             }
-            throw new Error('Failed to update user profile.');
+            // Use a more generic message for other database errors
+            throw new Error('An error occurred during profile update.');
         }
 
-        // 5. Send success response
+        // 6. Send success response
         res.status(200).json({ message: 'Profile updated successfully.' });
 
     } catch (error) {
-        // Generic error handler for unexpected issues
         console.error('Error in /api/update-profile:', error.message);
-        res.status(500).json({ error: 'An internal server error occurred.' });
+        // Avoid leaking detailed error messages to the client
+        res.status(500).json({ error: error.message || 'An internal server error occurred.' });
     }
 };
