@@ -39,19 +39,24 @@ module.exports = async (req, res) => {
             return res.status(400).json({ error: 'Full name and phone number are required.' });
         }
 
-        // 4. Update the user's profile in the 'users' table
-        const { error: updateError } = await supabase
+        // 4. Upsert the user's profile in the 'users' table
+        // An 'upsert' will update the record if it exists, or insert it if it doesn't.
+        // This is more robust against inconsistencies where an auth user might lack a profile row.
+        const { error: upsertError } = await supabase
             .from('users')
-            .update({
+            .upsert({
+                user_id: userId, // The unique identifier to check for conflicts
                 full_name: full_name,
                 phone_number: phone_number,
-            })
-            .eq('user_id', userId);
+                email: user.email // Also ensure the email is synced
+            }, {
+                onConflict: 'user_id' // The column to check for an existing row
+            });
 
-        if (updateError) {
-            console.error('Supabase update error:', updateError.message);
+        if (upsertError) {
+            console.error('Supabase upsert error:', upsertError.message);
             // Check for specific errors, e.g., RLS violation
-            if (updateError.code === '42501') { // RLS violation
+            if (upsertError.code === '42501') { // RLS violation
                  return res.status(403).json({ error: 'You do not have permission to update this profile.' });
             }
             throw new Error('Failed to update user profile.');
