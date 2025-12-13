@@ -1,9 +1,9 @@
 // api/signin.js
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
-// Handler utama, kini menggunakan sintaks 'export default'
-export default async function handler(req, res) {
-  console.log("--- api/signin.js (ESM version) invoked ---");
+// Handler utama, kini menggunakan sintaks CommonJS
+module.exports = async (req, res) => {
+  console.log("--- api/signin.js (CommonJS version) invoked ---");
 
   // Hanya benarkan kaedah POST
   if (req.method !== 'POST') {
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     // Inisialisasi Supabase client
     const supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_KEY
+      process.env.SUPABASE_ANON_KEY
     );
 
     const { email, password } = req.body;
@@ -57,4 +57,4 @@ export default async function handler(req, res) {
     console.error(err.stack);
     return res.status(500).json({ error: 'Internal Server Error.' });
   }
-}
+};

@@ -56,6 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const affiliateCodeSpan = document.getElementById('affiliate-code');
     const affiliateLeaderboardLink = document.getElementById('affiliate-leaderboard-link');
 
+    // --> MULA BLOK BARU: Rujukan untuk Modal Kemas Kini Profil
+    const profileUpdateModal = document.getElementById('profile-update-modal');
+    const profileUpdateForm = document.getElementById('profile-update-form');
+    // <-- TAMAT BLOK BARU
+
+
     // Fungsi baru untuk mengendalikan pendaftaran affiliate
     async function handleRegisterAffiliate() {
         const token = currentSessionToken;
@@ -196,7 +202,28 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Profile object:", profile);
 
         currentSessionToken = token;
+
+        // Sembunyikan semua bahagian utama terlebih dahulu
+        const allSections = [authSection, paymentSection, pendingApprovalSection, mainContentSection, adminPanelSection];
+        allSections.forEach(el => { if (el) el.style.display = 'none'; });
+
+        // Ciri Baru: Semak jika profil pengguna perlu dikemaskini.
+        // Jika ya, paparkan modal dan hentikan fungsi di sini.
+        if (profile && profile.needs_profile_update && !sessionStorage.getItem('profileUpdateSubmitted')) {
+            console.log("UI Path: Wajib Kemas Kini Profil");
+            if (profileUpdateModal) {
+                profileUpdateModal.style.display = 'block';
+            }
+            // Paparkan maklumat pengguna di latar belakang modal jika perlu
+            userInfoDisplays.forEach(display => {
+                if (user && user.email) {
+                    display.innerHTML = `Log masuk sebagai: <strong>${user.email}</strong>`;
+                }
+            });
+            return; // Hentikan pelaksanaan lebih lanjut untuk tumpukan pada modal
+        }
         
+        // Jika tidak perlu kemas kini profil, teruskan dengan logik UI biasa
         const elements = [authSection, paymentSection, pendingApprovalSection, mainContentSection, adminPanelSection, affiliateRegisterView, affiliateDashboardView];
         elements.forEach(el => { if (el) el.style.display = 'none'; });
 
@@ -436,6 +463,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --> MULA BLOK BARU: Fungsi untuk mengendalikan kemas kini profil dari modal
+    async function handleProfileUpdateSubmit(event) {
+        event.preventDefault();
+        const token = currentSessionToken;
+        if (!token) {
+            alert('Sesi anda telah tamat. Sila log masuk semula.');
+            return;
+        }
+
+        const full_name = document.getElementById('modal-full-name').value;
+        const phone_number = document.getElementById('modal-phone').value;
+
+        if (!full_name.trim() || !phone_number.trim()) {
+            alert('Sila isi kedua-dua nama penuh dan nombor telefon.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/update-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ full_name, phone_number })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Gagal mengemas kini profil.');
+            }
+
+            alert('Profil berjaya dikemas kini. Terima kasih!');
+            if (profileUpdateModal) {
+                profileUpdateModal.style.display = 'none';
+            }
+            // Tandakan bahawa borang telah diserahkan untuk mengelak dari muncul semula dalam sesi ini
+            sessionStorage.setItem('profileUpdateSubmitted', 'true');
+            // Muat semula sesi untuk mendapatkan profil yang telah dikemaskini
+            await checkUserSession();
+
+        } catch (error) {
+            alert(`Ralat mengemas kini profil: ${error.message}`);
+        }
+    }
+    // <-- TAMAT BLOK BARU
+
     // Fungsi untuk log keluar
     async function handleSignOut() {
         await _supabase.auth.signOut();
@@ -453,6 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (signupForm) signupForm.addEventListener('submit', (e) => handleAuth(e, '/api/signup'));
         logoutButtons.forEach(button => button.addEventListener('click', handleSignOut));
         if (paymentProofForm) paymentProofForm.addEventListener('submit', handlePaymentProofSubmit);
+        if (profileUpdateForm) profileUpdateForm.addEventListener('submit', handleProfileUpdateSubmit); // Tambah event listener baru
         if (openInteractiveButton) openInteractiveButton.addEventListener('click', () => window.open('/rujukan_interaktif.html', '_blank'));
         if (registerAffiliateButton) registerAffiliateButton.addEventListener('click', handleRegisterAffiliate);
         if (affiliateLeaderboardLink) {
