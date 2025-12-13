@@ -1,6 +1,5 @@
-
-import { createClient } from '@supabase/supabase-js';
-import jwt from 'jsonwebtoken';
+const { createClient } = require('@supabase/supabase-js');
+const jwt = require('jsonwebtoken');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
@@ -21,7 +20,7 @@ const verifyToken = (req) => {
     }
 };
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
@@ -57,6 +56,9 @@ export default async function handler(req, res) {
         res.status(200).json({ message: 'Profile updated successfully.' });
 
     } catch (error) {
-        res.status(401).json({ error: error.message });
+        // Log the detailed error on the server
+        console.error('Error updating profile:', error.message);
+        // Send a more generic error message to the client
+        res.status(401).json({ error: 'An error occurred during profile update. ' + error.message });
     }
-}
+};
