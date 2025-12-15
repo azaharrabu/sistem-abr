@@ -1,4 +1,5 @@
 // api/profile.js
+// Forcing a redeploy to clear potential server-side cache.
 const { createClient } = require('@supabase/supabase-js');
 const { verifyToken } = require('./_utils/auth');
 
