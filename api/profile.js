@@ -162,11 +162,18 @@ module.exports = async (req, res) => {
       console.log(`[PROFILE] User ${user.email} is not an affiliate.`);
     }
 
+    // --- START DEBUG LOGGING ---
+    console.log(`[PROFILE DEBUG] Checking conditions for needs_profile_update for user: ${profile.email}`);
+    console.log(`[PROFILE DEBUG] payment_status: '${profile.payment_status}' (Type: ${typeof profile.payment_status})`);
+    console.log(`[PROFILE DEBUG] full_name: '${profile.full_name}'`);
+    console.log(`[PROFILE DEBUG] phone_number: '${profile.phone_number}'`);
+    console.log(`[PROFILE DEBUG] Condition (profile.payment_status === 'paid'): ${profile.payment_status === 'paid'}`);
+    const should_update = profile.payment_status === 'paid' && (!profile.full_name || !profile.phone_number);
+    console.log(`[PROFILE DEBUG] Final calculated value for needs_profile_update: ${should_update}`);
+    // --- END DEBUG LOGGING ---
+
     // This flag prompts the frontend to show an update modal ONLY for paid users with incomplete profiles.
     profile.needs_profile_update = profile.payment_status === 'paid' && (!profile.full_name || !profile.phone_number);
-    if (profile.needs_profile_update) {
-      console.log(`[PROFILE] User ${user.email} will be prompted to update their profile.`);
-    }
 
     // 6. Send the combined profile data
     console.log("[PROFILE] Step 5: Successfully preparing to send combined profile to frontend.");
