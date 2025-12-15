@@ -1,11 +1,13 @@
 // api/signup.js
 const { createClient } = require('@supabase/supabase-js');
+const { Resend } = require('resend');
 
 // Inisialisasi Supabase client
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Harga untuk pelan langganan
 const subscriptionPrices = {
@@ -77,6 +79,70 @@ module.exports = async (req, res) => {
       console.error('[signup.js] CRITICAL: User profile created, but failed to create initial pending payment.', paymentInsertError);
       // This is also a partial failure state. The user exists but can't pay.
       return res.status(500).json({ error: 'User created, but failed to initialize payment. Please contact support.' });
+    }
+
+    // If user was referred, send a notification email to the affiliate
+    if (referred_by) {
+      try {
+        // 1. Find the affiliate's user_id from their referral code
+        const { data: affiliateData, error: affiliateError } = await supabase
+          .from('affiliates')
+          .select('user_id')
+          .eq('affiliate_code', referred_by)
+          .single();
+
+        if (affiliateError || !affiliateData) {
+          throw new Error(`Affiliate with code ${referred_by} not found.`);
+        }
+
+        // 2. Get the affiliate's email from their user record
+        const { data: affiliateUser, error: userError } = await supabase
+          .from('users')
+          .select('email, full_name')
+          .eq('user_id', affiliateData.user_id)
+          .single();
+
+        if (userError || !affiliateUser) {
+          throw new Error(`Affiliate user with id ${affiliateData.user_id} not found.`);
+        }
+        
+        const affiliateEmail = affiliateUser.email;
+        const affiliateName = affiliateUser.full_name || 'Rakan Affiliate';
+        const newUserName = email; // We can use the new user's email as an identifier
+
+        // 3. Send the notification email
+        if (process.env.RESEND_API_KEY) {
+            const { data: emailData, error: emailError } = await resend.emails.send({
+                from: 'Sistem ABR <noreply@abrbrillante.com>',
+                to: [affiliateEmail],
+                subject: 'Tahniah! Anda Mendapat Ahli Baru!',
+                html: `
+                <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <h2 style="color: #0056b3;">Tahniah, ${affiliateName}!</h2>
+                    <p>Seorang pengguna baru telah mendaftar menggunakan pautan affiliate anda.</p>
+                    <p><strong>Butiran Pengguna Baru:</strong> ${newUserName}</p>
+                    <p>Pengguna ini kini direkodkan di bawah anda. Anda akan menerima komisen selepas pembayaran mereka disahkan.</p>
+                    <p>Teruskan usaha anda!</p>
+                    <br>
+                    <p>Yang benar,</p>
+                    <p><strong>Team ABR Brillante</strong></p>
+                </div>
+                `
+            });
+
+            if (emailError) {
+                console.error(`[signup.js] EMAIL_ERROR: Failed to send new signup notification to affiliate ${affiliateEmail}`, emailError);
+            } else {
+                console.log(`[signup.js] Successfully sent new signup notification to affiliate ${affiliateEmail}.`);
+            }
+        } else {
+            console.log('[signup.js] RESEND_API_KEY not set. Skipping affiliate notification email.');
+        }
+
+      } catch (notificationError) {
+        // Log the error but do not block the main signup flow
+        console.error('[signup.js] NOTIFICATION_ERROR: Failed to process affiliate notification.', notificationError.message);
+      }
     }
 
     // 4. Pendaftaran dan penciptaan rekod berjaya.
