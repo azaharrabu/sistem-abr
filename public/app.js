@@ -320,6 +320,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fungsi utama untuk memeriksa sesi pengguna
     const checkUserSession = async () => {
+        // JANGAN JALANKAN FUNGSI INI DI HALAMAN SET SEMULA KATA LALUAN
+        // Kerana halaman itu mempunyai logik pengesahannya sendiri untuk mengendalikan token.
+        if (window.location.pathname.includes('reset-password.html')) {
+            console.log("checkUserSession dilangkau pada halaman set semula kata laluan.");
+            return;
+        }
+
         const { data: { session } } = await _supabase.auth.getSession();
         
         if (session) {
