@@ -1,5 +1,4 @@
 // api/profile.js
-// Forcing a redeploy to clear potential server-side cache.
 const { createClient } = require('@supabase/supabase-js');
 const { verifyToken } = require('./_utils/auth');
 
@@ -160,6 +159,13 @@ module.exports = async (req, res) => {
       console.log(`[PROFILE] Step 4 DONE: On-the-fly calculation for ${user.email}: Amount=RM${profile.totalSalesAmount}, Commission=RM${profile.totalCommission}`);
     } else {
       console.log(`[PROFILE] User ${user.email} is not an affiliate.`);
+    }
+
+    // Check if essential profile information is missing to prompt a frontend update.
+    // This flag can be used by the frontend to show a pop-up or notification.
+    profile.needs_profile_update = !profile.full_name || !profile.phone_number;
+    if (profile.needs_profile_update) {
+      console.log(`[PROFILE] User ${user.email} will be prompted to update their profile.`);
     }
 
     // 6. Send the combined profile data
