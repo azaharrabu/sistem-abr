@@ -81,6 +81,24 @@
             </div>
             <div id="commission-message" style="margin-top: 1rem;"></div>
             <pre id="commission-results" style="background-color: #2c3e50; color: #ecf0f1; padding: 1rem; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; display: none;"></pre>
+            <!-- Jadual baru untuk memaparkan hasil komisyen -->
+            <div id="commission-table-container" style="display: none; margin-top: 1rem;">
+                <h4>Ringkasan Komisyen Tertunggak</h4>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama Affiliate</th>
+                                <th>Emel</th>
+                                <th>Jumlah Jualan</th>
+                                <th>Jumlah Komisyen (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commission-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         
         <!-- Kotak Carian Baru -->
@@ -162,7 +180,9 @@
             const calcButton = document.getElementById('calculate-commissions-button');
             const execButton = document.getElementById('execute-payout-button');
             const commissionMessage = document.getElementById('commission-message');
-            const commissionResults = document.getElementById('commission-results');
+            const commissionResultsEl = document.getElementById('commission-results'); // Ganti nama untuk elak konflik
+            const commissionTableContainer = document.getElementById('commission-table-container');
+            const commissionTableBody = document.getElementById('commission-table-body');
 
             const callPayoutApi = async (mode) => {
                 const isExecute = mode === 'execute';
@@ -174,7 +194,9 @@
 
                 commissionMessage.textContent = 'Memproses permintaan...';
                 commissionMessage.className = 'message-loading';
-                commissionResults.style.display = 'none';
+                commissionTableContainer.style.display = 'none'; // Sembunyikan jadual semasa memuatkan
+                commissionResultsEl.style.display = 'none'; // Pastikan elemen pre juga tersembunyi
+
 
                 try {
                     const apiToken = await getAuthToken();
@@ -196,18 +218,29 @@
                     }
                     
                     commissionMessage.textContent = data.message;
-                    // Tambah kelas CSS untuk mesej kejayaan
                     commissionMessage.classList.remove('message-error', 'message-loading');
                     commissionMessage.style.color = 'green';
 
 
                     const results = data.payoutsPending || data.payoutsProcessed;
                     if (results && Object.keys(results).length > 0) {
-                        commissionResults.textContent = JSON.stringify(results, null, 2);
-                        commissionResults.style.display = 'block';
+                        // Logik baru untuk membina jadual
+                        commissionTableBody.innerHTML = ''; // Kosongkan jadual lama
+                        for (const affiliateId in results) {
+                            const details = results[affiliateId];
+                            const row = commissionTableBody.insertRow();
+                            row.innerHTML = `
+                                <td>${details.affiliateName}</td>
+                                <td>${details.affiliateEmail}</td>
+                                <td>${details.salesCount}</td>
+                                <td>${details.totalCommission.toFixed(2)}</td>
+                            `;
+                        }
+                        commissionTableContainer.style.display = 'block'; // Paparkan jadual
+                        commissionResultsEl.style.display = 'none'; // Sembunyikan blok JSON lama
                     } else {
-                        commissionResults.textContent = '';
-                        commissionResults.style.display = 'none';
+                        commissionTableContainer.style.display = 'none';
+                        commissionResultsEl.style.display = 'none';
                     }
 
                 } catch (err) {
