@@ -207,10 +207,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const allSections = [authSection, paymentSection, pendingApprovalSection, mainContentSection, adminPanelSection];
         allSections.forEach(el => { if (el) el.style.display = 'none'; });
 
-        // Ciri Baru: Semak jika profil pengguna perlu dikemaskini.
-        // Jika ya, paparkan modal dan hentikan fungsi di sini.
-        if (profile && profile.needs_profile_update && !sessionStorage.getItem('profileUpdateSubmitted')) {
-            console.log("UI Path: Wajib Kemas Kini Profil");
+        // Ciri Baru: Semak jika profil pengguna perlu dikemaskini (logik kini di frontend).
+        // Paparkan modal hanya jika pengguna telah membayar tetapi tidak mempunyai maklumat profil lengkap.
+        const needsUpdate = profile && profile.payment_status === 'paid' && (!profile.full_name || !profile.phone_number);
+        
+        if (needsUpdate && !sessionStorage.getItem('profileUpdateSubmitted')) {
+            console.log("UI Path: Wajib Kemas Kini Profil (ditentukan oleh frontend)");
             if (profileUpdateModal) {
                 profileUpdateModal.style.display = 'block';
             }
