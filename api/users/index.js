@@ -1,29 +1,26 @@
-// api/users/index.js
+// /api/users/index.js
 const { createClient } = require('@supabase/supabase-js');
 const { verifyToken } = require('../_utils/auth');
 
+// Inisialisasi Supabase client dengan Service Key untuk akses peringkat admin
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
 
-// Fungsi untuk menyemak peranan admin
+// Fungsi bantuan untuk menyemak sama ada pengguna adalah admin
 async function isAdmin(userId) {
-  // Menggunakan .maybeSingle() untuk mengelakkan ralat jika tiada rekod ditemui.
-  // Ia akan mengembalikan `null` jika tiada baris, dan bukannya error.
   const { data, error } = await supabase
     .from('users')
     .select('role')
     .eq('user_id', userId)
-    .maybeSingle();
+    .single();
 
   if (error) {
-    // Ralat ini kini hanya akan berlaku untuk masalah pangkalan data sebenar, bukan baris sifar.
     console.error('Error checking admin role:', error.message);
     return false;
   }
 
-  // Jika data adalah null (tiada pengguna ditemui) atau peranan bukan 'admin', kembalikan false.
   return data && data.role === 'admin';
 }
 
@@ -34,59 +31,31 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // 1. Sahkan token dan dapatkan pengguna
+    // 1. Sahkan token JWT dari header
     const user = await verifyToken(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Authentication failed' });
+    }
 
-    // 2. Semak jika pengguna adalah admin
+    // 2. Semak sama ada pengguna adalah admin
     const isUserAdmin = await isAdmin(user.id);
     if (!isUserAdmin) {
-      return res.status(403).json({ error: 'Forbidden: You do not have admin privileges.' });
+      return res.status(403).json({ error: 'Forbidden: Admin access required.' });
     }
 
-    // 3. Dapatkan semua bayaran yang berstatus 'pending' dan mempunyai tarikh bayaran
-    const { data: pendingPayments, error: paymentsError } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('status', 'pending')
-      .not('payment_date', 'is', null) // <-- PENAPIS BARU
-      .order('created_at', { ascending: true });
-
-    if (paymentsError) {
-      throw new Error(`Failed to fetch pending payments: ${paymentsError.message}`);
-    }
-
-    if (!pendingPayments || pendingPayments.length === 0) {
-      return res.status(200).json([]);
-    }
-
-    // 4. Dapatkan user_id yang unik dari semua bayaran tertunda
-    const userIds = [...new Set(pendingPayments.map(p => p.user_id))];
-
-    // 5. Dapatkan semua profil pengguna yang sepadan dalam satu panggilan
+    // 3. Dapatkan semua pengguna menggunakan fungsi pangkalan data untuk memastikan data konsisten
     const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('user_id, email')
-      .in('user_id', userIds);
+      .rpc('get_all_users_with_status');
 
     if (usersError) {
-      throw new Error(`Failed to fetch user profiles: ${usersError.message}`);
+      throw new Error(`Failed to fetch users: ${usersError.message}`);
     }
 
-    // 6. Gabungkan data bayaran dengan data pengguna (dalam memori)
-    // Ini menggantikan 'JOIN' automatik yang gagal sebelum ini.
-    const usersMap = new Map(users.map(u => [u.user_id, u]));
-    const combinedData = pendingPayments.map(payment => {
-      return {
-        ...payment,
-        users: usersMap.get(payment.user_id) || null
-      };
-    });
-
-    // 7. Hantar data yang telah digabungkan
-    return res.status(200).json(combinedData);
+    // 4. Hantar senarai pengguna
+    return res.status(200).json(users);
 
   } catch (err) {
-    console.error('Fetch Pending Payments Error:', err.message);
+    console.error('Fetch Users Error:', err.message);
     const statusCode = err.message.includes('Authentication failed') ? 401 : 500;
     return res.status(statusCode).json({ error: err.message });
   }
