@@ -52,6 +52,7 @@ module.exports = async (req, res) => {
     }
 
     // 4. Hantar senarai pengguna
+    res.setHeader('X-Api-Version', '2'); // Diagnostic header
     return res.status(200).json(users);
 
   } catch (err) {
