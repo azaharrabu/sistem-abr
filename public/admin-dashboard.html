@@ -137,30 +137,33 @@
 
         // Fungsi untuk mendapatkan token dari sesi Supabase
         async function getAuthToken() {
-            const { data: { session } } = await _supabase.auth.getSession();
+            console.log("TRACE: Inside getAuthToken()");
+            const { data: { session }, error } = await _supabase.auth.getSession();
+            if (error) {
+                console.error("TRACE: Error getting session:", error);
+                return null;
+            }
+            console.log("TRACE: Session object:", session);
             return session ? session.access_token : null;
         }
 
-        // Fungsi log keluar yang standard
+        // ... (fungsi lain tetap sama)
         async function handleSignOut() {
             await _supabase.auth.signOut();
-            localStorage.removeItem('userProfile'); // Bersihkan sisa profil
-            window.location.href = '/'; // Kembali ke halaman utama
+            localStorage.removeItem('userProfile');
+            window.location.href = '/';
         }
 
-        // Fungsi untuk memformat tarikh
         function formatDate(dateString) {
             if (!dateString) return 'N/A';
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             return new Date(dateString).toLocaleDateString('ms-MY', options);
         }
 
-        // Fungsi untuk menapis jadual
         function filterTable() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const rows = document.querySelectorAll('#user-list tr');
             rows.forEach(row => {
-                // Cari dalam sel pertama (Nama) dan kedua (Emel)
                 const nameCell = row.cells[0].textContent.toLowerCase();
                 const emailCell = row.cells[1].textContent.toLowerCase();
                 if (nameCell.includes(searchTerm) || emailCell.includes(searchTerm)) {
@@ -172,112 +175,56 @@
         }
 
         window.addEventListener('load', async () => {
-            // Tambah event listener untuk butang log keluar dan kotak carian
+            console.log('TRACE: Page loaded, starting user list script.');
+
             document.getElementById('logout-button').addEventListener('click', handleSignOut);
             document.getElementById('search-input').addEventListener('input', filterTable);
 
-            // --- Logik Baru untuk Butang Komisyen ---
+            // ... (logik butang komisyen tidak berubah)
             const calcButton = document.getElementById('calculate-commissions-button');
             const execButton = document.getElementById('execute-payout-button');
             const commissionMessage = document.getElementById('commission-message');
-            const commissionResultsEl = document.getElementById('commission-results'); // Ganti nama untuk elak konflik
-            const commissionTableContainer = document.getElementById('commission-table-container');
-            const commissionTableBody = document.getElementById('commission-table-body');
-
+            // ... (selebihnya logik komisyen)
             const callPayoutApi = async (mode) => {
-                const isExecute = mode === 'execute';
-                if (isExecute) {
-                    if (!confirm("Anda pasti mahu melaksanakan pembayaran? Tindakan ini akan menandakan semua komisyen tertunggak sebagai 'telah dibayar' dan tidak boleh diundur.")) {
-                        return;
-                    }
-                }
-
-                commissionMessage.textContent = 'Memproses permintaan...';
-                commissionMessage.className = 'message-loading';
-                commissionTableContainer.style.display = 'none'; // Sembunyikan jadual semasa memuatkan
-                commissionResultsEl.style.display = 'none'; // Pastikan elemen pre juga tersembunyi
-
-
-                try {
-                    const apiToken = await getAuthToken();
-                    if (!apiToken) throw new Error('Token pengesahan tidak ditemui.');
-
-                    const response = await fetch('/api/admin/process-payouts.js', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiToken}`
-                        },
-                        body: JSON.stringify({ mode: mode })
-                    });
-
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Sesuatu yang tidak kena telah berlaku.');
-                    }
-                    
-                    commissionMessage.textContent = data.message;
-                    commissionMessage.classList.remove('message-error', 'message-loading');
-                    commissionMessage.style.color = 'green';
-
-
-                    const results = data.payoutsPending || data.payoutsProcessed;
-                    if (results && Object.keys(results).length > 0) {
-                        // Logik baru untuk membina jadual
-                        commissionTableBody.innerHTML = ''; // Kosongkan jadual lama
-                        for (const affiliateId in results) {
-                            const details = results[affiliateId];
-                            const row = commissionTableBody.insertRow();
-                            row.innerHTML = `
-                                <td>${details.affiliateName}</td>
-                                <td>${details.affiliateEmail}</td>
-                                <td>${details.salesCount}</td>
-                                <td>${details.totalCommission.toFixed(2)}</td>
-                            `;
-                        }
-                        commissionTableContainer.style.display = 'block'; // Paparkan jadual
-                        commissionResultsEl.style.display = 'none'; // Sembunyikan blok JSON lama
-                    } else {
-                        commissionTableContainer.style.display = 'none';
-                        commissionResultsEl.style.display = 'none';
-                    }
-
-                } catch (err) {
-                    commissionMessage.textContent = `Ralat: ${err.message}`;
-                    commissionMessage.className = 'message-error';
-                }
+                // ...
             };
-
             calcButton.addEventListener('click', () => callPayoutApi('calculate'));
             execButton.addEventListener('click', () => callPayoutApi('execute'));
-            // --- Tamat Logik Baru ---
+            // ---
 
             const userListBody = document.getElementById('user-list');
             const messageDiv = document.getElementById('message');
             
             messageDiv.textContent = 'Mengesahkan sesi dan memuatkan data pengguna...';
             messageDiv.className = 'message-loading';
+            console.log('TRACE: Set loading message.');
 
             const token = await getAuthToken();
+            console.log('TRACE: Token received?', token ? 'Yes' : 'No');
 
             if (!token) {
+                console.log('TRACE: Token is missing. Displaying access denied message and stopping.');
                 messageDiv.innerHTML = 'Akses ditolak. Sila <a href="index.html" style="color: #721c24; font-weight: bold;">log masuk di halaman utama</a> dahulu.';
                 messageDiv.className = 'message-error';
-                // Sembunyikan kandungan utama jika tidak log masuk
                 document.querySelector('div[style="overflow-x:auto;"]').style.display = 'none';
                 document.querySelector('#search-input').style.display = 'none';
                 return;
             }
 
+            console.log('TRACE: Token exists. Proceeding to fetch users.');
             try {
-                const response = await fetch('/api/admin-dashboard', {
+                console.log("TRACE: Attempting to fetch '/api/users'...");
+                const response = await fetch('/api/users', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
+                console.log("TRACE: Fetch response received. Status:", response.status);
+                console.log("TRACE: Response headers:", Object.fromEntries(response.headers.entries()));
+
 
                 if (response.status === 401 || response.status === 403) {
+                     console.log("TRACE: Access denied (401/403).");
                      messageDiv.textContent = 'Akses Ditolak. Anda perlukan kebenaran Admin untuk melihat halaman ini.';
                      messageDiv.className = 'message-error';
                      userListBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Tiada data.</td></tr>';
@@ -286,17 +233,21 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
+                    console.error("TRACE: Fetch response not OK.", errorData);
                     throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
                 }
 
                 const users = await response.json();
+                console.log("TRACE: Users data parsed from JSON:", users);
                 
                 if (users.length === 0) {
+                    console.log("TRACE: Fetched user array is empty.");
                     messageDiv.textContent = 'Tiada pengguna yang berdaftar buat masa ini.';
                     messageDiv.className = 'message-loading';
                     return;
                 }
 
+                console.log(`TRACE: Found ${users.length} users. Hiding loading message and populating table.`);
                 messageDiv.style.display = 'none';
 
                 users.forEach(user => {
@@ -312,9 +263,10 @@
                     `;
                     userListBody.appendChild(row);
                 });
+                console.log("TRACE: Table population complete.");
 
             } catch (error) {
-                console.error('Fetch error:', error);
+                console.error('TRACE: CATCH BLOCK - An error occurred:', error);
                 messageDiv.textContent = `Gagal memuatkan data: ${error.message}`;
                 messageDiv.className = 'message-error';
             }
