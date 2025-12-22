@@ -1,19 +1,17 @@
 -- =====================================================================================
--- DATABASE FUNCTION: get_all_users_with_status (v10 - FILTERED)
+-- DATABASE FUNCTION: get_all_users_with_status (v11 - FINAL CLEANUP)
 -- =====================================================================================
--- TUJUAN: Versi ini mengemas kini fungsi untuk menapis senarai pengguna, hanya
---         menunjukkan pengguna yang telah membuat pembayaran yang berjaya.
+-- TUJUAN: Versi terakhir ini membersihkan logik penapisan, kerana semua status
+--         'approved' kini telah diseragamkan kepada 'paid'.
 --
 -- PERUBAHAN:
---   1. Menambah klausa `WHERE` untuk menapis status.
---   2. Menggunakan `IN ('paid', 'approved')` untuk merangkumi rekod-rekod lama
---      yang mungkin masih menggunakan status 'approved'.
+--   1. Klausa `WHERE` dipermudahkan dari `IN ('paid', 'approved')` kepada `= 'paid'`.
 -- =====================================================================================
 
 -- Langkah 1: Buang fungsi sedia ada.
 DROP FUNCTION IF EXISTS public.get_all_users_with_status();
 
--- Langkah 2: Cipta semula fungsi dengan logik penapisan.
+-- Langkah 2: Cipta semula fungsi dengan logik penapisan yang telah dibersihkan.
 CREATE OR REPLACE FUNCTION public.get_all_users_with_status()
 RETURNS TABLE(
     user_id uuid,
@@ -48,12 +46,12 @@ BEGIN
         ORDER BY p.created_at DESC
         LIMIT 1
     ) lp ON true
-    -- TAPISAN: Hanya tunjukkan pengguna dengan bayaran yang berjaya.
-    WHERE COALESCE(lp.status, u.payment_status) IN ('paid', 'approved')
+    -- TAPISAN BERSIH: Hanya tunjukkan pengguna dengan status 'paid'.
+    WHERE COALESCE(lp.status, u.payment_status) = 'paid'
     ORDER BY
         u.created_at DESC;
 END;
 $$;
 
 -- Mesej pengesahan
-SELECT 'Fungsi get_all_users_with_status() (v10 - FILTERED) berjaya dicipta.' AS status;
+SELECT 'Fungsi get_all_users_with_status() (v11 - FINAL CLEANUP) berjaya dicipta.' AS status;
