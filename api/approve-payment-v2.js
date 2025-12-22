@@ -94,10 +94,10 @@ module.exports = async (req, res) => {
     }
     console.log(`Successfully updated user ${userId} status to 'paid' and set new end date to ${updatePayload.subscription_end_date}.`);
     
-    // 4. Find the user's pending payment and update it to 'approved'.
-    const { data: approvedPayments, error: paymentError } = await supabase
+    // 4. Find the user's pending payment and update it to 'paid'.
+    const { data: paidPayments, error: paymentError } = await supabase
         .from('payments')
-        .update({ status: 'approved' })
+        .update({ status: 'paid' })
         .eq('user_id', userId)
         .eq('status', 'pending')
         .select('amount');
@@ -111,7 +111,7 @@ module.exports = async (req, res) => {
         // We don't exit here because the main user status was updated.
     }
     
-    const paymentForSale = approvedPayments ? approvedPayments[0] : null;
+    const paymentForSale = paidPayments ? paidPayments[0] : null;
 
     // 5. If the user was referred, create a sales record for the affiliate.
     if (userProfile.referred_by && paymentForSale && paymentForSale.amount > 0) {

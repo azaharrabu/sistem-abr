@@ -1,31 +1,28 @@
 -- =====================================================================================
--- DATABASE FUNCTION: get_all_users_with_status
+-- DATABASE FUNCTION: get_all_users_with_status (v10 - FILTERED)
 -- =====================================================================================
--- TUJUAN: Fungsi ini direka untuk menyelesaikan masalah data tidak konsisten di
---         papan pemuka admin. Ia mendapatkan semua pengguna dan menggabungkannya
---         dengan status pembayaran TERKINI dari jadual `payments`.
+-- TUJUAN: Versi ini mengemas kini fungsi untuk menapis senarai pengguna, hanya
+--         menunjukkan pengguna yang telah membuat pembayaran yang berjaya.
 --
---         Ini lebih mantap daripada bergantung pada lajur `payment_status` yang
---         didenormalisasi pada jadual `users`, yang boleh menjadi lapuk.
---
--- CARA PENGGUNAAN:
---   1. Laksanakan skrip SQL ini dalam Editor SQL Supabase anda untuk mencipta fungsi.
---   2. Kemas kini endpoint API (`/api/users`) untuk memanggil fungsi ini
---      menggunakan `supabase.rpc('get_all_users_with_status')`.
+-- PERUBAHAN:
+--   1. Menambah klausa `WHERE` untuk menapis status.
+--   2. Menggunakan `IN ('paid', 'approved')` untuk merangkumi rekod-rekod lama
+--      yang mungkin masih menggunakan status 'approved'.
 -- =====================================================================================
 
+-- Langkah 1: Buang fungsi sedia ada.
+DROP FUNCTION IF EXISTS public.get_all_users_with_status();
+
+-- Langkah 2: Cipta semula fungsi dengan logik penapisan.
 CREATE OR REPLACE FUNCTION public.get_all_users_with_status()
 RETURNS TABLE(
-    -- Lajur terus dari jadual 'users'
     user_id uuid,
     full_name text,
     phone_number text,
     email text,
     created_at timestamptz,
-    subscription_end_date timestamptz,
+    subscription_end_date text,
     subscription_plan text,
-
-    -- Status pembayaran yang diperoleh secara dinamik
     payment_status text
 )
 LANGUAGE plpgsql
@@ -39,32 +36,24 @@ BEGIN
         u.phone_number,
         u.email,
         u.created_at,
-        u.subscription_end_date,
+        u.subscription_end_date::text,
         u.subscription_plan,
-
-        -- Jika terdapat rekod pembayaran terkini, gunakan statusnya.
-        -- Jika tidak, kembali kepada status yang disimpan pada pengguna (cth: 'awaiting_payment').
-        -- Ini memberikan status yang paling tepat pada masanya.
         COALESCE(lp.status, u.payment_status) AS payment_status
     FROM
         public.users u
     LEFT JOIN LATERAL (
-        -- Cari rekod pembayaran terbaru untuk pengguna
-        SELECT
-            p.status
-        FROM
-            public.payments p
-        WHERE
-            p.user_id = u.user_id
-        ORDER BY
-            -- Isih mengikut tarikh dicipta untuk mencari yang terkini
-            p.created_at DESC
+        SELECT p.status
+        FROM public.payments p
+        WHERE p.user_id = u.user_id
+        ORDER BY p.created_at DESC
         LIMIT 1
     ) lp ON true
+    -- TAPISAN: Hanya tunjukkan pengguna dengan bayaran yang berjaya.
+    WHERE COALESCE(lp.status, u.payment_status) IN ('paid', 'approved')
     ORDER BY
         u.created_at DESC;
 END;
 $$;
 
 -- Mesej pengesahan
-SELECT 'Fungsi get_all_users_with_status() berjaya dicipta.' AS status;
+SELECT 'Fungsi get_all_users_with_status() (v10 - FILTERED) berjaya dicipta.' AS status;
