@@ -43,11 +43,12 @@ module.exports = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: You do not have admin privileges.' });
     }
 
-    // 3. Dapatkan semua bayaran yang berstatus 'pending'
+    // 3. Dapatkan semua bayaran yang berstatus 'pending' dan mempunyai tarikh bayaran
     const { data: pendingPayments, error: paymentsError } = await supabase
       .from('payments')
       .select('*')
       .eq('status', 'pending')
+      .not('payment_date', 'is', null) // <-- PENAPIS BARU
       .order('created_at', { ascending: true });
 
     if (paymentsError) {

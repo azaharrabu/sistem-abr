@@ -44,19 +44,49 @@ module.exports = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Admin access required.' });
     }
 
-    // 3. Jika pengguna adalah admin, dapatkan semua data pengguna dari jadual 'users'
-    const { data: allUsers, error: usersError } = await supabase
-      .from('users')
-      .select('full_name, email, role, phone_number, subscription_plan, subscription_end_date, payment_status, created_at')
+    // 3. Jika pengguna adalah admin, dapatkan data pembayaran yang belum selesai dari jadual 'payments'
+    const { data: pendingPayments, error: paymentsError } = await supabase
+      .from('payments')
+      .select(`
+        payment_id,
+        amount,
+        payment_date,
+        payment_time,
+        proof_url,
+        reference_text,
+        users (
+          user_id,
+          email,
+          full_name,
+          phone_number,
+          subscription_plan
+        )
+      `)
+      .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
-    if (usersError) {
+    if (paymentsError) {
       // Jika terdapat ralat semasa mengambil data, hantar ralat server
-      throw new Error(`Failed to fetch users: ${usersError.message}`);
+      throw new Error(`Failed to fetch pending payments: ${paymentsError.message}`);
     }
 
-    // 4. Hantar data semua pengguna sebagai tindak balas
-    return res.status(200).json(allUsers);
+    // 4. Format data untuk sepadan dengan jangkaan frontend
+    const formattedData = pendingPayments.map(p => ({
+      user_id: p.users ? p.users.user_id : null, // Penting untuk kelulusan/penolakan
+      email: p.users ? p.users.email : 'N/A',
+      full_name: p.users ? p.users.full_name : 'N/A',
+      phone_number: p.users ? p.users.phone_number : 'N/A',
+      subscription_plan: p.users ? p.users.subscription_plan : 'N/A',
+      reference_text: p.reference_text,
+      payment_date: p.payment_date,
+      payment_time: p.payment_time,
+      amount: p.amount,
+      payment_id: p.payment_id
+    }));
+
+
+    // 5. Hantar data pembayaran yang belum selesai sebagai tindak balas
+    return res.status(200).json(formattedData);
 
   } catch (err) {
     // Tangani sebarang ralat lain (cth: token tidak sah, masalah server)

@@ -146,52 +146,63 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchPendingPayments(token) {
         if (!token) token = currentSessionToken || await getSessionToken();
         if (!token) {
-            if (pendingPaymentsTableBody) pendingPaymentsTableBody.innerHTML = '<tr><td colspan="8">Sesi tidak sah. Sila log masuk semula.</td></tr>';
+            if (pendingPaymentsTableBody) pendingPaymentsTableBody.innerHTML = '<tr><td colspan="10">Sesi tidak sah. Sila log masuk semula.</td></tr>';
             return;
         }
 
         try {
-            const response = await fetch('/api/users', { headers: { 'Authorization': `Bearer ${token}` } });
+            // Panggil endpoint API admin-dashboard yang telah dibaiki
+            const response = await fetch('/api/admin-dashboard', { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error((await response.json()).error || 'Gagal mengambil data bayaran.');
             
             const pendingPayments = await response.json();
             if (pendingPaymentsTableBody) {
                 pendingPaymentsTableBody.innerHTML = '';
                 if (pendingPayments.length === 0) {
-                    pendingPaymentsTableBody.innerHTML = '<tr><td colspan="8">Tiada permintaan pembayaran tertunda.</td></tr>';
+                    // Kemas kini colspan kepada 10
+                    pendingPaymentsTableBody.innerHTML = '<tr><td colspan="10">Tiada permintaan pembayaran tertunda.</td></tr>';
                     return;
                 }
                 pendingPayments.forEach(payment => {
-                    const row = pendingPaymentsTableBody.insertRow();
-                    const user = payment.users;
-                    if (!user) {
-                        console.warn("Rekod bayaran ditemui tanpa pengguna yang sepadan:", payment);
-                        return;
+                    if (!payment || !payment.user_id) {
+                        console.warn("Rekod bayaran tidak lengkap atau tiada user_id:", payment);
+                        return; // Langkau rekod yang tidak lengkap
                     }
-                    row.insertCell().textContent = user.email;
-                    row.insertCell().textContent = user.subscription_plan;
-                    row.insertCell().textContent = payment.reference_no;
-                    row.insertCell().textContent = new Date(payment.payment_date).toLocaleDateString();
-                    row.insertCell().textContent = payment.payment_time;
+
+                    const row = pendingPaymentsTableBody.insertRow();
+                    
+                    // Isikan sel mengikut susunan lajur baharu
+                    row.insertCell().textContent = payment.email || 'N/A';
+                    row.insertCell().textContent = payment.full_name || 'N/A';
+                    row.insertCell().textContent = payment.phone_number || 'N/A';
+                    row.insertCell().textContent = payment.subscription_plan || 'N/A';
+                    row.insertCell().textContent = payment.reference_text || 'N/A'; // Gunakan reference_text
+                    row.insertCell().textContent = payment.payment_date ? new Date(payment.payment_date).toLocaleDateString('ms-MY') : 'N/A';
+                    row.insertCell().textContent = payment.payment_time || 'N/A';
                     row.insertCell().textContent = `RM${Number(payment.amount).toFixed(2)}`;
 
+                    // Sel untuk butang Luluskan
                     const approveCell = row.insertCell();
                     const approveButton = document.createElement('button');
                     approveButton.textContent = 'Luluskan';
                     approveButton.className = 'approve-button';
-                    approveButton.addEventListener('click', (event) => handleApprovePayment(event, user.user_id, token));
+                    // Gunakan payment.user_id yang kini tersedia
+                    approveButton.addEventListener('click', (event) => handleApprovePayment(event, payment.user_id, token));
                     approveCell.appendChild(approveButton);
 
+                    // Sel untuk butang Tolak
                     const rejectCell = row.insertCell();
                     const rejectButton = document.createElement('button');
                     rejectButton.textContent = 'Tolak';
                     rejectButton.className = 'reject-button';
-                    rejectButton.addEventListener('click', (event) => handleRejectPayment(event, user.user_id, token));
+                    // Gunakan payment.user_id yang kini tersedia
+                    rejectButton.addEventListener('click', (event) => handleRejectPayment(event, payment.user_id, token));
                     rejectCell.appendChild(rejectButton);
                 });
             }
         } catch (error) {
-            if (pendingPaymentsTableBody) pendingPaymentsTableBody.innerHTML = `<tr><td colspan="8" style="color: red;">Ralat: ${error.message}</td></tr>`;
+            // Kemas kini colspan kepada 10
+            if (pendingPaymentsTableBody) pendingPaymentsTableBody.innerHTML = `<tr><td colspan="10" style="color: red;">Ralat: ${error.message}</td></tr>`;
         }
     }
 
@@ -405,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await _supabase.auth.setSession(data.session);
                 await checkUserSession(); // Panggil fungsi yang mendapatkan profil penuh & betul
             } else { 
-                alert('Pendaftaran berjaya! Sila semak emel anda untuk pengesahan, kemudian log masuk.');
+                alert('Pendaftaran berjaya! sila log masuk untuk menghantar bukti pembayaran.');
                 if(signupContainer) signupContainer.style.display = 'none';
                 if(loginContainer) loginContainer.style.display = 'block';
             }
