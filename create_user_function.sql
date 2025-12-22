@@ -19,7 +19,9 @@ CREATE OR REPLACE FUNCTION public.create_user_and_profile(
     p_user_id uuid,
     p_email text,
     p_subscription_plan text,
-    p_referred_by text DEFAULT NULL -- Changed type from uuid to text
+    p_full_name text,          -- BAHARU
+    p_phone_number text,       -- BAHARU
+    p_referred_by text DEFAULT NULL
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -51,9 +53,9 @@ BEGIN
         END IF;
     END IF;
 
-    -- Insert the new user record with the referral code text
-    INSERT INTO public.users (user_id, email, role, payment_status, subscription_plan, subscription_price, is_affiliate, referred_by, is_promo_user)
-    VALUES (p_user_id, p_email, 'user', 'awaiting_payment', p_subscription_plan, final_price, FALSE, p_referred_by, is_promo_user);
+    -- Insert the new user record with all details
+    INSERT INTO public.users (user_id, email, full_name, phone_number, role, payment_status, subscription_plan, subscription_price, is_affiliate, referred_by, is_promo_user)
+    VALUES (p_user_id, p_email, p_full_name, p_phone_number, 'user', 'awaiting_payment', p_subscription_plan, final_price, FALSE, p_referred_by, is_promo_user);
 END;
 $$;
 

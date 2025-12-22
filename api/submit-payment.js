@@ -23,29 +23,13 @@ module.exports = async (req, res) => {
       payment_date,
       payment_time,
       amount,
-      full_name,
-      phone_number
     } = req.body;
 
-    if (!payment_date || !payment_time || !amount || !full_name || !phone_number) {
+    if (!payment_date || !payment_time || !amount) {
       return res.status(400).json({ error: 'Sila lengkapkan semua butiran yang diperlukan.' });
     }
 
-    // Upsert logic - Step 1: Update user's profile with name and phone
-    const { error: profileUpdateError } = await supabase
-      .from('users')
-      .update({
-        full_name: full_name,
-        phone_number: phone_number
-      })
-      .eq('user_id', user.id);
-
-    if (profileUpdateError) {
-      console.error('Error updating user profile:', profileUpdateError.message);
-      throw new Error(`Gagal mengemas kini profil pengguna: ${profileUpdateError.message}`);
-    }
-
-    // Upsert logic - Step 2: Check for an existing 'pending' payment
+    // Upsert logic - Step 1: Check for an existing 'pending' payment
     const { data: existingPayment, error: findError } = await supabase
       .from('payments')
       .select('id')
