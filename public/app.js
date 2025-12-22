@@ -278,6 +278,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log("UI Sub-Path: Needs payment (new, rejected, or other).");
                     if (paymentSection) {
                         paymentSection.style.display = 'block';
+                        
+                        // --> MULA BLOK BARU: Isi amaun secara automatik berdasarkan pelan
+                        const amountInput = document.getElementById('amount');
+                        if (amountInput && profile && profile.subscription_plan) {
+                            let price = '';
+                            if (profile.subscription_plan === '6-bulan') {
+                                price = '50.00';
+                            } else if (profile.subscription_plan === '12-bulan') {
+                                price = '80.00';
+                            }
+                            amountInput.value = price;
+                            amountInput.readOnly = true; // Kunci medan untuk elak kekeliruan
+                            console.log(`Amaun ditetapkan kepada ${price} untuk pelan ${profile.subscription_plan} dan dikunci.`);
+                        }
+                        // <-- TAMAT BLOK BARU
                     }
                     break;
             }
@@ -356,6 +371,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Sila pilih pelan langganan.');
                 return;
             }
+            
+            // --> MULA BLOK BARU: Tangkap nama penuh dan telefon semasa pendaftaran
+            const fullName = document.getElementById('signup-full-name').value;
+            const phoneNumber = document.getElementById('signup-phone').value;
+            if (!fullName.trim() || !phoneNumber.trim()) {
+                alert('Sila masukkan Nama Penuh dan Nombor Telefon anda.');
+                return;
+            }
+            body.full_name = fullName;
+            body.phone_number = phoneNumber;
+            // <-- TAMAT BLOK BARU
+
             body.subscription_plan = planInput.value;
             const affiliateCode = getCookie('affiliate_ref_code');
             if (affiliateCode) {
@@ -398,15 +425,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Kumpul data yang relevan dari borang
         const reference_no = document.getElementById('reference_no').value;
-        const payment_date = document.getElementById('payment_date').value;
+        let payment_date = document.getElementById('payment_date').value;
         const payment_time = document.getElementById('payment_time').value;
+
+        // --> MULA PEMBETULAN: Tetapkan tarikh hari ini jika tiada tarikh dipilih
+        if (!payment_date) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            payment_date = `${year}-${month}-${day}`;
+            console.log(`Tarikh pembayaran kosong, ditetapkan kepada tarikh hari ini: ${payment_date}`);
+        }
+        // <-- TAMAT PEMBETULAN
+
         const amount = document.getElementById('amount').value;
-        const full_name = document.getElementById('affiliate-full-name').value;
-        const phone_number = document.getElementById('affiliate-phone').value;
 
         // Semak jika semua medan yang diperlukan diisi
-        if (!reference_no.trim() || !payment_date || !payment_time || !amount ||
-            !full_name.trim() || !phone_number.trim()) {
+        if (!reference_no.trim() || !payment_date || !payment_time || !amount) {
             alert('Sila lengkapkan semua butiran yang diperlukan.');
             return;
         }
@@ -416,8 +452,6 @@ document.addEventListener('DOMContentLoaded', () => {
             payment_date,
             payment_time,
             amount,
-            full_name,
-            phone_number 
         };
 
         try {

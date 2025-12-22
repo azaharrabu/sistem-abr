@@ -21,10 +21,10 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { email, password, subscription_plan, referred_by } = req.body;
+  const { email, password, subscription_plan, full_name, phone_number, referred_by } = req.body;
 
-  if (!email || !password || !subscription_plan) {
-    return res.status(400).json({ error: 'Email, password, and subscription plan are required.' });
+  if (!email || !password || !subscription_plan || !full_name || !phone_number) {
+    return res.status(400).json({ error: 'Email, password, subscription plan, full name, and phone number are required.' });
   }
 
   // Valid subscription plans
@@ -54,6 +54,8 @@ module.exports = async (req, res) => {
       p_user_id: authData.user.id,
       p_email: authData.user.email,
       p_subscription_plan: subscription_plan,
+      p_full_name: full_name,
+      p_phone_number: phone_number,
       p_referred_by: referred_by || null
     });
 

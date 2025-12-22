@@ -81,6 +81,18 @@
                 <form id="signup-form">
                     <input type="email" id="signup-email" placeholder="Email" required>
                     <input type="password" id="signup-password" placeholder="Kata Laluan" required>
+
+                    <!-- MEDAN BARU UNTUK NAMA & TELEFON -->
+                    <div class="form-group">
+                        <label for="signup-full-name">Nama Penuh</label>
+                        <input type="text" id="signup-full-name" placeholder="Nama Penuh Anda" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-phone">Nombor Telefon</label>
+                        <input type="tel" id="signup-phone" placeholder="Cth: 0123456789" required>
+                    </div>
+                    <!-- TAMAT MEDAN BARU -->
+
                     <div class="subscription-options">
                         <h4>Pilih Pelan Langganan Anda:</h4>
                         <p class="promo-info"><span class="highlight">Promosi Istimewa!</span> Untuk 100 pendaftar pertama, nikmati harga diskaun!</p>
@@ -135,21 +147,8 @@
                 </div>
                 <div class="form-group">
                     <label for="amount">Jumlah Bayaran (RM)</label>
-                    <input type="number" id="amount" step="0.01" placeholder="Cth: 50.00" required>
+                    <input type="number" id="amount" step="0.01" placeholder="" required>
                 </div>
-                <hr style="margin: 20px 0;">
-                <h4 style="margin-bottom: 10px;">Butiran Peribadi</h4>
-                <p style="margin-bottom: 15px;">Sila lengkapkan maklumat di bawah untuk tujuan rekod kami.</p>
-
-                <div class="form-group">
-                    <label for="affiliate-full-name">Nama Penuh</label>
-                    <input type="text" id="affiliate-full-name" placeholder="Nama Penuh Anda" required>
-                </div>
-                <div class="form-group">
-                    <label for="affiliate-phone">Nombor Telefon</label>
-                    <input type="tel" id="affiliate-phone" placeholder="Cth: 0123456789" required>
-                </div>
-
                 <button type="submit">Hantar Bukti Pembayaran</button>
             </form>
         </div>
