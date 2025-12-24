@@ -53,7 +53,7 @@ module.exports = async (req, res) => {
         payment_date,
         payment_time,
         proof_url,
-        reference_text,
+        reference_no,
         users (
           user_id,
           email,
@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
       full_name: p.users ? p.users.full_name : 'N/A',
       phone_number: p.users ? p.users.phone_number : 'N/A',
       subscription_plan: p.users ? p.users.subscription_plan : 'N/A',
-      reference_text: p.reference_text,
+      reference_no: p.reference_no,
       payment_date: p.payment_date,
       payment_time: p.payment_time,
       amount: p.amount,

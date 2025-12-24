@@ -45,8 +45,18 @@ CREATE POLICY "Admins have full access to payments."
 ON public.payments FOR ALL
 USING ( (SELECT role FROM public.users WHERE user_id = auth.uid()) = 'admin' );
 
+-- 4. BERIKAN KEBENARAN KEPADA PENGGUNA YANG DISAHKAN
+-- Ini memastikan peranan 'authenticated' boleh melakukan operasi yang dibenarkan oleh polisi RLS.
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.payments TO authenticated;
+GRANT USAGE, SELECT ON SEQUENCE payments_id_seq TO authenticated;
+
+-- 5. PAKSA PENYEGARAN SEMULA SKEMA (PENTING UNTUK SUPABASE)
+-- Arahan ini memberitahu API (PostgREST) untuk memuat semula skema databasenya.
+-- Ini menyelesaikan ralat "column not found" yang disebabkan oleh cache yang lapuk.
+NOTIFY pgrst, 'reload schema';
+
 -- ARAHAN:
 -- 1. Pergi ke dashboard Supabase projek anda.
 -- 2. Pergi ke "SQL Editor".
 -- 3. Salin dan tampal SEMUA kandungan fail ini ke dalam editor.
--- 4. Klik "RUN" untuk melaksanakan skrip. Ini akan mencipta jadual 'payments' dan polisinya.
+-- 4. Klik "RUN" untuk melaksanakan skrip. Ini akan mengemas kini jadual 'payments', polisi, dan kebenarannya.
