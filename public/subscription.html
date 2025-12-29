@@ -132,8 +132,8 @@
                 <p>Permintaan langganan anda telah diterima. Sila lengkapkan butiran pembayaran di bawah.</p>
                 <form id="renewal-payment-form">
                     <div class="form-group">
-                        <label for="reference_no">No. Rujukan</label>
-                        <input type="text" id="reference_no" required>
+                        <label for="reference_no">Rujukan Pembayaran</label>
+                        <input type="text" id="reference_no" readonly>
                     </div>
                     <div class="form-group">
                         <label for="amount">Jumlah Bayaran (RM)</label>
@@ -208,7 +208,7 @@
                     showMessage('info', 'Anda mempunyai permintaan langganan yang sedang menunggu pembayaran. Sila lengkapkan butiran di bawah.');
                     document.getElementById('renewal-section').style.display = 'none';
                     document.getElementById('payment-proof-section').style.display = 'block';
-                    document.getElementById('reference_no').value = '';
+                    document.getElementById('reference_no').value = userEmail;
 
                     let pendingAmount = profile.pending_amount;
                     if (!pendingAmount) {
@@ -264,7 +264,7 @@
                 showMessage('success', 'Langkah 1 Selesai. Sila teruskan ke Langkah 2 di bawah.');
                 document.getElementById('renewal-section').style.display = 'none';
                 document.getElementById('payment-proof-section').style.display = 'block';
-                document.getElementById('reference_no').value = '';
+                document.getElementById('reference_no').value = userEmail;
                 document.getElementById('amount').value = selection.price;
 
             } catch (error) {
@@ -283,15 +283,17 @@
             const token = await getAuthToken();
             if (!token) { return showMessage('error', 'Sesi anda telah tamat. Sila log masuk semula.'); }
             
+            const form = event.target;
             const body = {
-                payment_date: document.getElementById('payment-date').value,
-                payment_time: document.getElementById('payment-time').value,
-                amount: document.getElementById('amount').value,
-                reference_no: document.getElementById('reference_no').value,
+                payment_date: form.elements['payment-date'].value,
+                payment_time: form.elements['payment-time'].value,
+                amount: form.elements['amount'].value,
+                reference_no: form.elements['reference_no'].value,
             };
 
+            console.log('Sending payment data:', body);
+
             try {
-                // TUKAR ENDPOINT KE API YANG BETUL
                 const response = await fetch('/api/submit-payment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
