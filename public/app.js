@@ -14,26 +14,13 @@ const getSessionToken = async () => {
 };
 
 // Balut semua logik aplikasi dalam DOMContentLoaded untuk memastikan semua elemen wujud.
-document.addEventListener('DOMContentLoaded', () => {
-    // Only run the app logic if we are on a page that has the main authentication section (i.e., index.html)
+document.addEventListener('DOMContentLoaded', async () => {
+    // Hanya jalankan logik aplikasi jika kita berada di halaman yang mempunyai bahagian pengesahan utama
     if (!document.getElementById('auth-section')) {
-        return; // Do not run on pages like subscription.html
+        return; // Jangan jalankan di halaman seperti langganan.html
     }
-    
-    // --> MULA BLOK BARU: Tangkap kod affiliate dari URL dan simpan dalam kuki
-    const urlParams = new URLSearchParams(window.location.search);
-    const refCode = urlParams.get('ref');
-    if (refCode) {
-        // Tetapkan kuki untuk bertahan selama 7 hari
-        const d = new Date();
-        d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
-        let expires = "expires=" + d.toUTCString();
-        document.cookie = "affiliate_ref_code=" + refCode + ";" + expires + ";path=/";
-        console.log(`Kod affiliate '${refCode}' dari URL telah disimpan dalam kuki.`);
-    }
-    // <-- TAMAT BLOK BARU
 
-    // Rujukan kepada elemen DOM
+    // Rujukan kepada elemen DOM (diletakkan di sini untuk akses global dalam skop)
     const authSection = document.getElementById('auth-section');
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
@@ -56,12 +43,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const affiliateCodeSpan = document.getElementById('affiliate-code');
     const affiliateLeaderboardLink = document.getElementById('affiliate-leaderboard-link');
 
-    // --> MULA BLOK BARU: Rujukan untuk Modal Kemas Kini Profil
-    const profileUpdateModal = document.getElementById('profile-update-modal');
-    const profileUpdateForm = document.getElementById('profile-update-form');
-    // <-- TAMAT BLOK BARU
+    // Fungsi untuk log keluar
+    async function handleSignOut() {
+        await _supabase.auth.signOut();
+        localStorage.removeItem('userProfile');
+        currentSessionToken = null;
+        
+        // Periksa jika 'ref' ada dalam URL. Jika ya, jangan redirect, hanya tunjukkan borang auth.
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('ref')) {
+            showAuth(); // Hanya tunjukkan paparan auth, jangan muat semula halaman
+        } else {
+            window.location.href = '/'; // Fungsi asal untuk log keluar biasa
+        }
+    }
 
+    // Fungsi utama untuk memulakan aplikasi
+    async function initializeApp() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref');
 
+        // Jika pautan affiliate digunakan, log keluar pengguna sedia ada untuk membenarkan pendaftaran baru
+        if (refCode) {
+            console.log("Pautan affiliate dikesan. Melog keluar sesi sedia ada...");
+            await _supabase.auth.signOut(); // Terus log keluar
+            localStorage.removeItem('userProfile'); // Pastikan profil tempatan dibersihkan
+            currentSessionToken = null;
+            
+            // Simpan kod affiliate dalam kuki
+            const d = new Date();
+            d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
+            let expires = "expires=" + d.toUTCString();
+            document.cookie = "affiliate_ref_code=" + refCode + ";" + expires + ";path=/";
+            console.log(`Kod affiliate '${refCode}' dari URL telah disimpan dalam kuki.`);
+
+            // Buang parameter 'ref' dari URL untuk mengelakkan log keluar berulang jika halaman dimuat semula
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // Teruskan dengan persediaan biasa
+        initializeEventListeners();
+        await checkUserSession(); // Sekarang checkUserSession akan mendapati tiada sesi dan menunjukkan borang pendaftaran
+    }
+    
     // Fungsi baru untuk mengendalikan pendaftaran affiliate
     async function handleRegisterAffiliate() {
         const token = currentSessionToken;
@@ -351,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showUi(session.user, userProfile, token);
             } else {
                 console.error("Gagal mendapatkan profil, log keluar...");
-                await handleSignOut();
+                await handleSignOut(); // Guna handleSignOut yang telah diubah suai
                 return;
             }
         } else {
@@ -416,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await _supabase.auth.setSession(data.session);
                 await checkUserSession(); // Panggil fungsi yang mendapatkan profil penuh & betul
             } else { 
-                alert('Pendaftaran berjaya! sila log masuk untuk menghantar bukti pembayaran.');
+                alert('Pendaftaran berjaya! Sila log masuk untuk menghantar bukti pembayaran.');
                 if(signupContainer) signupContainer.style.display = 'none';
                 if(loginContainer) loginContainer.style.display = 'block';
             }
@@ -499,17 +523,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // <-- TAMAT BLOK BARU
-
-    // Fungsi untuk log keluar
-    async function handleSignOut() {
-        await _supabase.auth.signOut();
-        localStorage.removeItem('userProfile');
-        currentSessionToken = null;
-        showAuth();
-        window.location.href = '/';
-    }
-
     // Inisialisasi Event Listeners
     function initializeEventListeners() {
         if (showSignup) showSignup.addEventListener('click', (e) => { e.preventDefault(); if(loginContainer) loginContainer.style.display = 'none'; if(signupContainer) signupContainer.style.display = 'block'; });
@@ -528,7 +541,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Panggil fungsi inisialisasi
-    checkUserSession();
-    initializeEventListeners();
+    // Panggil fungsi permulaan utama
+    initializeApp();
 });
