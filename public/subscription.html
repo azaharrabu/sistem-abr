@@ -159,12 +159,10 @@
 
     <script>
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        let userEmail = '';
         
-        async function getAuthToken() {
+        async function getAuthSession() {
             const { data: { session } } = await _supabase.auth.getSession();
-            if (session) userEmail = session.user.email;
-            return session ? session.access_token : null;
+            return session;
         }
 
         async function handleSignOut() {
@@ -190,21 +188,21 @@
         window.addEventListener('load', async () => {
             document.getElementById('logout-button').addEventListener('click', handleSignOut);
 
-            const token = await getAuthToken();
-            if (!token) {
+            const session = await getAuthSession();
+            if (!session) {
                 showMessage('error', 'Sila log masuk untuk menguruskan langganan anda.');
                 document.getElementById('renewal-section').style.display = 'none';
                 return;
             }
+            const userEmail = session.user.email;
+            const token = session.access_token;
 
             try {
                 const response = await fetch('/api/profile', { headers: { 'Authorization': `Bearer ${token}` } });
                 if (!response.ok) { throw new Error((await response.json()).error || 'Gagal mendapatkan data profil.'); }
                 const profile = await response.json();
 
-                // Logic based on payment status
                 if (profile.payment_status === 'pending') {
-                    // User has a pending payment, show the payment proof form
                     showMessage('info', 'Anda mempunyai permintaan langganan yang sedang menunggu pembayaran. Sila lengkapkan butiran di bawah.');
                     document.getElementById('renewal-section').style.display = 'none';
                     document.getElementById('payment-proof-section').style.display = 'block';
@@ -226,9 +224,7 @@
                         showMessage('error', 'Tidak dapat menentukan jumlah pembayaran. Sila hubungi sokongan.');
                         document.getElementById('submit-payment-button').disabled = true;
                     }
-
                 } else {
-                    // Default view for users without pending payments
                     document.getElementById('current-plan').textContent = profile.subscription_plan || 'Tiada';
                     document.getElementById('expiry-date').textContent = formatDate(profile.subscription_end_date);
                     document.getElementById('status-loading').style.display = 'none';
@@ -247,8 +243,10 @@
             submitButton.disabled = true;
             submitButton.textContent = 'Memproses...';
             
-            const token = await getAuthToken();
-            if (!token) { return showMessage('error', 'Sesi anda telah tamat. Sila log masuk semula.'); }
+            const session = await getAuthSession();
+            if (!session) { return showMessage('error', 'Sesi anda telah tamat. Sila log masuk semula.'); }
+            const userEmail = session.user.email;
+            const token = session.access_token;
 
             const selection = JSON.parse(document.getElementById('plan-selection').value);
 
@@ -280,8 +278,9 @@
             submitButton.disabled = true;
             submitButton.textContent = 'Menghantar...';
 
-            const token = await getAuthToken();
-            if (!token) { return showMessage('error', 'Sesi anda telah tamat. Sila log masuk semula.'); }
+            const session = await getAuthSession();
+            if (!session) { return showMessage('error', 'Sesi anda telah tamat. Sila log masuk semula.'); }
+            const token = session.access_token;
             
             const form = event.target;
             const body = {
