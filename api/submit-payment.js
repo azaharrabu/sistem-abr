@@ -23,9 +23,10 @@ module.exports = async (req, res) => {
       payment_date,
       payment_time,
       amount,
+      reference_no,
     } = req.body;
 
-    if (!payment_date || !payment_time || !amount) {
+    if (!payment_date || !payment_time || !amount || !reference_no) {
       return res.status(400).json({ error: 'Sila lengkapkan semua butiran yang diperlukan.' });
     }
 
@@ -47,7 +48,7 @@ module.exports = async (req, res) => {
       payment_date,
       payment_time,
       amount,
-      reference_no: user.email,
+      reference_no,
       status: 'pending',
     };
 
