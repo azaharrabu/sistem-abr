@@ -44,45 +44,58 @@ module.exports = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Admin access required.' });
     }
 
-    // 3. Jika pengguna adalah admin, dapatkan data pembayaran yang belum selesai dari jadual 'payments'
+    // 3. Jika pengguna adalah admin, laksanakan logik untuk mendapatkan data.
+    // Daripada menggunakan satu query JOIN yang kompleks, kita akan pecahkannya kepada dua bahagian untuk keteguhan.
+
+    // Bahagian 1: Dapatkan semua pembayaran yang belum selesai.
     const { data: pendingPayments, error: paymentsError } = await supabase
       .from('payments')
-      .select(`
-        payment_id,
-        amount,
-        payment_date,
-        payment_time,
-        proof_url,
-        reference_no,
-        users (
-          user_id,
-          email,
-          full_name,
-          phone_number,
-          subscription_plan
-        )
-      `)
+      .select('id, user_id, amount, payment_date, payment_time, reference_no')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
     if (paymentsError) {
-      // Jika terdapat ralat semasa mengambil data, hantar ralat server
-      throw new Error(`Failed to fetch pending payments: ${paymentsError.message}`);
+      throw new Error(`Gagal mendapatkan bayaran tertunda: ${paymentsError.message}`);
     }
 
+    if (!pendingPayments.length) {
+      console.log('Tiada bayaran tertunda ditemui.');
+      return res.status(200).json([]); // Hantar array kosong jika tiada bayaran
+    }
+
+    // Bahagian 2: Dapatkan butiran pengguna untuk semua bayaran yang belum selesai dalam satu query.
+    const userIds = pendingPayments.map(p => p.user_id);
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('user_id, email, full_name, phone_number, subscription_plan')
+      .in('user_id', userIds);
+
+    if (usersError) {
+        throw new Error(`Gagal mendapatkan butiran pengguna: ${usersError.message}`);
+    }
+
+    // Buat pemetaan pengguna dengan user_id sebagai kunci untuk akses mudah.
+    const userMap = users.reduce((map, user) => {
+        map[user.user_id] = user;
+        return map;
+    }, {});
+
     // 4. Format data untuk sepadan dengan jangkaan frontend
-    const formattedData = pendingPayments.map(p => ({
-      user_id: p.users ? p.users.user_id : null, // Penting untuk kelulusan/penolakan
-      email: p.users ? p.users.email : 'N/A',
-      full_name: p.users ? p.users.full_name : 'N/A',
-      phone_number: p.users ? p.users.phone_number : 'N/A',
-      subscription_plan: p.users ? p.users.subscription_plan : 'N/A',
-      reference_no: p.reference_no,
-      payment_date: p.payment_date,
-      payment_time: p.payment_time,
-      amount: p.amount,
-      payment_id: p.payment_id
-    }));
+    const formattedData = pendingPayments.map(p => {
+      const user = userMap[p.user_id] || {}; // Cari pengguna yang sepadan
+      return {
+        payment_id: p.id, // Guna 'id' dari jadual 'payments'
+        user_id: p.user_id,
+        email: user.email || 'N/A',
+        full_name: user.full_name || 'N/A',
+        phone_number: user.phone_number || 'N/A',
+        subscription_plan: user.subscription_plan || 'N/A',
+        reference_no: p.reference_no,
+        payment_date: p.payment_date,
+        payment_time: p.payment_time,
+        amount: p.amount
+      };
+    });
 
 
     // 5. Hantar data pembayaran yang belum selesai sebagai tindak balas
