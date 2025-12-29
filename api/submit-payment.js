@@ -26,6 +26,8 @@ module.exports = async (req, res) => {
       reference_no,
     } = req.body;
 
+    console.log('Received payment submission:', req.body);
+
     if (!payment_date || !payment_time || !amount || !reference_no) {
       return res.status(400).json({ error: 'Sila lengkapkan semua butiran yang diperlukan.' });
     }

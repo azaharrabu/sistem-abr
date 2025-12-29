@@ -209,7 +209,24 @@
                     document.getElementById('renewal-section').style.display = 'none';
                     document.getElementById('payment-proof-section').style.display = 'block';
                     document.getElementById('reference_no').value = '';
-                    document.getElementById('amount').value = profile.pending_amount || 'Sila semak pelan anda'; // Fallback
+
+                    let pendingAmount = profile.pending_amount;
+                    if (!pendingAmount) {
+                        try {
+                            const selection = JSON.parse(document.getElementById('plan-selection').value);
+                            pendingAmount = selection.price;
+                        } catch (e) {
+                            console.error('Could not determine pending amount.');
+                        }
+                    }
+
+                    if (pendingAmount) {
+                        document.getElementById('amount').value = pendingAmount;
+                    } else {
+                        showMessage('error', 'Tidak dapat menentukan jumlah pembayaran. Sila hubungi sokongan.');
+                        document.getElementById('submit-payment-button').disabled = true;
+                    }
+
                 } else {
                     // Default view for users without pending payments
                     document.getElementById('current-plan').textContent = profile.subscription_plan || 'Tiada';
