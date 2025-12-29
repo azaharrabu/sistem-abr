@@ -106,7 +106,7 @@ module.exports = async (req, res) => {
         throw new Error(`Error updating payment: ${paymentError.message}`);
     }
 
-    if (!approvedPayments || approvedPayments.length === 0) {
+    if (!paidPayments || paidPayments.length === 0) {
         console.warn(`Could not find a 'pending' payment record for user ${userId}.`);
         // We don't exit here because the main user status was updated.
     }
