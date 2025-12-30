@@ -106,7 +106,7 @@ module.exports = async (req, res) => {
         throw new Error(`Error updating payment: ${paymentError.message}`);
     }
 
-    if (!approvedPayments || approvedPayments.length === 0) {
+    if (!paidPayments || paidPayments.length === 0) {
         console.warn(`Could not find a 'pending' payment record for user ${userId}.`);
         // We don't exit here because the main user status was updated.
     }
@@ -120,7 +120,7 @@ module.exports = async (req, res) => {
         const { data: affiliate, error: affiliateError } = await supabase
             .from('affiliates')
             .select('id, commission_rate')
-            .eq('affiliate_code', userProfile.referred_by) 
+            .eq('user_id', userProfile.referred_by) 
             .single();
 
         if (affiliateError || !affiliate) {
@@ -133,7 +133,7 @@ module.exports = async (req, res) => {
                     affiliate_id: affiliate.id,
                     purchaser_user_id: userId,
                     sale_amount: paymentForSale.amount,
-                    commission_rate: affiliate.commission_rate
+                    commission_rate: affiliate.commission_rate || 0.10 // SEDIAKAN NILAI LALAI
                 });
             
             if (saleInsertError) {
@@ -192,7 +192,8 @@ module.exports = async (req, res) => {
 
   } catch (err) {
     console.error('Approve Payment API Error:', err.message);
-    return res.status(500).json({ error: 'An internal server error occurred.' });
+    // HANTAR RALAT SEBENAR KE FRONTEND UNTUK DEBUGGING
+    return res.status(500).json({ error: err.message });
   }
 };
 
