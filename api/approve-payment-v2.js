@@ -129,13 +129,18 @@ module.exports = async (req, res) => {
                 console.error(`CRITICAL: Could not find affiliate with code: ${userProfile.referred_by}. Sale not recorded.`);
             } else {
                 console.log(`Found affiliate with id: ${affiliate.id}. Preparing to insert sale record.`);
+                const commissionRate = affiliate.commission_rate || 0.10;
+                const commissionAmount = paymentForSale.amount * commissionRate;
+
                 const { error: saleInsertError } = await supabase
                     .from('sales')
                     .insert({
                         affiliate_id: affiliate.id,
                         purchaser_user_id: userId,
                         sale_amount: paymentForSale.amount,
-                        commission_rate: affiliate.commission_rate || 0.10 // SEDIAKAN NILAI LALAI
+                        commission_rate: commissionRate,
+                        commission_amount: commissionAmount,
+                        payout_status: 'unpaid'
                     });
                 
                 if (saleInsertError) {
