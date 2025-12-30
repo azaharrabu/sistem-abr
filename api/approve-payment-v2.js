@@ -11,17 +11,17 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function isAdmin(userId) {
   const { data, error } = await supabase
-    .from('users')
-    .select('role')
+    .from('admin_users')
+    .select('user_id')
     .eq('user_id', userId)
     .single();
-  
-  if (error) {
+
+  if (error && error.code !== 'PGRST116') { // PGRST116 is 'No rows found', which is expected for non-admins.
     console.error('Error checking admin role:', error.message);
     return false;
   }
   
-  return data && data.role === 'admin';
+  return !!data; // Returns true if a record is found, false otherwise.
 }
 
 module.exports = async (req, res) => {

@@ -70,7 +70,7 @@ module.exports = async (req, res) => {
     console.log('[PROFILE] Step 2: Fetching main profile from "users" table...');
     const { data: userProfile, error: profileError } = await supabase
       .from('users')
-      .select('*')
+      .select('user_id, email, full_name, phone_number, subscription_plan, subscription_end_date, payment_status, is_promo_user') // Explicitly select columns, exclude 'role'
       .eq('user_id', user.id)
       .single();
 
@@ -92,7 +92,17 @@ module.exports = async (req, res) => {
     // The fetched user data is our base profile object
     const profile = userProfile;
     console.log(`[PROFILE] Step 2 DONE: Profile data ready for user: ${user.email}`);
-    console.log(`[PROFILE] Details: Role='${profile.role}', Payment Status='${profile.payment_status}'`);
+    
+    // NEW STEP: Check for admin status from the 'admin_users' table
+    const { data: adminRecord } = await supabase
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .single();
+    
+    profile.is_admin = !!adminRecord; // Add 'is_admin' boolean to the profile object
+
+    console.log(`[PROFILE] Details: Is Admin='${profile.is_admin}', Payment Status='${profile.payment_status}'`);
 
     // **New Step**: If payment is pending, get the amount from the 'payments' table
     if (profile.payment_status === 'pending') {
