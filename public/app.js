@@ -309,6 +309,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (pendingApprovalSection) pendingApprovalSection.style.display = 'block';
                     break;
                 case 'rejected':
+                case 'awaiting_payment':
                 default: // Also covers new users where status is null/undefined
                     console.log("UI Sub-Path: Needs payment (new, rejected, or other).");
                     if (paymentSection) {
@@ -370,12 +371,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 cache: 'no-cache' // Elakkan caching profil
             });
             if (response.ok) {
-                const userProfile = await response.json();
-                localStorage.setItem('userProfile', JSON.stringify(userProfile));
-                showUi(session.user, userProfile, token);
+                // Handle cases where response is OK but has no body (e.g., 204 No Content or 304 Not Modified)
+                if (response.status === 204 || response.status === 304) {
+                    console.warn(`Profile fetch returned ${response.status}. Using cached profile from localStorage.`);
+                    const cachedProfile = JSON.parse(localStorage.getItem('userProfile'));
+                    // If a cached profile exists, use it. Otherwise, we can't proceed.
+                    if (cachedProfile) {
+                        showUi(session.user, cachedProfile, token);
+                    } else {
+                        console.error("No cached profile available after a 304 response. Logging out.");
+                        await handleSignOut();
+                    }
+                    return; // Stop further execution
+                }
+
+                try {
+                    const userProfile = await response.json();
+                    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                    showUi(session.user, userProfile, token);
+                } catch (e) {
+                    console.error("Failed to parse profile JSON, logging out.", e);
+                    await handleSignOut();
+                }
             } else {
-                console.error("Gagal mendapatkan profil, log keluar...");
-                await handleSignOut(); // Guna handleSignOut yang telah diubah suai
+                console.error(`Failed to get profile, status: ${response.status}. Logging out...`);
+                await handleSignOut(); // Use modified handleSignOut
                 return;
             }
         } else {
