@@ -135,10 +135,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Gagal meluluskan pembayaran.');
-            alert('Pembayaran berjaya diluluskan!');
-            fetchPendingPayments(token);
         } catch (error) {
-            alert(`Ralat: ${error.message}`);
+            console.error("--- DEBUGGING approve-payment ---");
+            console.error("Full error object:", error);
+            alert(`Ralat Frontend Sebenar: ${error.message}`);
         }
     }
 
