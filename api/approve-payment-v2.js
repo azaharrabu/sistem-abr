@@ -114,32 +114,36 @@ module.exports = async (req, res) => {
     const paymentForSale = paidPayments ? paidPayments[0] : null;
 
     // 5. If the user was referred, create a sales record for the affiliate.
-    if (userProfile.referred_by && paymentForSale && paymentForSale.amount > 0) {
-        console.log(`User was referred by affiliate with user_id: ${userProfile.referred_by}. Attempting to record sale.`);
-        
-        const { data: affiliate, error: affiliateError } = await supabase
-            .from('affiliates')
-            .select('id, commission_rate')
-            .eq('user_id', userProfile.referred_by) 
-            .single();
-
-        if (affiliateError || !affiliate) {
-            console.error(`CRITICAL: Could not find affiliate with user_id: ${userProfile.referred_by}. Sale not recorded.`);
-        } else {
-            console.log(`Found affiliate with id: ${affiliate.id}. Preparing to insert sale record.`);
-            const { error: saleInsertError } = await supabase
-                .from('sales')
-                .insert({
-                    affiliate_id: affiliate.id,
-                    purchaser_user_id: userId,
-                    sale_amount: paymentForSale.amount,
-                    commission_rate: affiliate.commission_rate || 0.10 // SEDIAKAN NILAI LALAI
-                });
+    // Nested check to prevent TypeError if paymentForSale is undefined.
+    if (userProfile.referred_by && paymentForSale) {
+        if (paymentForSale.amount > 0) {
+            console.log(`User was referred by affiliate with code: ${userProfile.referred_by}. Attempting to record sale.`);
             
-            if (saleInsertError) {
-                console.error(`CRITICAL: Failed to insert sale record for affiliate ID ${affiliate.id}`, saleInsertError.message);
+            const { data: affiliate, error: affiliateError } = await supabase
+                .from('affiliates')
+                .select('id, commission_rate')
+                .eq('affiliate_code', userProfile.referred_by) 
+                .single();
+
+            if (affiliateError || !affiliate) {
+                console.error(`CRITICAL: Could not find affiliate with code: ${userProfile.referred_by}. Sale not recorded.`);
             } else {
-                console.log(`Successfully recorded sale for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount}`);
+                console.log(`Found affiliate with id: ${affiliate.id}. Preparing to insert sale record.`);
+                const { error: saleInsertError } = await supabase
+                    .from('sales')
+                    .insert({
+                        affiliate_id: affiliate.id,
+                        purchaser_user_id: userId,
+                        sale_amount: paymentForSale.amount,
+                        commission_rate: affiliate.commission_rate || 0.10 // SEDIAKAN NILAI LALAI
+                    });
+                
+                if (saleInsertError) {
+                    console.error(`CRITICAL: Failed to insert sale record for affiliate ID ${affiliate.id}`, saleInsertError.message);
+                    throw new Error(`Failed to insert sale record: ${saleInsertError.message}`);
+                } else {
+                    console.log(`Successfully recorded sale for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount}`);
+                }
             }
         }
     }
