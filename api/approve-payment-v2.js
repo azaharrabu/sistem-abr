@@ -24,13 +24,6 @@ async function isAdmin(userId) {
   return data && data.role === 'admin';
 }
 
-// Helper function to format date for logging, to avoid code duplication
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('ms-MY', options);
-}
-
 module.exports = async (req, res) => {
   console.log('--- APPROVE-PAYMENT V2: EXECUTION STARTED ---');
   if (req.method !== 'POST') {
@@ -118,7 +111,7 @@ module.exports = async (req, res) => {
         console.error(`[ERROR-STEP 7] Error updating payment record:`, paymentError);
         throw new Error(`Error updating payment: ${paymentError.message}`);
     }
-    
+
     if (!approvedPayments || approvedPayments.length === 0) {
         console.warn(`[STEP 7] No 'pending' payment record found for user ${userId}.`);
     } else {
@@ -130,8 +123,8 @@ module.exports = async (req, res) => {
 
     console.log('[STEP 8] Checking for affiliate referral...');
     if (userProfile.referred_by && paymentForSale && paymentForSale.amount > 0) {
-        console.log(`[STEP 8] User was referred by: ${userProfile.referred_by}. Recording sale.`);
-        
+        console.log(`[STEP 8] User was referred by affiliate with code: ${userProfile.referred_by}. Attempting to record sale.`);
+            
         console.log(`[STEP 8a] Fetching affiliate details...`);
         const { data: affiliate, error: affiliateError } = await supabase
             .from('affiliates')
@@ -140,9 +133,9 @@ module.exports = async (req, res) => {
             .single();
 
         if (affiliateError || !affiliate) {
-            console.error(`[ERROR-STEP 8a] CRITICAL: Could not find affiliate with code: ${userProfile.referred_by}. Sale not recorded.`, affiliateError);
+            console.error(`[ERROR-STEP 8a] CRITICAL: Could not find affiliate with code: ${userProfile.referred_by}. Sale not recorded.`);
         } else {
-            console.log(`[STEP 8b] Affiliate found (ID: ${affiliate.id}). Preparing to insert sale record.`);
+            console.log(`[STEP 8b] Found affiliate with id: ${affiliate.id}. Preparing to insert sale record.`);
             const commissionRate = affiliate.commission_rate || 0.10;
             const commissionAmount = paymentForSale.amount * commissionRate;
 
@@ -159,8 +152,9 @@ module.exports = async (req, res) => {
             
             if (saleInsertError) {
                 console.error(`[ERROR-STEP 8b] CRITICAL: Failed to insert sale record for affiliate ID ${affiliate.id}`, saleInsertError.message);
+                throw new Error(`Failed to insert sale record: ${saleInsertError.message}`);
             } else {
-                console.log(`[STEP 8b] Sale recorded successfully for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount}`);
+                console.log(`[STEP 8b] Successfully recorded sale for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount}`);
             }
         }
     } else {
@@ -218,6 +212,15 @@ module.exports = async (req, res) => {
   } catch (err) {
     console.error('--- APPROVE-PAYMENT V2: EXECUTION FAILED ---');
     console.error('Approve Payment API Error:', err.message);
+    console.error('Stack trace:', err.stack); // Also log the stack
+    // HANTAR RALAT SEBENAR KE FRONTEND UNTUK DEBUGGING
     return res.status(500).json({ error: err.message });
   }
 };
+
+// Helper function to format date for logging, to avoid code duplication
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('ms-MY', options);
+}
