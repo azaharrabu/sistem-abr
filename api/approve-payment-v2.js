@@ -113,7 +113,8 @@ module.exports = async (req, res) => {
     }
 
     if (!approvedPayments || approvedPayments.length === 0) {
-        console.warn(`[STEP 7] No 'pending' payment record found for user ${userId}.`);
+        // This is a critical failure, as a pending payment was expected.
+        throw new Error(`No 'pending' payment record found to approve for user ${userId}. The user status was not updated.`);
     } else {
         console.log(`[STEP 7] Found and updated ${approvedPayments.length} payment record(s).`);
     }
@@ -146,7 +147,6 @@ module.exports = async (req, res) => {
                     purchaser_user_id: userId,
                     sale_amount: paymentForSale.amount,
                     commission_rate: commissionRate,
-                    commission_amount: commissionAmount,
                     payout_status: 'unpaid'
                 });
             
