@@ -34,7 +34,23 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // 1. Daftar pengguna baru di Supabase Auth.
+    // 1. Validate affiliate code before anything else.
+    let validatedReferredBy = null;
+    if (referred_by) {
+      const { data: affiliate, error: affiliateError } = await supabase
+        .from('affiliates')
+        .select('affiliate_code')
+        .eq('affiliate_code', referred_by)
+        .single();
+
+      if (affiliateError || !affiliate) {
+        console.warn(`[signup.js] WARN: Invalid or non-existent affiliate code provided: ${referred_by}. Proceeding without referral.`);
+      } else {
+        validatedReferredBy = affiliate.affiliate_code;
+      }
+    }
+
+    // 2. Daftar pengguna baru di Supabase Auth.
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -49,14 +65,14 @@ module.exports = async (req, res) => {
         return res.status(500).json({ error: "Signup succeeded but no user data returned."});
     }
 
-    // 2. Panggil fungsi database untuk mencipta rekod pengguna dan profil secara atomik.
+    // 3. Panggil fungsi database untuk mencipta rekod pengguna dan profil secara atomik.
     const { error: rpcError } = await supabase.rpc('create_user_and_profile', {
       p_user_id: authData.user.id,
       p_email: authData.user.email,
       p_subscription_plan: subscription_plan,
       p_full_name: full_name,
       p_phone_number: phone_number,
-      p_referred_by: referred_by || null
+      p_referred_by: validatedReferredBy
     });
 
     if (rpcError) {
@@ -67,18 +83,19 @@ module.exports = async (req, res) => {
       return res.status(500).json({ error: 'Database error creating user profile. Please contact support.' });
     }
 
-    // If user was referred, send a notification email to the affiliate
-    if (referred_by) {
+    // If user was referred by a valid affiliate, send a notification email
+    if (validatedReferredBy) {
       try {
         // 1. Find the affiliate's user_id from their referral code
         const { data: affiliateData, error: affiliateError } = await supabase
           .from('affiliates')
           .select('user_id')
-          .eq('affiliate_code', referred_by)
+          .eq('affiliate_code', validatedReferredBy)
           .single();
 
         if (affiliateError || !affiliateData) {
-          throw new Error(`Affiliate with code ${referred_by} not found.`);
+          // This should theoretically not happen due to the validation above, but as a safeguard:
+          throw new Error(`Affiliate with code ${validatedReferredBy} not found despite prior validation.`);
         }
 
         // 2. Get the affiliate's email from their user record

@@ -91,6 +91,10 @@ module.exports = async (req, res) => {
     
     // The fetched user data is our base profile object
     const profile = userProfile;
+
+    // The 'role' is now directly available from the userProfile object.
+    // The manual workaround has been removed.
+
     console.log(`[PROFILE] Step 2 DONE: Profile data ready for user: ${user.email}`);
     console.log(`[PROFILE] Details: Role='${profile.role}', Payment Status='${profile.payment_status}'`);
 

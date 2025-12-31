@@ -25,24 +25,30 @@ async function isAdmin(userId) {
 }
 
 module.exports = async (req, res) => {
-  console.log('--- EXECUTING LATEST VERSION OF approve-payment-v2.js ---');
+  console.log('--- APPROVE-PAYMENT V2: EXECUTION STARTED ---');
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
+    console.log('[STEP 1] Verifying admin token...');
     const adminUser = await verifyToken(req);
+    if (!adminUser) throw new Error('Admin verification failed.');
+    console.log('[STEP 1] Admin token verified.');
+
+    console.log('[STEP 2] Checking admin privileges...');
     if (!await isAdmin(adminUser.id)) {
       return res.status(403).json({ error: 'Forbidden: Admin privileges required.' });
     }
+    console.log('[STEP 2] Admin privileges confirmed.');
 
     const { userId } = req.body;
-    console.log('DEBUG: Received request to approve payment for userId:', userId);
+    console.log(`[STEP 3] Request received to approve payment for userId: ${userId}`);
     if (!userId) {
         return res.status(400).json({ error: 'userId is required.'});
     }
 
-    // 1. Fetch the user's profile to get subscription plan and referral info.
+    console.log(`[STEP 4] Fetching user profile for userId: ${userId}...`);
     const { data: userProfile, error: userFetchError } = await supabase
         .from('users')
         .select('user_id, email, full_name, subscription_plan, referred_by')
@@ -50,18 +56,16 @@ module.exports = async (req, res) => {
         .single();
 
     if (userFetchError) {
-        console.error(`Error fetching user profile for userId: ${userId}`, userFetchError);
+        console.error(`[ERROR-STEP 4] Error fetching user profile for userId: ${userId}`, userFetchError);
         return res.status(500).json({ error: `Database error while fetching user profile: ${userFetchError.message}` });
     }
-
     if (!userProfile) {
-        console.error(`User profile with ID ${userId} not found.`);
+        console.error(`[ERROR-STEP 4] User profile with ID ${userId} not found.`);
         return res.status(404).json({ error: `User profile with ID ${userId} not found.` });
     }
+    console.log(`[STEP 4] User profile found: ${userProfile.email}`);
 
-    console.log(`DEBUG: Found user ${userProfile.user_id} (${userProfile.email}) to approve.`);
-
-    // 2. Calculate the new subscription end date.
+    console.log('[STEP 5] Calculating new subscription end date...');
     const newEndDate = new Date();
     const plan = userProfile.subscription_plan;
     let durationMonths = 0;
@@ -73,11 +77,12 @@ module.exports = async (req, res) => {
     
     if (durationMonths > 0) {
         newEndDate.setMonth(newEndDate.getMonth() + durationMonths);
+        console.log(`[STEP 5] Subscription plan is ${durationMonths} months. New end date: ${newEndDate.toISOString()}`);
     } else {
-        console.warn(`Could not determine subscription duration for plan: "${plan}". Subscription end date will not be updated.`);
+        console.warn(`[STEP 5] Could not determine subscription duration for plan: "${plan}". End date will not be updated.`);
     }
 
-    // 3. Update user's payment status and subscription end date.
+    console.log(`[STEP 6] Updating user record in database for userId: ${userId}...`);
     const updatePayload = { payment_status: 'paid' };
     if (durationMonths > 0) {
         updatePayload.subscription_end_date = newEndDate.toISOString();
@@ -89,13 +94,13 @@ module.exports = async (req, res) => {
         .eq('user_id', userId);
 
     if (updateUserError) {
-        console.error(`Error updating user status for userId: ${userId}`, updateUserError);
+        console.error(`[ERROR-STEP 6] Error updating user status for userId: ${userId}`, updateUserError);
         throw new Error(`Failed to update user status: ${updateUserError.message}`);
     }
-    console.log(`Successfully updated user ${userId} status to 'paid' and set new end date to ${updatePayload.subscription_end_date}.`);
+    console.log(`[STEP 6] User record updated successfully.`);
     
-    // 4. Find the user's pending payment and update it to 'paid'.
-    const { data: paidPayments, error: paymentError } = await supabase
+    console.log(`[STEP 7] Updating payment record in database for userId: ${userId}...`);
+    const { data: approvedPayments, error: paymentError } = await supabase
         .from('payments')
         .update({ status: 'paid' })
         .eq('user_id', userId)
@@ -103,61 +108,65 @@ module.exports = async (req, res) => {
         .select('amount');
 
     if (paymentError) {
+        console.error(`[ERROR-STEP 7] Error updating payment record:`, paymentError);
         throw new Error(`Error updating payment: ${paymentError.message}`);
     }
 
-    if (!paidPayments || paidPayments.length === 0) {
-        console.warn(`Could not find a 'pending' payment record for user ${userId}.`);
-        // We don't exit here because the main user status was updated.
+    if (!approvedPayments || approvedPayments.length === 0) {
+        console.warn(`[STEP 7] No 'pending' payment record found for user ${userId}.`);
+    } else {
+        console.log(`[STEP 7] Found and updated ${approvedPayments.length} payment record(s).`);
     }
     
-    const paymentForSale = paidPayments ? paidPayments[0] : null;
+    const paymentForSale = approvedPayments && approvedPayments.length > 0 ? approvedPayments[0] : null;
+    console.log('[STEP 7] Payment record processing complete.');
 
-    // 5. If the user was referred, create a sales record for the affiliate.
-    // Nested check to prevent TypeError if paymentForSale is undefined.
-    if (userProfile.referred_by && paymentForSale) {
-        if (paymentForSale.amount > 0) {
-            console.log(`User was referred by affiliate with code: ${userProfile.referred_by}. Attempting to record sale.`);
+    console.log('[STEP 8] Checking for affiliate referral...');
+    if (userProfile.referred_by && paymentForSale && paymentForSale.amount > 0) {
+        console.log(`[STEP 8] User was referred by affiliate with code: ${userProfile.referred_by}. Attempting to record sale.`);
             
-            const { data: affiliate, error: affiliateError } = await supabase
-                .from('affiliates')
-                .select('id, commission_rate')
-                .eq('affiliate_code', userProfile.referred_by) 
-                .single();
+        console.log(`[STEP 8a] Fetching affiliate details...`);
+        const { data: affiliate, error: affiliateError } = await supabase
+            .from('affiliates')
+            .select('id, commission_rate')
+            .eq('affiliate_code', userProfile.referred_by) 
+            .single();
 
-            if (affiliateError || !affiliate) {
-                console.error(`CRITICAL: Could not find affiliate with code: ${userProfile.referred_by}. Sale not recorded.`);
+        if (affiliateError || !affiliate) {
+            console.error(`[ERROR-STEP 8a] CRITICAL: Could not find affiliate with code: ${userProfile.referred_by}. Sale not recorded.`);
+        } else {
+            console.log(`[STEP 8b] Found affiliate with id: ${affiliate.id}. Preparing to insert sale record.`);
+            const commissionRate = affiliate.commission_rate || 0.10;
+            const commissionAmount = paymentForSale.amount * commissionRate;
+
+            const { error: saleInsertError } = await supabase
+                .from('sales')
+                .insert({
+                    affiliate_id: affiliate.id,
+                    purchaser_user_id: userId,
+                    sale_amount: paymentForSale.amount,
+                    commission_rate: commissionRate,
+                    commission_amount: commissionAmount,
+                    payout_status: 'unpaid'
+                });
+            
+            if (saleInsertError) {
+                console.error(`[ERROR-STEP 8b] CRITICAL: Failed to insert sale record for affiliate ID ${affiliate.id}`, saleInsertError.message);
+                throw new Error(`Failed to insert sale record: ${saleInsertError.message}`);
             } else {
-                console.log(`Found affiliate with id: ${affiliate.id}. Preparing to insert sale record.`);
-                const commissionRate = affiliate.commission_rate || 0.10;
-                const commissionAmount = paymentForSale.amount * commissionRate;
-
-                const { error: saleInsertError } = await supabase
-                    .from('sales')
-                    .insert({
-                        affiliate_id: affiliate.id,
-                        purchaser_user_id: userId,
-                        sale_amount: paymentForSale.amount,
-                        commission_rate: commissionRate,
-                        commission_amount: commissionAmount,
-                        payout_status: 'unpaid'
-                    });
-                
-                if (saleInsertError) {
-                    console.error(`CRITICAL: Failed to insert sale record for affiliate ID ${affiliate.id}`, saleInsertError.message);
-                    throw new Error(`Failed to insert sale record: ${saleInsertError.message}`);
-                } else {
-                    console.log(`Successfully recorded sale for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount}`);
-                }
+                console.log(`[STEP 8b] Successfully recorded sale for affiliate ID ${affiliate.id} with amount ${paymentForSale.amount}`);
             }
         }
+    } else {
+        console.log('[STEP 8] No affiliate referral to process.');
     }
 
-    // 6. Send success notification email to the user
+    console.log('[STEP 9] Preparing to send approval email...');
     try {
         if (!process.env.RESEND_API_KEY) {
-            console.warn('RESEND_API_KEY is not set. Skipping email notification.');
+            console.warn('[EMAIL] RESEND_API_KEY not set. Skipping email notification.');
         } else {
+            console.log(`[EMAIL] Sending approval email to ${userProfile.email}...`);
             const { data, error } = await resend.emails.send({
                 from: 'Sistem ABR <noreply@abrbrillante.com>',
                 to: [userProfile.email],
@@ -187,20 +196,23 @@ module.exports = async (req, res) => {
             });
 
             if (error) {
-                // Log the error but don't block the API from returning success
-                console.error(`EMAIL_ERROR: Failed to send approval email to ${userProfile.email}`, error);
+                console.error(`[EMAIL_ERROR] Failed to send approval email to ${userProfile.email}`, error);
             } else {
-                console.log(`Successfully sent approval email to ${userProfile.email}. Message ID: ${data.id}`);
+                console.log(`[EMAIL] Approval email sent successfully. Message ID: ${data.id}`);
             }
         }
     } catch (emailError) {
-        console.error(`EMAIL_EXCEPTION: An exception occurred while trying to send email to ${userProfile.email}`, emailError);
+        console.error(`[EMAIL_EXCEPTION] Exception during email sending for ${userProfile.email}`, emailError);
     }
-
+    console.log('[STEP 9] Email step complete.');
+    
+    console.log('--- APPROVE-PAYMENT V2: EXECUTION SUCCEEDED ---');
     return res.status(200).json({ message: 'Payment approved, subscription updated, and sale recorded successfully.' });
 
   } catch (err) {
+    console.error('--- APPROVE-PAYMENT V2: EXECUTION FAILED ---');
     console.error('Approve Payment API Error:', err.message);
+    console.error('Stack trace:', err.stack); // Also log the stack
     // HANTAR RALAT SEBENAR KE FRONTEND UNTUK DEBUGGING
     return res.status(500).json({ error: err.message });
   }
