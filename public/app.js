@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("UI Path: Admin");
             if (adminPanelSection) adminPanelSection.style.display = 'block';
             fetchPendingPayments(token);
-        } else if (profile && profile.role === 'user') {
+        } else if (profile) {
             console.log(`UI Path: User (Payment Status: ${profile.payment_status})`);
             switch (profile.payment_status) {
                 case 'paid':
