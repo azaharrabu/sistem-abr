@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok) throw new Error(data.error || 'Gagal meluluskan pembayaran.');
         
         alert('Pembayaran berjaya diluluskan!');
-        fetchPendingPayments(token); // Reload the list of pending payments
+        await fetchPendingPayments(token); // Reload the list of pending payments
         } catch (error) {
             console.error("--- DEBUGGING approve-payment ---");
             console.error("Full error object:", error);
