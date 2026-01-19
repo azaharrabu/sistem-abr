@@ -106,7 +106,8 @@ module.exports = async (req, res) => {
         console.log(`Found ${adminEmails.length} admin(s). Sending notifications to: ${adminEmails.join(', ')}`);
 
         const host = req.headers.host;
-        const adminDashboardUrl = `https://${host}/admin-dashboard`;
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+        const loginUrl = `${protocol}://${host}/rujukan_interaktif.html`;
 
         const { data, error } = await resend.emails.send({
           from: 'Sistem ABR <noreply@abrbrillante.com>',
@@ -121,8 +122,8 @@ module.exports = async (req, res) => {
                 <li><strong>Email:</strong> ${user.email}</li>
               </ul>
               <p>Sila log masuk ke dashboard admin untuk menyemak dan meluluskan bayaran ini.</p>
-              <a href="${adminDashboardUrl}" style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
-                Pergi ke Dashboard Admin
+              <a href="${loginUrl}" style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
+                Log Masuk ke Sistem
               </a>
               <p style="font-size: 0.9em; color: #666; margin-top: 15px;">
                 Ini adalah e-mel yang dijana secara automatik. Sila jangan balas.
