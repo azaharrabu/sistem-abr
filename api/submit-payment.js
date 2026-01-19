@@ -107,7 +107,7 @@ module.exports = async (req, res) => {
 
         const host = req.headers.host;
         const protocol = host.includes('localhost') ? 'http' : 'https';
-        const loginUrl = `${protocol}://${host}/rujukan_interaktif.html`;
+        const loginUrl = `${protocol}://${host}/`;
 
         const { data, error } = await resend.emails.send({
           from: 'Sistem ABR <noreply@abrbrillante.com>',
@@ -123,7 +123,7 @@ module.exports = async (req, res) => {
               </ul>
               <p>Sila log masuk ke dashboard admin untuk menyemak dan meluluskan bayaran ini.</p>
               <a href="${loginUrl}" style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
-                Log Masuk ke Sistem
+                Log Masuk ke Dashboard Admin
               </a>
               <p style="font-size: 0.9em; color: #666; margin-top: 15px;">
                 Ini adalah e-mel yang dijana secara automatik. Sila jangan balas.
