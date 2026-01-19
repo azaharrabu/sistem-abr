@@ -118,7 +118,7 @@ module.exports = async (req, res) => {
                 <li><strong>Email:</strong> ${user.email}</li>
               </ul>
               <p>Sila log masuk ke dashboard admin untuk menyemak dan meluluskan bayaran ini.</p>
-              <a href="https://sistemubbl.abrbrillante.com/admin.html" style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
+              <a href="https://sistemubbl.abrbrillante.com/admin-dashboard.html" style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
                 Pergi ke Dashboard Admin
               </a>
               <p style="font-size: 0.9em; color: #666; margin-top: 15px;">
