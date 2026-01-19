@@ -105,6 +105,9 @@ module.exports = async (req, res) => {
         const adminEmails = admins.map(admin => admin.email);
         console.log(`Found ${adminEmails.length} admin(s). Sending notifications to: ${adminEmails.join(', ')}`);
 
+        const host = req.headers.host;
+        const adminDashboardUrl = `https://${host}/admin-dashboard`;
+
         const { data, error } = await resend.emails.send({
           from: 'Sistem ABR <noreply@abrbrillante.com>',
           to: adminEmails,
@@ -118,7 +121,7 @@ module.exports = async (req, res) => {
                 <li><strong>Email:</strong> ${user.email}</li>
               </ul>
               <p>Sila log masuk ke dashboard admin untuk menyemak dan meluluskan bayaran ini.</p>
-              <a href="https://sistemubbl.abrbrillante.com/admin-dashboard.html" style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
+              <a href="${adminDashboardUrl}" style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
                 Pergi ke Dashboard Admin
               </a>
               <p style="font-size: 0.9em; color: #666; margin-top: 15px;">
